@@ -487,8 +487,10 @@ TermBuf.prototype={
                 }
                 */
 
-                //if(this.view.bbscore.robot.autoLoginStage > 0) //TODO: For auto login, we need this for mobile device.
-                //  this.view.bbscore.robot.checkAutoLogin(row);
+                if(this.bbsCore.robot.autoLoginStage == 4)
+                  this.bbsCore.robot.checkLoginStatus(row);
+                else if(this.bbsCore.robot.autoLoginStage > 0)
+                  this.bbsCore.robot.checkAutoLogin(row);
                 
                 //if(this.openThreadUrl==1) //open therad URL, this code only for desktop browser.
                 //{
@@ -1033,6 +1035,7 @@ TermBuf.prototype={
       text = text.slice(colStart, colEnd);
       var charset = this.prefs.charset;
       return text.map( function(c, col, line){
+
         if(!c.isLeadByte) {
           if(col >=1 && line[col-1].isLeadByte) { // second byte of DBCS char
             var prevC = line[col-1];

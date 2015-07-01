@@ -1,3 +1,57 @@
+function UnEscapeStr(str) {
+    var result = '';
+    for(var i=0; i<str.length; ++i) {
+        switch(str.charAt(i)) {
+        case '\\':
+            if(i == str.length-1) { // independent \ at the end of the string
+                result += '\\';
+                break;
+            }
+            switch(str.charAt(i+1)) {
+            case '\\':
+                result += '\\\\';
+                ++i;
+                break;
+            case '^':
+                result += '^';
+                ++i;
+                break;
+            case 'x':
+                if(i > str.length - 4) {
+                    result += '\\';
+                    break;
+                }
+                var code = parseInt(str.substr(i+2, 2), 16);
+                result += String.fromCharCode(code);
+                i += 3;
+                break;
+            default:
+                result += '\\';
+            }
+            break;
+        case '^':
+            if(i == str.length-1) { // independent ^ at the end of the string
+                result += '^';
+                break;
+            }
+            if('@' <= str.charAt(i+1) && str.charAt(i+1) <= '_') {
+                var code = str.charCodeAt(i+1) - 64;
+                result += String.fromCharCode(code);
+                i++;
+            } else if(str.charAt(i+1) == '?') {
+                result += '\x7f';
+                i++;
+            } else {
+                result += '^';
+            }
+            break;
+        default:
+            result += str.charAt(i);
+        }
+    }
+    return result;
+}
+
 function ansiHalfColorConv(bufdata) {
   var str = '';
   var regex = new RegExp('\x15\\[(([0-9]+)?;)+50m', 'g');
