@@ -12,7 +12,8 @@ function BBSCore() {
     loginStr: ['',
                '',    //your username  //TODO: save by HTML5 storage
                '',   //your password
-               '']
+               ''],
+    store:false
   };
   this.conn = new TelnetProtocol(this);
   //this.view = new TermView(80, 24);

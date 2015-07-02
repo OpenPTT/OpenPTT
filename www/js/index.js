@@ -39,15 +39,33 @@ var app = {
     // function, we must explicitly call 'app.receivedEvent(...);'
     onDeviceReady: function() {
         app.receivedEvent('deviceready');
-        app.bbsCore = new BBSCore();
-        app.bbsCore.connect();
         
+    },
+    username: document.getElementById('username'),
+    password: document.getElementById('password'),
+    remember: document.getElementById('storePrefs'),
+
+    storePrefs: function() {
+        if(app.remember.checked){
+            app.bbsCore.prefs.loginStr[1] = app.username.value;
+            app.bbsCore.prefs.loginStr[2] = app.password.value;
+            app.bbsCore.prefs.store = app.remember.checked;
+            window.localStorage.setItem('prefs', JSON.stringify(app.bbsCore.prefs));
+        }
+        else
+            window.localStorage.removeItem('prefs');
+    },
+
+    login: function() {
+        console.log(app.bbsCore.prefs);
+        app.bbsCore.prefs.loginStr[1] = username.value;
+        app.bbsCore.prefs.loginStr[2] = password.value;
+        app.bbsCore.connect();
     },
     showData: function() {
         if(app.bbsCore)
           app.bbsCore.addTask('getFavoriteList', this.onMessage.bind(this));
     },
-
     onMessage: function(data) {
       console.log(data);
         /*
@@ -60,8 +78,23 @@ var app = {
     
     onLoad: function() {
         app.receivedEvent('load');
-        var btn = document.getElementById('showData');
-        btn.addEventListener('click', app.showData.bind(app), false);
+        app.bbsCore = new BBSCore();
+        json_prefs = window.localStorage.getItem('prefs');
+        if(json_prefs){
+            console.log(json_prefs)
+            prefs = JSON.parse(json_prefs);
+            
+            console.log(prefs)
+            app.username.value = prefs.loginStr[1];
+            app.password.value = prefs.loginStr[2];
+            app.remember.checked = prefs.store;
+        }
+        var btn_storePrefs = document.getElementById('storePrefs');
+        btn_storePrefs.addEventListener('click', app.storePrefs.bind(app), false);
+        var btn_login = document.getElementById('login');
+        btn_login.addEventListener('click', app.login.bind(app), false);
+        var btn_showList = document.getElementById('showData');
+        btn_showList.addEventListener('click', app.showData.bind(app), false);
     },
     onOffline: function() {
         app.receivedEvent('unload');
