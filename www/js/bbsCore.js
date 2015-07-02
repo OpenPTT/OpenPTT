@@ -10,9 +10,9 @@ function BBSCore() {
     deleteDuplicate: true,
     loginPrompt: ['','',''],
     loginStr: ['',
-               'username'    //your username  //TODO: save by HTML5 storage
-               ,'password'   //your password
-               ,'']
+               '',    //your username  //TODO: save by HTML5 storage
+               '',   //your password
+               '']
   };
   this.conn = new TelnetProtocol(this);
   //this.view = new TermView(80, 24);
@@ -42,9 +42,19 @@ BBSCore.prototype={
   onClose: function(conn) {
 
   },
-  
+
   resetUnusedTime: function() {
-    
+
+  },
+
+  addTask: function(taskName, callback) {
+    if(taskName in this.robot)
+    this.robot.addTask(
+      {
+        name: taskName,
+        run: this.robot[taskName].bind(this.robot),
+        callback: callback
+      }
+    );
   }
-  
 };

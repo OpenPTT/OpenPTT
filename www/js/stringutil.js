@@ -74,4 +74,17 @@ function ansiHalfColorConv(bufdata) {
   }
   str += bufdata.substring(curInd);
   return str;
-};
+}
+
+function parseBoardData (str1, str2) {
+  var regex = new RegExp(/\u25cf?\s{0,7}(\d{0,7})\s{1,2}[\u02c7 ]([\w ]{12})\s(.{2})\s[\u25ce\u25cf\u03a3](.*)/g);
+  var result = regex.exec(str1);
+  if(result && result.length == 5) {
+    return {sn: parseInt(result[1]),
+            boardName: result[2].replace(/^\s+|\s+$/g,''),
+            bClass: result[3],
+            description: result[4],
+            popular: str2};
+  }
+  return null;
+}

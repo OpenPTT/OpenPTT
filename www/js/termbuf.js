@@ -327,7 +327,7 @@ TermBuf.prototype={
             switch(ch) {
             case '\x07':
                 /*
-                TODO: water ball !, we need handle this event. 
+                TODO: water ball !, we need handle this event.
                 */
                 continue;
             case '\b':
@@ -487,11 +487,13 @@ TermBuf.prototype={
                 }
                 */
 
-                if(this.bbsCore.robot.autoLoginStage == 4)
-                  this.bbsCore.robot.checkLoginStatus(row);
-                else if(this.bbsCore.robot.autoLoginStage > 0)
+                //if(this.bbsCore.robot.autoLoginStage == 4)
+                //  this.bbsCore.robot.checkLoginStatus(row);
+                if(this.bbsCore.robot.autoLoginStage > 0)
                   this.bbsCore.robot.checkAutoLogin(row);
-                
+                //else
+                //  this.bbsCore.robot.checkTask();
+
                 //if(this.openThreadUrl==1) //open therad URL, this code only for desktop browser.
                 //{
                 //    var text = this.getRowText(row, 0, this.cols);
@@ -887,7 +889,7 @@ TermBuf.prototype={
         */
     },
 
-    
+
     queueUpdate: function(directupdate) {
         this.notify();
         //this.timerUpdate.cancel();
@@ -896,9 +898,9 @@ TermBuf.prototype={
         //else
         //  this.timerUpdate.initWithCallback(this, this.prefs.viewBufferTimer, Components.interfaces.nsITimer.TYPE_ONE_SHOT);
     },
-    
 
-    notify: function() {      
+
+    notify: function() {
       /*
       //open therad URL, this code only for desktop browser.
       if(this.openThreadUrl == 1)
@@ -912,7 +914,7 @@ TermBuf.prototype={
         return;
       }
       */
-      
+
       if(this.changed){ // content changed
         //if(this.prefs.useMouseBrowsing || this.prefs.testPttThread || this.prefs.aidAction!=0){
           this.SetPageState();
@@ -1594,7 +1596,7 @@ TermBuf.prototype={
           //document.getElementById('testdata4').innerHTML = "hightlight = -1";
           this.mouseCursor = 0;
     },
-    
+
     initPttStr: function(){
       var tmp = '\xa1\x69\xba\xeb\xb5\xd8\xa4\xe5\xb3\xb9\xa1\x6a';
       this.PTTZSTR1=this.conv.convertStringToUTF8(tmp, this.prefs.charset, true, true);

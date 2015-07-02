@@ -17,6 +17,7 @@
  * under the License.
  */
 var app = {
+    bbsCore: null,
     // Application Constructor
     initialize: function() {
         this.bindEvents();
@@ -28,6 +29,7 @@ var app = {
     bindEvents: function() {
         document.addEventListener('deviceready', this.onDeviceReady, false);
         window.addEventListener('load', this.onLoad, false);
+        window.addEventListener('unload', this.onUnload, false);
         document.addEventListener('online', this.onOnline, false);
         document.addEventListener('offline', this.onOffline, false);
     },
@@ -42,15 +44,28 @@ var app = {
         
     },
     showData: function() {
+        if(app.bbsCore)
+          app.bbsCore.addTask('getFavoriteList', this.onMessage.bind(this));
+    },
+
+    onMessage: function(data) {
+      console.log(data);
+        /*
         var span = document.getElementById('message');
         for(var i=0;i<24;++i){
           span.innerHTML += (app.bbsCore.buf.getText(i, 0, 79, false, true, false) + '\n');
         }
+        */
     },
+    
     onLoad: function() {
         app.receivedEvent('load');
         var btn = document.getElementById('showData');
         btn.addEventListener('click', app.showData.bind(app), false);
+    },
+    onOffline: function() {
+        app.receivedEvent('unload');
+        //TODO: disconnect
     },
 //    onOnline: function() {
 //        app.receivedEvent('online');

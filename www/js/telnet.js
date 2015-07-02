@@ -208,6 +208,8 @@ TelnetProtocol.prototype={
 
     send: function(str) {
         if(!this.socket) return;
+
+        console.log(str);
         if(this.bbsCore)
         {
           this.bbsCore.resetUnusedTime();
@@ -225,6 +227,7 @@ TelnetProtocol.prototype={
         if(charset.toLowerCase() == 'utf-8') {
             return this.send(this.utf8Output(unicode_str));
         }
+
         // supports UAO
         var s;
         // when converting unicode to big5, use UAO.
