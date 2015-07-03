@@ -1,20 +1,6 @@
 function BBSCore() {
-  this.prefs = {
-    termType: 'VT100',
-    bbsCol: 80,
-    bbsRow: 24,
-    charset: 'big5',
-    EnterChar: UnEscapeStr('^M'),
-    disableLinefeed: false,
-    aidAction: 0,
-    deleteDuplicate: true,
-    loginPrompt: ['','',''],
-    loginStr: ['',
-               '',    //your username  //TODO: save by HTML5 storage
-               '',   //your password
-               ''],
-    store:false
-  };
+  this.prefs = new PrefsHandler(this);
+  this.prefs.loadPrefs();
   this.conn = new TelnetProtocol(this);
   //this.view = new TermView(80, 24);
   this.buf = new TermBuf(this, 80, 24);
@@ -57,5 +43,26 @@ BBSCore.prototype={
         callback: callback
       }
     );
+  },
+  
+  login: function(username, password, savePassword) {
+    if(savePassword) {
+      this.prefs.saveUsernameAndPassword(username, password);
+    } else {
+      this.prefs.removeUsernameAndPassword();
+    }
+    this.prefs.loginStr[1] = username;
+    this.prefs.loginStr[2] = password;
+    this.addTask('login', this.onLoginEvent.bind(this));
+    this.addTask('getFavoriteList', this.onFavoriteListEvent.bind(this));
+    this.connect();
+
+  },
+  
+  onLoginEvent: function(){
+    //TODO: handle login error here
+  },
+  onFavoriteListEvent: function(data){
+    //TODO: update FavoriteList
   }
 };

@@ -69,7 +69,6 @@ TelnetProtocol.prototype={
           this.port = port;
         }
         this.bbsCore.robot.initialAutoLogin();
-
         //this.isConnected = false;
         this.socket = new Socket();
         this.socket.onData = this.onDataAvailable.bind(this);

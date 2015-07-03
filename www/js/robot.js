@@ -86,6 +86,9 @@ Robot.prototype={
       console.log('main menu');
       this.termStatus = 0;
       this.postLoginStage = 0;
+      var task = this.taskList.shift();
+      task.callback(this.favoriteList);
+      this.runNextTask();
       return;
     }
     setTimeout(this.checkLoginStatus.bind(this), this.timerInterval);
@@ -200,5 +203,8 @@ Robot.prototype={
 
   getBoardList: function() {
 
+  },
+  
+  login:function() {
   }
 };

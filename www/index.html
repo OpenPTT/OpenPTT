@@ -17,49 +17,307 @@
     specific language governing permissions and limitations
     under the License.
 -->
-<html>
-    <head>
-        <!--
-        Customize this policy to fit your own app's needs. For more guidance, see:
-            https://github.com/apache/cordova-plugin-whitelist/blob/master/README.md#content-security-policy
-        Some notes:
-            * gap: is required only on iOS (when using UIWebView) and is needed for JS->native communication
-            * https://ssl.gstatic.com is required only on Android and is needed for TalkBack to function properly
-            * Disables use of inline scripts in order to mitigate risk of XSS vulnerabilities. To change this:
-                * Enable inline JS: add 'unsafe-inline' to default-src
-        -->
-        <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *">
-        <meta name="format-detection" content="telephone=no">
-        <meta name="msapplication-tap-highlight" content="no">
-        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
-        <link rel="stylesheet" type="text/css" href="css/index.css">
-        <title>Open PTT</title>
-    </head>
-    <body>
-        <div id="showData">getFavoriteList</div>
-        <div id="message"></div></br></br>
-        <input type="text" id="username" /></br>
-        <input type="password" id="password" /></br>
-        <label>storePrefs</label><input type="checkbox" id="storePrefs" /></br>
-        <input type="button" id="login" value="login" /></br>
+<!-- CSP support mode (required for Windows Universal apps): https://docs.angularjs.org/api/ng/directive/ngCsp -->
+<html lang="en" ng-app="app" ng-csp>
+<head>
+    <meta charset="utf-8" />
+<!--    <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *">-->
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
 
-        <!--<div class="app">
-            <h1>Apache Cordova</h1>
-            <div id="deviceready" class="blink">
-                <p class="event listening">Connecting to Device</p>
-                <p class="event received">Device is Ready</p>
+    <!-- JS dependencies (order matters!) -->
+    <!--<script src="scripts/platformOverrides.js"></script>-->
+    <script src="lib/angular/angular.js"></script>
+    <script src="lib/onsen/js/onsenui.js"></script>
+    <script src="js/appController.js"></script>
+
+    <!-- CSS dependencies -->
+<!--    <link rel="stylesheet" type="text/css" href="css/index.css">-->
+    <link rel="stylesheet" href="lib/onsen/css/onsenui.css" />
+    <link rel="stylesheet" href="lib/onsen/css/onsen-css-components-blue-basic-theme.css" />
+    <link rel="stylesheet" type="text/css" href="css/login.css">
+    <link rel="stylesheet" type="text/css" href="css/boardList.css">
+    <link rel="stylesheet" type="text/css" href="css/articleList.css">
+
+    <!-- CSP support mode (required for Windows Universal apps) -->
+    <link rel="stylesheet" href="lib/angular/angular-csp.css" />
+
+
+    <!-- --------------- App init --------------- -->
+
+    <title>Open PTT</title>
+
+    <style>
+        .tab {
+            line-height: 1;
+        }
+
+        .tab-icon {
+            font-size: 24px;
+            padding: 0;
+            margin: 0;
+            vertical-align: top;
+            line-height: 28px;
+        }
+
+        .tab-label {
+            line-height: 11px;
+            vertical-align: top;
+            font-size: 11px;
+        }
+
+        .profile-wrapper {
+            padding: 16px 10px 0 10px;
+        }
+
+        .profile-image {
+            width: 50px;
+            height: 50px;
+            border-radius: 100%;
+            -webkit-border-radius: 100%;
+            background-color: #ccc;
+        }
+
+        .profile-name {
+            font-size: 18px;
+            padding: 4px 0 2px 0;
+        }
+
+        .profile-email {
+            font-size: 15px;
+            opacity: 0.4;
+        }
+
+        .switch--list-item {
+            margin-right: 0px;
+        }
+
+        .settings-header {
+            font-weight: 500;
+            font-size: 14px;
+            opacity: 0.4;
+            padding: 10px 0 0px 10px;
+            margin-bottom: -4px;
+        }
+
+        .settings-list {
+            margin-top: 10px;
+        }
+
+        .item {
+            padding: 10px;
+            line-height: 1;
+        }
+
+        .item-thum {
+            background-color: #ccc;
+            width: 50px;
+            height: 50px;
+            border-radius: 100%;
+            -webkit-border-radius: 100%;
+        }
+
+        .item-title {
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .item-desc {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.3;
+            margin: 4px 0 0 0;
+            padding: 0 30px 0 0;
+        }
+
+        .item-label {
+            font-size: 12px;
+            color: #999;
+            float: right;
+        }
+    </style>
+
+</head>
+
+<body ng-controller="AppController" ng-init="init()">
+    <!-- Cordova reference -->
+    <script type="text/javascript" src="cordova.js"></script>
+    <script type="text/javascript" src="js/uao_b2u_table.js"></script>
+    <script type="text/javascript" src="js/uao_u2b_table.js"></script>
+    <script type="text/javascript" src="js/uao_conv.js"></script>
+    <script type="text/javascript" src="js/stringutil.js"></script>
+    <script type="text/javascript" src="js/robot.js"></script>
+    <script type="text/javascript" src="js/ansiparser.js"></script>
+    <script type="text/javascript" src="js/termbuf.js"></script>
+    <script type="text/javascript" src="js/telnet.js"></script>
+    <script type="text/javascript" src="js/prefsHandler.js"></script>
+    <script type="text/javascript" src="js/bbsCore.js"></script>
+    <script type="text/javascript" src="js/index.js"></script>
+    <!-- -->
+
+    <ons-page ng-show='page==="login"'>
+      <ons-toolbar>
+        <div class="center">Log In</div>
+        <div class="right"><ons-toolbar-button>Close</ons-toolbar-button></div>
+      </ons-toolbar>
+
+      <div class="login-form">
+
+        <input type="text" class="text-input--underbar" placeholder="Username" ng-model="username">
+        <input type="password" class="text-input--underbar" placeholder="Password" ng-model="password">
+        <ons-list class="remember-me">
+        <ons-list-item modifier="tappable">
+          <label class="checkbox checkbox--list-item">
+            <input type="checkbox" ng-model="savePassword">
+            <div class="checkbox__checkmark checkbox--list-item__checkmark"></div>
+            Remember password
+          </label>
+        </ons-list-item>
+        </ons-list>
+        <ons-button modifier="large" class="login-button" ng-click="login()">Login</ons-button>
+      </div>
+
+    </ons-page>
+    <ons-tabbar ng-show='page==="main"'>
+        <ons-tab active="true" page="home.html">
+            <div class="tab">
+                <ons-icon icon="ion-home" class="tab-icon"></ons-icon>
+                <div class="tab-label">Main menu</div>
             </div>
-        </div>-->
-        <script type="text/javascript" src="cordova.js"></script>
-        <script type="text/javascript" src="js/uao_b2u_table.js"></script>
-        <script type="text/javascript" src="js/uao_u2b_table.js"></script>
-        <script type="text/javascript" src="js/uao_conv.js"></script>
-        <script type="text/javascript" src="js/stringutil.js"></script>
-        <script type="text/javascript" src="js/robot.js"></script>
-        <script type="text/javascript" src="js/ansiparser.js"></script>
-        <script type="text/javascript" src="js/termbuf.js"></script>
-        <script type="text/javascript" src="js/telnet.js"></script>
-        <script type="text/javascript" src="js/bbsCore.js"></script>
-        <script type="text/javascript" src="js/index.js"></script>
-    </body>
+        </ons-tab>
+        <ons-tab page="favorite.html">
+            <div class="tab">
+                <ons-icon icon="ion-heart" class="tab-icon"></ons-icon>
+                <div class="tab-label">Favorite</div>
+            </div>
+        </ons-tab>
+        <ons-tab page="settings.html">
+            <div class="tab">
+                <ons-icon icon="ion-gear-a" class="tab-icon"></ons-icon>
+                <div class="tab-label">Settings</div>
+            </div>
+        </ons-tab>
+    </ons-tabbar>
+
+    <ons-template id="home.html">
+        <ons-navigator>
+            <ons-page>
+                <ons-toolbar>
+                    <div class="left"><ons-toolbar-button ng-click="doSomething()"><ons-icon icon="ion-compose"></ons-icon></ons-toolbar-button></div>
+                    <div class="center">Home</div>
+                    <div class="right"></div>
+                </ons-toolbar>
+
+                <ons-list style="margin: -1px 0">
+                    <ons-list-item modifier="chevron" class="item" ng-repeat="i in [1,2,3,4,5]" ng-click="doSomething()">
+                        <ons-row>
+                            <ons-col width="60px">
+                                <div class="item-thum"></div>
+                            </ons-col>
+                            <ons-col>
+                                <header>
+                                    <span class="item-title">Rorem Ipsum</span>
+                                    <span class="item-label">5h</span>
+                                </header>
+                                <p class="item-desc">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                            </ons-col>
+                        </ons-row>
+                    </ons-list-item>
+                </ons-list>
+            </ons-page>
+        </ons-navigator>
+    </ons-template>
+    
+    <ons-template id="favorite.html">
+        <ons-list class="plan-list">
+          <ons-list-item modifier="chevron" class="plan" ng-repeat="a in [1,2,3,4,5,6,7,8,9,10]">
+            <ons-row>
+              <ons-col width="80px" class="plan-left">
+                <div class="plan-date">5:30 PM</div>
+                <div class="plan-duration">1h</div>
+              </ons-col>
+
+              <ons-col width="6px" class="plan-center" ng-style="{backgroundColor:a % 3 == 1 ? '#3399ff' : '#ccc'}">
+              </ons-col>
+
+              <ons-col class="plan-right">
+                <div class="plan-name">Onsen UI Meetup</div>
+
+                <div class="plan-info">
+                  <div ng-hide="a % 4 == 0">
+                    <ons-icon icon="fa-phone"></ons-icon>123-456-789
+                  </div>
+
+                  <div ng-hide="a % 3 == 0">
+                    <ons-icon icon="fa-map-marker"></ons-icon>Moscone, San Francisco
+                  </div>
+                </div>
+              </ons-col>
+            </ons-row>
+          </ons-list-item>
+
+        </ons-list>
+    </ons-template>
+
+    <ons-template id="settings.html">
+        <ons-page>
+            <ons-toolbar>
+                <div class="center">Settings</div>
+            </ons-toolbar>
+
+            <ons-row class="profile-wrapper">
+                <ons-col width="60px" class="profile-image-wrapper">
+                    <div class="profile-image"></div>
+                </ons-col>
+
+                <ons-col>
+                    <div class="profile-name">Foobar</div>
+                    <div class="profile-email">foobar@example.com</div>
+                </ons-col>
+
+            </ons-row>
+
+            <div class="settings-header">Share</div>
+
+            <ons-list modifier="inset" class="settings-list">
+                <ons-list-item>
+                    Twitter
+                    <ons-switch modifier="list-item"></ons-switch>
+                </ons-list-item>
+
+                <ons-list-item>
+                    Facebook
+                    <ons-switch modifier="list-item" checked></ons-switch>
+                </ons-list-item>
+            </ons-list>
+
+            <div class="settings-header">Others</div>
+
+            <ons-list modifier="inset" class="settings-list">
+                <ons-list-item modifier="chevron" ng-click="doSomething()">
+                    Terms of Service
+                </ons-list-item>
+
+                <ons-list-item modifier="chevron" ng-click="doSomething()">
+                    Privacy Policy
+                </ons-list-item>
+            </ons-list>
+
+            <br>
+
+            <ons-list modifier="inset" class="settings-list">
+                <ons-list-item modifier="tappable" ng-click="doSomething()">
+                    <ons-icon icon="ion-log-out" style="opacity: 0.8"></ons-icon>
+                    Sign out
+                </ons-list-item>
+            </ons-list>
+
+            <br>
+
+        </ons-page>
+    </ons-template>
+</body>
 </html>

@@ -16,108 +16,37 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-var app = {
-    bbsCore: null,
-    // Application Constructor
-    initialize: function() {
-        this.bindEvents();
-    },
-    // Bind Event Listeners
-    //
-    // Bind any events that are required on startup. Common events are:
-    // 'load', 'deviceready', 'offline', and 'online'.
-    bindEvents: function() {
-        document.addEventListener('deviceready', this.onDeviceReady, false);
-        window.addEventListener('load', this.onLoad, false);
-        window.addEventListener('unload', this.onUnload, false);
-        document.addEventListener('online', this.onOnline, false);
-        document.addEventListener('offline', this.onOffline, false);
-    },
-    // deviceready Event Handler
-    //
-    // The scope of 'this' is the event. In order to call the 'receivedEvent'
-    // function, we must explicitly call 'app.receivedEvent(...);'
-    onDeviceReady: function() {
-        app.receivedEvent('deviceready');
+(function () {
+    "use strict";
         
-    },
-    username: document.getElementById('username'),
-    password: document.getElementById('password'),
-    remember: document.getElementById('storePrefs'),
-
-    storePrefs: function() {
-        if(app.remember.checked){
-            app.bbsCore.prefs.loginStr[1] = app.username.value;
-            app.bbsCore.prefs.loginStr[2] = app.password.value;
-            app.bbsCore.prefs.store = app.remember.checked;
-            window.localStorage.setItem('prefs', JSON.stringify(app.bbsCore.prefs));
-        }
-        else
-            window.localStorage.removeItem('prefs');
-    },
-
-    login: function() {
-        //console.log(app.bbsCore.prefs);
-        app.bbsCore.prefs.loginStr[1] = username.value;
-        app.bbsCore.prefs.loginStr[2] = password.value;
-        app.bbsCore.connect();
-    },
-    showData: function() {
-        if(app.bbsCore)
-          app.bbsCore.addTask('getFavoriteList', this.onMessage.bind(this));
-    },
-    onMessage: function(data) {
-      console.log(data);
-        /*
-        var span = document.getElementById('message');
-        for(var i=0;i<24;++i){
-          span.innerHTML += (app.bbsCore.buf.getText(i, 0, 79, false, true, false) + '\n');
-        }
-        */
-    },
-    
-    onLoad: function() {
-        app.receivedEvent('load');
-        app.bbsCore = new BBSCore();
-        json_prefs = window.localStorage.getItem('prefs');
-        if(json_prefs){
-            //console.log(json_prefs)
-            prefs = JSON.parse(json_prefs);
-            
-            //console.log(prefs)
-            app.username.value = prefs.loginStr[1];
-            app.password.value = prefs.loginStr[2];
-            app.remember.checked = prefs.store;
-        }
-        var btn_storePrefs = document.getElementById('storePrefs');
-        btn_storePrefs.addEventListener('click', app.storePrefs.bind(app), false);
-        var btn_login = document.getElementById('login');
-        btn_login.addEventListener('click', app.login.bind(app), false);
-        var btn_showList = document.getElementById('showData');
-        btn_showList.addEventListener('click', app.showData.bind(app), false);
-    },
-    onOffline: function() {
-        app.receivedEvent('unload');
-        //TODO: disconnect
-    },
-//    onOnline: function() {
-//        app.receivedEvent('online');
-//    },
-//    onOffline: function() {
-//        app.receivedEvent('offline');
-//    },
-    // Update DOM on a Received Event
-    receivedEvent: function(id) {
-        /*
-        var parentElement = document.getElementById(id);
-        var listeningElement = parentElement.querySelector('.listening');
-        var receivedElement = parentElement.querySelector('.received');
-
-        listeningElement.setAttribute('style', 'display:none;');
-        receivedElement.setAttribute('style', 'display:block;');
-        */
-        console.log('Received Event: ' + id);
+    function onDeviceReady() {
+        // Handle the Cordova pause and resume events
+        document.addEventListener( 'pause', this.onPause.bind(this), false );
+        document.addEventListener( 'resume', this.onResume.bind(this), false );
+        // TODO: Cordova has been loaded. Perform any initialization that requires Cordova here.
     }
-};
 
-app.initialize();
+    function onPause() {
+        // TODO: This application has been suspended. Save application state here.
+    }
+
+    function onResume() {
+        // TODO: This application has been reactivated. Restore application state here.
+    }
+
+    function onLoad() {
+
+    }
+    function onUnload() {
+        //TODO: disconnect
+    }
+    
+    document.addEventListener( 'deviceready', onDeviceReady.bind( this ), false );
+    window.addEventListener('load', onLoad.bind(this), false);
+    window.addEventListener('unload', onUnload.bind(this), false);
+    
+    window.app = {
+        bbsCore: null
+    }
+    
+} )();
