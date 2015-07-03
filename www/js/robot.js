@@ -179,7 +179,7 @@ Robot.prototype={
           var boardP1 = this.bbsCore.buf.getRowText(i, 0, 63);
           var boardP2 = this.bbsCore.buf.getRowText(i, 64, 67);
           var boardData = parseBoardData(boardP1, boardP2);
-          if(!this.flMap['b'+boardData.sn]) {
+          if(boardData && !this.flMap['b'+boardData.sn]) {
               this.flMap['b'+boardData.sn] = boardData;
           }
         }
