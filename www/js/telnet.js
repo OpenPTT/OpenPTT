@@ -62,22 +62,24 @@ TelnetProtocol.prototype={
     //oconv: Cc["@mozilla.org/intl/scriptableunicodeconverter"].createInstance(Ci.nsIScriptableUnicodeConverter),
 
     connect: function(host, port) {
-        //alert('connect');
-        if(host)
-        {
-          this.host = host;
-          this.port = port;
-        }
-        this.bbsCore.robot.initialAutoLogin();
-        //this.isConnected = false;
-        this.socket = new Socket();
-        this.socket.onData = this.onDataAvailable.bind(this);
-        this.socket.onError = this.onSocketError.bind(this);
-        this.socket.onClose = this.onStopRequest.bind(this);
-        this.socket.open(this.host, this.port,
-          this.onStartRequest.bind(this),
-          this.onSocketError.bind(this)
-        );
+      this.state=STATE_DATA;
+      this.iac_sb='';
+      //alert('connect');
+      if(host)
+      {
+        this.host = host;
+        this.port = port;
+      }
+      this.bbsCore.robot.initialAutoLogin();
+      //this.isConnected = false;
+      this.socket = new Socket();
+      this.socket.onData = this.onDataAvailable.bind(this);
+      this.socket.onError = this.onSocketError.bind(this);
+      this.socket.onClose = this.onStopRequest.bind(this);
+      this.socket.open(this.host, this.port,
+        this.onStartRequest.bind(this),
+        this.onSocketError.bind(this)
+      );
     },
 
     close: function() {

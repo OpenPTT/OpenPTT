@@ -6,6 +6,8 @@ function BBSCore() {
   this.buf = new TermBuf(this, 80, 24);
   this.parser = new AnsiParser(this.buf);
   this.robot = new Robot(this);
+  this.favoriteListEventNotify = [];
+  this.connectionStatusEventNotify = [];
 }
 
 BBSCore.prototype={
@@ -27,7 +29,7 @@ BBSCore.prototype={
   },
 
   onClose: function(conn) {
-
+    //alert('onClose');
   },
 
   resetUnusedTime: function() {
@@ -45,8 +47,7 @@ BBSCore.prototype={
     );
   },
   
-  login: function(owner, username, password, savePassword) {
-    this.owner = owner;
+  login: function(username, password, savePassword) {
     if(savePassword) {
       this.prefs.saveUsernameAndPassword(username, password);
     } else {
@@ -57,14 +58,34 @@ BBSCore.prototype={
     this.addTask('login', this.onLoginEvent.bind(this));
     this.addTask('getFavoriteList', this.onFavoriteListEvent.bind(this));
     this.connect();
-
+  },
+  
+  logout:function() {
+    this.addTask('logout', this.onLogoutEvent.bind(this));
   },
   
   onLoginEvent: function(){
     //TODO: handle login error here
   },
+
   onFavoriteListEvent: function(data){
-    //TODO: update FavoriteList
-    this.owner.UpdateFavoriteList(data);
+    for(var i=0;i<this.favoriteListEventNotify.length;++i){
+      this.favoriteListEventNotify[i](data);
+    }
+  },
+
+  onLogoutEvent: function(data){
+    for(var i=0;i<this.connectionStatusEventNotify.length;++i){
+      this.connectionStatusEventNotify[i]('logout');
+    }
+  },
+  
+  regFavoriteListEvent: function(eventCallback) {
+    this.favoriteListEventNotify.push(eventCallback);
+  },
+
+  regConnectionStatusEvent: function(eventCallback) {
+    this.connectionStatusEventNotify.push(eventCallback);
   }
+
 };

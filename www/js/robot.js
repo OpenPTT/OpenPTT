@@ -11,7 +11,7 @@ function Robot(bbsCore) {
   //termStatus: 0 //main list;
   //termStatus: 1 //favorite list;
   this.termStatus = 0;
-  this.currentTask = 0;
+  this.currentTask = 0; //1:getFavoriteList , 2:logout
   this.taskList = [];
 
 
@@ -118,6 +118,10 @@ Robot.prototype={
     if(this.taskList.length > 0)
       this.taskList[0].run();
   },
+  
+  removeAllTask: function() {
+    this.taskList = [];
+  },
 
   getFavoriteListFromMap: function() {
     for(var i=1;i<65535;++i) {
@@ -172,7 +176,7 @@ Robot.prototype={
         this.bbsCore.conn.send('\x1b[5~'); //page up.
       }
     }
-    if(this.taskStage == 2) {
+    else if(this.taskStage == 2) {
       var firstBoardP1 = this.bbsCore.buf.getRowText(3, 0, 63);
       var firstBoardP2 = this.bbsCore.buf.getRowText(3, 64, 67);
       var firstBoardData = parseBoardData(firstBoardP1, firstBoardP2);
@@ -206,5 +210,37 @@ Robot.prototype={
   },
   
   login:function() {
+  },
+
+  logout: function() {
+    //TODO: detect if favorite list empty
+    this.currentTask = 2;
+
+    if(this.taskStage == 0) {
+      this.taskStage = 1;
+      if(this.termStatus != 0) {
+        this.bbsCore.conn.send('\x1b[D\x1b[D\x1b[D');
+      }
+    } else if(this.taskStage == 1) {
+      var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
+      if(line.indexOf('【主功能表】') >= 0) {
+        this.termStatus = 0;
+        this.taskStage = 2;
+        this.bbsCore.conn.send('g' + this.prefs.EnterChar); //g + enter
+      }
+    } else if(this.taskStage == 2) {
+      var line = this.bbsCore.buf.getRowText(22, 0, this.bbsCore.buf.cols);
+      if(line.indexOf('您確定要離開【 批踢踢實業坊 】嗎') >= 0) {
+        this.bbsCore.conn.send('y' + this.prefs.EnterChar + ' '); //y + enter + space
+
+        this.taskStage = 0;
+        var task = this.taskList.shift();
+        task.callback(this.favoriteList);
+        this.currentTask = 0;
+        this.removeAllTask();
+        return;
+      }
+    }
+    setTimeout(this.logout.bind(this), this.timerInterval);
   }
 };

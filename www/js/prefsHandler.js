@@ -19,10 +19,9 @@ function PrefsHandler(bbsCore) {
 
 PrefsHandler.prototype={
   loadPrefs : function () {
-    var prefsIntNames = ['bbsCol', 'bbsRow', 'aidAction'];
+    var prefsIntNames = ['aidAction']; //['bbsCol', 'bbsRow', 'aidAction'];
     var prefsBoolNames = ['deleteDuplicate', 'savePassword'];
-    var prefsStrNames = ['termType', 'charset',
-                         'username', 'password'];
+    var prefsStrNames = ['username', 'password'];
     var value;
     for(var i=0;i<prefsIntNames.length;++i) {
       value = window.localStorage.getItem('openptt.' + prefsIntNames[i]);
@@ -61,6 +60,9 @@ PrefsHandler.prototype={
     window.localStorage.setItem('openptt.username', '');
     window.localStorage.setItem('openptt.password', '');
     window.localStorage.setItem('openptt.savePassword', 'false');
-  }
+  },
 
+  savePrefsValue : function (key, value) {
+    window.localStorage.setItem('openptt.' + key, value);
+  }
 };
