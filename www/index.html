@@ -233,27 +233,21 @@
     
     <ons-template id="favorite.html">
         <ons-list class="plan-list">
-          <ons-list-item modifier="chevron" class="plan" ng-repeat="a in [1,2,3,4,5,6,7,8,9,10]">
+          <ons-list-item modifier="chevron" class="plan" ng-repeat="favorite in favoriteList">
             <ons-row>
               <ons-col width="80px" class="plan-left">
-                <div class="plan-date">5:30 PM</div>
-                <div class="plan-duration">1h</div>
+                <div class="plan-date">{{favorite.bClass}}</div>
+                <div class="plan-duration">{{favorite.popular}}</div>
               </ons-col>
 
-              <ons-col width="6px" class="plan-center" ng-style="{backgroundColor:a % 3 == 1 ? '#3399ff' : '#ccc'}">
+              <ons-col width="6px" class="plan-center" ng-style="{backgroundColor:$index % 2 == 1 ? '#3399ff' : '#ccc'}">
               </ons-col>
 
               <ons-col class="plan-right">
-                <div class="plan-name">Onsen UI Meetup</div>
+                <div class="plan-name">{{favorite.boardName}}</div>
 
                 <div class="plan-info">
-                  <div ng-hide="a % 4 == 0">
-                    <ons-icon icon="fa-phone"></ons-icon>123-456-789
-                  </div>
-
-                  <div ng-hide="a % 3 == 0">
-                    <ons-icon icon="fa-map-marker"></ons-icon>Moscone, San Francisco
-                  </div>
+                  {{favorite.description}}
                 </div>
               </ons-col>
             </ons-row>

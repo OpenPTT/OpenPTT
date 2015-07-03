@@ -18,8 +18,12 @@ angular.module('app').controller('AppController', function ($scope, $window) {
 
   $scope.login = function () {
 
-    $scope.bbsCore.login($scope.username, $scope.password, $scope.savePassword);
+    $scope.bbsCore.login($scope, $scope.username, $scope.password, $scope.savePassword);
     $scope.page = 'main';
+  };
+  
+  $scope.UpdateFavoriteList = function (data) {
+    $scope.favoriteList = data;
   };
 
 });

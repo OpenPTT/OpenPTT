@@ -45,7 +45,8 @@ BBSCore.prototype={
     );
   },
   
-  login: function(username, password, savePassword) {
+  login: function(owner, username, password, savePassword) {
+    this.owner = owner;
     if(savePassword) {
       this.prefs.saveUsernameAndPassword(username, password);
     } else {
@@ -64,5 +65,6 @@ BBSCore.prototype={
   },
   onFavoriteListEvent: function(data){
     //TODO: update FavoriteList
+    this.owner.UpdateFavoriteList(data);
   }
 };
