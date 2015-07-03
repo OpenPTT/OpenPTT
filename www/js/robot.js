@@ -5,6 +5,7 @@ function Robot(bbsCore) {
   this.autoLoginStage = 0;
   this.postLoginStage = 0;
   this.taskStage = 0;
+  this.timerInterval = 40;
   //this.downloadArticle = new DownloadArticle(bbsCore);
 
   //termStatus: 0 //main list;
@@ -15,6 +16,7 @@ function Robot(bbsCore) {
 
 
   this.favoriteList = [];
+  this.flMap = {};
 }
 
 Robot.prototype={
@@ -51,7 +53,7 @@ Robot.prototype={
       this.autoLoginStage = 0;
       this.postLoginStage = 1;
       //check deleteDuplicate
-      setTimeout(this.checkLoginStatus.bind(this), 40);
+      setTimeout(this.checkLoginStatus.bind(this), this.timerInterval);
       return;
     }
     ++this.autoLoginStage;
@@ -86,7 +88,7 @@ Robot.prototype={
       this.postLoginStage = 0;
       return;
     }
-    setTimeout(this.checkLoginStatus.bind(this), 40);
+    setTimeout(this.checkLoginStatus.bind(this), this.timerInterval);
   },
 
   checkTask: function() {
@@ -114,72 +116,86 @@ Robot.prototype={
       this.taskList[0].run();
   },
 
+  getFavoriteListFromMap: function() {
+    for(var i=1;i<65535;++i) {
+      if(this.flMap['b' + i]) {
+        this.favoriteList.push(this.flMap['b' + i]);
+      } else {
+        break;
+      }
+    }
+    return this.favoriteList;
+  },
+  
   getFavoriteList: function() {
+    //TODO: detect if favorite list empty
     this.currentTask = 1;
 
     if(this.taskStage == 0) {
       this.favoriteList = [];
+      this.flMap = {};
       this.taskStage = 1;
       if(this.termStatus != 0) {
         this.bbsCore.conn.send('\x1b[D\x1b[D\x1b[D');
       }
-      this.bbsCore.conn.send('f' + this.prefs.EnterChar + '\x1b[1~');
+      this.bbsCore.conn.send('f' + this.prefs.EnterChar + '\x1b[4~'); //f + enter + end -> show last item.
     } else if(this.taskStage == 1) {
       var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
       var firstBoardP1 = this.bbsCore.buf.getRowText(3, 0, 63);
-      var firstBoardP2 = this.bbsCore.buf.getRowText(3, 64, 66);
+      var firstBoardP2 = this.bbsCore.buf.getRowText(3, 64, 67);
       var firstBoardData = parseBoardData(firstBoardP1, firstBoardP2);
-      if(line.indexOf('【看板列表】') >= 0 && firstBoardData && firstBoardData.sn == 1) {
-        this.termStatus = 0;
+      if(line.indexOf('【看板列表】') >= 0 && firstBoardData) {
+        this.termStatus = 1;
         //console.log('this.bbsCore.buf.cur_x = ' + this.bbsCore.buf.cur_x);
-        //ready, capture first page (line 3~22)
+        console.log(firstBoardData.sn);
         for(var i=3;i<23;++i) {
           var boardP1 = this.bbsCore.buf.getRowText(i, 0, 63);
-          var boardP2 = this.bbsCore.buf.getRowText(i, 64, 66);
+          var boardP2 = this.bbsCore.buf.getRowText(i, 64, 67);
           var boardData = parseBoardData(boardP1, boardP2);
           if(boardData) {
-            this.favoriteList.push(boardData);
-          } else {
-            //if got any empty line. stop capture
-            this.taskStage = 0;
-            var task = this.taskList.shift();
-            task.callback(this.favoriteList);
-            this.currentTask = 0;
-            this.runNextTask();
-            return;
+            this.flMap['b'+boardData.sn] = boardData;
           }
+        }
+        if(this.flMap['b1']) {
+          this.getFavoriteListFromMap();
+          this.taskStage = 0;
+          var task = this.taskList.shift();
+          task.callback(this.favoriteList);
+          this.currentTask = 0;
+          this.runNextTask();
+          return;          
         }
         this.taskStage = 2;
-        this.bbsCore.conn.send('\x1b[6~'); //page down.
+        this.bbsCore.conn.send('\x1b[5~'); //page up.
       }
     }
-    if(this.taskStage > 1) {
+    if(this.taskStage == 2) {
       var firstBoardP1 = this.bbsCore.buf.getRowText(3, 0, 63);
-      var firstBoardP2 = this.bbsCore.buf.getRowText(3, 64, 66);
+      var firstBoardP2 = this.bbsCore.buf.getRowText(3, 64, 67);
       var firstBoardData = parseBoardData(firstBoardP1, firstBoardP2);
-      if(firstBoardData && firstBoardData.sn == ((this.taskStage-1)*20)+1 ) {
+      if(firstBoardData) {
+        console.log(firstBoardData.sn);
         for(var i=3;i<23;++i) {
           var boardP1 = this.bbsCore.buf.getRowText(i, 0, 63);
-          var boardP2 = this.bbsCore.buf.getRowText(i, 64, 66);
+          var boardP2 = this.bbsCore.buf.getRowText(i, 64, 67);
           var boardData = parseBoardData(boardP1, boardP2);
-          if(boardData && boardData.sn != 1) {
-            this.favoriteList.push(boardData);
-          } else {
-            //if got sn = 1 twice. stop capture
-            //if got any empty line. stop capture
-            this.taskStage = 0;
-            var task = this.taskList.shift();
-            task.callback(this.favoriteList);
-            this.currentTask = 0;
-            this.runNextTask();
-            return;
+          if(!this.flMap['b'+boardData.sn]) {
+              this.flMap['b'+boardData.sn] = boardData;
           }
         }
-        this.taskStage++;
-        this.bbsCore.conn.send('\x1b[6~'); //page down.
-      }
+        if(this.flMap['b1']) {
+          this.getFavoriteListFromMap();
+          this.taskStage = 0;
+          var task = this.taskList.shift();
+          task.callback(this.favoriteList);
+          this.currentTask = 0;
+          this.runNextTask();
+          return;          
+        }
+        this.bbsCore.conn.send('\x1b[5~'); //page up.
+      }      
     }
-    setTimeout(this.getFavoriteList.bind(this), 40);
+    setTimeout(this.getFavoriteList.bind(this), this.timerInterval);
   },
 
   getBoardList: function() {

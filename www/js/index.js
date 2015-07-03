@@ -57,7 +57,7 @@ var app = {
     },
 
     login: function() {
-        console.log(app.bbsCore.prefs);
+        //console.log(app.bbsCore.prefs);
         app.bbsCore.prefs.loginStr[1] = username.value;
         app.bbsCore.prefs.loginStr[2] = password.value;
         app.bbsCore.connect();
@@ -81,10 +81,10 @@ var app = {
         app.bbsCore = new BBSCore();
         json_prefs = window.localStorage.getItem('prefs');
         if(json_prefs){
-            console.log(json_prefs)
+            //console.log(json_prefs)
             prefs = JSON.parse(json_prefs);
             
-            console.log(prefs)
+            //console.log(prefs)
             app.username.value = prefs.loginStr[1];
             app.password.value = prefs.loginStr[2];
             app.remember.checked = prefs.store;
