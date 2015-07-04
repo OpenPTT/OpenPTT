@@ -88,3 +88,27 @@ function parseBoardData (str1, str2) {
   }
   return null;
 }
+
+function parseArticleData (str1, str2) {
+  var regex = new RegExp(/((?:(?:\d+)|(?:  \u2605 ))) [\u002bmMsSD*!=~ ]((?:(?:[X\d ]{2})|(?:\u7206))[\d ])(\d\/\d{2}) ([\w-]+) +/g);
+  var result = regex.exec(str1);
+  var regex2 = new RegExp(/([\u25a1\u8f49R]:?) (\[.{2,4}\])?(.*)/g);
+  var result2 = regex2.exec(str2);
+
+  if(result && result.length == 5 && result2 && result2.length == 4) {
+    var snStr = result[1].replace(/^\s+|\s+$/g,'');
+    if(snStr=='\u2605') snStr = '0';
+    var aClass = (typeof result2[2] == 'undefined') ? '' : result2[2];
+    var title  = result2[1] + result2[3];
+    //result2[1] //框/轉/R:
+ 
+    return {sn: parseInt(snStr),
+            date: result[3],
+            author: result[4], //if article be deleted, this field will be '-'.
+            popular: result[2].replace(/^\s+|\s+$/g,''),
+            aClass: aClass,
+            title: title
+            };
+  }
+  return null;
+}

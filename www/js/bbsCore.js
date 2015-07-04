@@ -8,6 +8,7 @@ function BBSCore() {
   this.robot = new Robot(this);
   this.favoriteListEventNotify = [];
   this.connectionStatusEventNotify = [];
+  this.articleListEventNotify = [];
 }
 
 BBSCore.prototype={
@@ -36,13 +37,14 @@ BBSCore.prototype={
 
   },
 
-  addTask: function(taskName, callback) {
+  addTask: function(taskName, callback, extData) {
     if(taskName in this.robot)
     this.robot.addTask(
       {
         name: taskName,
         run: this.robot[taskName].bind(this.robot),
-        callback: callback
+        callback: callback,
+        extData: extData
       }
     );
   },
@@ -60,11 +62,22 @@ BBSCore.prototype={
     this.connect();
   },
   
-  logout:function() {
+  logout: function() {
     this.addTask('logout', this.onLogoutEvent.bind(this));
   },
   
-  onLoginEvent: function(){
+  enterBoard: function(board) {
+    this.addTask('enterBoard', this.onNullEvent.bind(this), board);
+  },
+  
+  getArticleList: function(board) {
+    this.addTask('getArticleList', this.onArticleListEvent.bind(this), board);
+  },
+  
+  onNullEvent: function(){
+  },
+
+  onLoginEvent: function(data){
     //TODO: handle login error here
   },
 
@@ -79,13 +92,23 @@ BBSCore.prototype={
       this.connectionStatusEventNotify[i]('logout');
     }
   },
-  
+
+  onArticleListEvent: function(data){
+    for(var i=0;i<this.articleListEventNotify.length;++i){
+      this.articleListEventNotify[i](data);
+    }
+  },
+
   regFavoriteListEvent: function(eventCallback) {
     this.favoriteListEventNotify.push(eventCallback);
   },
 
   regConnectionStatusEvent: function(eventCallback) {
     this.connectionStatusEventNotify.push(eventCallback);
+  },
+  
+  regArticleListEvent: function(eventCallback) {
+    this.articleListEventNotify.push(eventCallback);
   }
 
 };

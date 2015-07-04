@@ -2,8 +2,10 @@ angular.module('app', ['onsen']);
 
 angular.module('app').controller('AppController', function ($scope, $window) {
   $scope.page = 'login';
+  $scope.boardPage = 'list';
   $scope.bbsCore = null;
   $scope.nickname = '';
+  $scope.currentBoardName = '';
 
   $scope.init = function() {
     $scope.bbsCore = $window.app.bbsCore = new BBSCore();
@@ -22,6 +24,15 @@ angular.module('app').controller('AppController', function ($scope, $window) {
     ons.notification.alert({ message: 'tapped' });
   };
 
+  $scope.enterBoard = function (board) {
+    $scope.boardPage = 'article';
+    $scope.currentBoardName = board.boardName;
+    //alert(board.sn);
+    $scope.bbsCore.regArticleListEvent($scope.updateArticleList);
+    $scope.bbsCore.enterBoard(board);
+    $scope.bbsCore.getArticleList(board);
+  };
+
   $scope.login = function () {
     $scope.bbsCore.login($scope.username, $scope.password, $scope.savePassword);
     $scope.page = 'main';
@@ -29,6 +40,12 @@ angular.module('app').controller('AppController', function ($scope, $window) {
 
   $scope.logout = function () {
     $scope.bbsCore.logout();
+  };
+
+  $scope.updateArticleList = function (data) {
+    //TODO: apend list.
+    $scope.articleList = data;
+    $scope.$apply();
   };
 
   $scope.updateFavoriteList = function (data) {
@@ -65,7 +82,6 @@ angular.module('app').controller('AppController', function ($scope, $window) {
       default:
         break;
     }
-    $scope.favoriteList = data;
   };
 
 });

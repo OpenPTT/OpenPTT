@@ -10,10 +10,10 @@ function Robot(bbsCore) {
 
   //termStatus: 0 //main list;
   //termStatus: 1 //favorite list;
+  //termStatus: 2 //article list;
   this.termStatus = 0;
-  this.currentTask = 0; //1:getFavoriteList , 2:logout
+  this.currentTask = 0; //1:getFavoriteList, 2:logout, 3:getBoardList, 4:getArticleList 5:enterBoard
   this.taskList = [];
-
 
   this.favoriteList = [];
   this.flMap = {};
@@ -87,7 +87,7 @@ Robot.prototype={
       this.termStatus = 0;
       this.postLoginStage = 0;
       var task = this.taskList.shift();
-      task.callback(this.favoriteList);
+      task.callback(); //keep error login message.
       this.runNextTask();
       return;
     }
@@ -101,7 +101,7 @@ Robot.prototype={
   },
 
   addTask: function(task, force) {
-    if(!force) {
+    if(!force) { //if force== false, check exists.
       var count = this.taskList.length;
       for(var i=0;i<count;++i) {
         if(this.taskList[i].name == task.name) {
@@ -124,14 +124,27 @@ Robot.prototype={
   },
 
   getFavoriteListFromMap: function() {
+    var favoriteList = [];
     for(var i=1;i<65535;++i) {
       if(this.flMap['b' + i]) {
-        this.favoriteList.push(this.flMap['b' + i]);
+        favoriteList.push(this.flMap['b' + i]);
       } else {
         break;
       }
     }
-    return this.favoriteList;
+    return favoriteList;
+  },
+
+  getArticleListFromMap: function(alMap, min) {
+    var articleList = [];
+    for(var i=min;;++i) {
+      if(alMap['a' + i]) {
+        articleList.push(alMap['a' + i]);
+      } else {
+        break;
+      }
+    }
+    return articleList;
   },
   
   getFavoriteList: function() {
@@ -139,7 +152,6 @@ Robot.prototype={
     this.currentTask = 1;
 
     if(this.taskStage == 0) {
-      this.favoriteList = [];
       this.flMap = {};
       this.taskStage = 1;
       if(this.termStatus != 0) {
@@ -164,10 +176,10 @@ Robot.prototype={
           }
         }
         if(this.flMap['b1']) {
-          this.getFavoriteListFromMap();
+          var favoriteList = this.getFavoriteListFromMap();
           this.taskStage = 0;
           var task = this.taskList.shift();
-          task.callback(this.favoriteList);
+          task.callback(favoriteList);
           this.currentTask = 0;
           this.runNextTask();
           return;          
@@ -191,18 +203,111 @@ Robot.prototype={
           }
         }
         if(this.flMap['b1']) {
-          this.getFavoriteListFromMap();
+          var favoriteList = this.getFavoriteListFromMap();
           this.taskStage = 0;
           var task = this.taskList.shift();
-          task.callback(this.favoriteList);
+          task.callback(favoriteList);
           this.currentTask = 0;
           this.runNextTask();
-          return;          
+          return;
         }
         this.bbsCore.conn.send('\x1b[5~'); //page up.
       }      
     }
     setTimeout(this.getFavoriteList.bind(this), this.timerInterval);
+  },
+  
+  enterBoard: function() {
+    this.currentTask = 5;
+    var extData = this.taskList[0].extData;
+    var EnterChar = this.prefs.EnterChar;
+    if(this.taskStage == 0) {
+      this.taskStage = 1;
+      if(this.termStatus != 1) {
+        this.bbsCore.conn.send('^Zf' + String(extData.sn) +  EnterChar + EnterChar + ' ' + '\x1b[4~');//ctrl+z,f
+      } else {
+        this.bbsCore.conn.send(String(extData.sn) +  EnterChar + EnterChar + ' ' + '\x1b[4~');
+      }
+    } else if(this.taskStage == 1) {
+      // check board name.
+      var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
+      if(line.indexOf('看板《'+extData.boardName+'》') >= 0) {
+          this.taskStage = 0;
+          this.termStatus = 2;
+          var task = this.taskList.shift();
+          task.callback();
+          this.currentTask = 0;
+          this.runNextTask();
+          return;
+      }
+    }
+    setTimeout(this.enterBoard.bind(this), this.timerInterval);
+  },
+
+  findMaxMinSn: function() {
+    
+  },
+  
+  getArticleList: function() {
+    this.currentTask = 4;
+    var extData = this.taskList[0].extData;
+    var EnterChar = this.prefs.EnterChar;
+    if(this.taskStage == 0) {
+      this.taskStage = 1;
+      if(this.termStatus != 2) {
+        //error ?
+        alert('error ?');
+      }
+    } else if(this.taskStage == 1) {
+      // check board name.
+      var firstArticleP1 = this.bbsCore.buf.getRowText(3, 0, 30);
+      var firstArticleP2 = this.bbsCore.buf.getRowText(3, 30, this.bbsCore.buf.cols);
+      var firstArticleData = parseArticleData(firstArticleP1, firstArticleP2);
+      if(firstArticleData) {
+        var alMap = {};
+        var max = 0;
+        var min = 0;
+
+        for(var i=3;i<23;++i) {
+          var articleP1 = this.bbsCore.buf.getRowText(i, 0, 30);
+          var articleP2 = this.bbsCore.buf.getRowText(i, 30, this.bbsCore.buf.cols);
+          var articleData = parseArticleData(articleP1, articleP2);
+          if(articleData && articleData.sn!=0 && !alMap['a'+articleData.sn]) {
+            if(max==0 && min==0) {
+              max = articleData.sn;
+              min = articleData.sn;
+            }
+            if(articleData.sn > max)
+              max = articleData.sn;
+            if(articleData.sn < min)
+              min = articleData.sn;
+            alMap['a'+articleData.sn] = articleData;
+          }
+        }
+        if( max-min > 100) {
+          var tmpData = alMap['a'+min];
+          tmpData.sn += 100000;
+          delete alMap['a'+min];
+          alMap['a'+tmpData.sn] = tmpData;
+          min = tmpData.sn; //fine min again
+          for (var key in alMap) {
+            if (alMap.hasOwnProperty(key)) {
+              if(alMap[key].sn < min)
+                min = alMap[key].sn;
+            }
+          }
+        }
+        this.taskStage = 0;
+        this.termStatus = 2;
+        var articleList = this.getArticleListFromMap(alMap, min);
+        var task = this.taskList.shift();
+        task.callback(articleList);
+        this.currentTask = 0;
+        this.runNextTask();
+        return;
+      }
+    }
+    setTimeout(this.getArticleList.bind(this), this.timerInterval);
   },
 
   getBoardList: function() {
@@ -235,7 +340,7 @@ Robot.prototype={
 
         this.taskStage = 0;
         var task = this.taskList.shift();
-        task.callback(this.favoriteList);
+        task.callback(); //if have water ball? need handle this case.
         this.currentTask = 0;
         this.removeAllTask();
         return;
