@@ -1,11 +1,10 @@
 angular.module('app', ['onsen']);
 
 angular.module('app').controller('AppController', function ($scope, $window) {
-  $scope.page = 'login';
-  $scope.boardPage = 'list';
   $scope.bbsCore = null;
   $scope.nickname = '';
   $scope.currentBoardName = '';
+  $scope.favoriteList = [];
 
   $scope.init = function() {
     $scope.bbsCore = $window.app.bbsCore = new BBSCore();
@@ -18,6 +17,7 @@ angular.module('app').controller('AppController', function ($scope, $window) {
     
     $scope.bbsCore.regFavoriteListEvent($scope.updateFavoriteList);
     $scope.bbsCore.regConnectionStatusEvent($scope.updateMainUI);
+    $scope.bbsCore.regArticleListEvent($scope.updateArticleList);
   };
 
   $scope.doSomething = function () {
@@ -25,17 +25,15 @@ angular.module('app').controller('AppController', function ($scope, $window) {
   };
 
   $scope.enterBoard = function (board) {
-    $scope.boardPage = 'article';
+    $scope.articleList = [];
     $scope.currentBoardName = board.boardName;
     //alert(board.sn);
-    $scope.bbsCore.regArticleListEvent($scope.updateArticleList);
     $scope.bbsCore.enterBoard(board);
     $scope.bbsCore.getArticleList({direction: 'none'});
   };
 
   $scope.login = function () {
     $scope.bbsCore.login($scope.username, $scope.password, $scope.savePassword);
-    $scope.page = 'main';
   };
 
   $scope.logout = function () {
@@ -44,7 +42,7 @@ angular.module('app').controller('AppController', function ($scope, $window) {
 
   $scope.updateArticleList = function (data) {
     //TODO: apend list.
-    if(!$scope.articleList) {
+    if(!$scope.articleList || ($scope.articleList && $scope.articleList.length == 0)) {
       $scope.articleList = data;
     } else {
       if(data[data.length-1].sn < $scope.articleList[0].sn) {
@@ -77,8 +75,6 @@ angular.module('app').controller('AppController', function ($scope, $window) {
   $scope.updateMainUI = function (status) {
     switch (status){
       case "logout":
-        $scope.page = 'login';
-        $scope.boardPage = 'list';
         $scope.favoriteList = [];
         $scope.$apply();
         break;

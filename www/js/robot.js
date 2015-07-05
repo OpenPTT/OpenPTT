@@ -227,7 +227,7 @@ Robot.prototype={
     if(this.taskStage == 0) {
       this.taskStage = 1;
       if(this.termStatus != 1) {
-        this.bbsCore.conn.send('^Zf' + String(extData.sn) +  EnterChar + EnterChar + ' ' + '\x1b[4~');//ctrl+z,f
+        this.bbsCore.conn.send('\x1af' + String(extData.sn) +  EnterChar + EnterChar + ' ' + '\x1b[4~');//ctrl+z,f
       } else {
         this.bbsCore.conn.send(String(extData.sn) +  EnterChar + EnterChar + ' ' + '\x1b[4~');
       }
