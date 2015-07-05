@@ -258,8 +258,8 @@ Robot.prototype={
     //new: left + enter + end, get all article that sn > max
     //old: jump to min, get article that sn < min (articleList.length = 15)
     var EnterChar = this.prefs.EnterChar;
-    this.alMap = {};
     if(this.taskStage == 0) {
+      this.alMap = {};
       if(this.termStatus != 2) {
         //error ?
         alert('error ?');
@@ -319,7 +319,7 @@ Robot.prototype={
             }
           }
         }
-        if(extData.direction == 'none' || extData.direction == 'new') {
+        if(extData.direction == 'none') {
           this.taskStage = 0;
           this.termStatus = 2;
           var articleList = this.getArticleListFromMap(this.alMap, min);
@@ -328,6 +328,29 @@ Robot.prototype={
           this.currentTask = 0;
           this.runNextTask();
           return;
+        } else if(extData.direction == 'new') {
+          //if(!this.alMap['a'+extData.max]) {  //only crawl newest data
+          if(!this.alMap['a'+extData.min]) { //crawl all data to update article's newest status
+            this.taskStage = 3;
+            //send page up and wait update. how to detect page up finish?
+            this.bbsCore.conn.send('\x1b[B\x1b[5~');//arrow down + page up
+          } else {
+            this.taskStage = 0;
+            this.termStatus = 2;
+            var tmparr = [];
+            for (var key in this.alMap) {
+              if (this.alMap.hasOwnProperty(key)) {
+                tmparr.push(key);
+              }
+            }
+            var articleList = this.getArticleListFromMap(this.alMap, parseInt(extData.max)+1);
+            var updateList = this.getArticleListFromMap(this.alMap, parseInt(extData.min), parseInt(extData.max)+1);
+            var task = this.taskList.shift();
+            task.callback(articleList, updateList);
+            this.currentTask = 0;
+            this.runNextTask();
+            return;
+          }
         } else if(extData.direction == 'old') {
           //we can't end task if this.alMap.length < 15
           var articleList = this.getArticleListFromMap(this.alMap, min, extData.min);

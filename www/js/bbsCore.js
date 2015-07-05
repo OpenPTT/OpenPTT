@@ -78,7 +78,9 @@ BBSCore.prototype={
   },
 
   onLoginEvent: function(data){
-    //TODO: handle login error here
+    for(var i=0;i<this.connectionStatusEventNotify.length;++i){
+      this.connectionStatusEventNotify[i]('login');
+    }
   },
 
   onFavoriteListEvent: function(data){
@@ -93,9 +95,9 @@ BBSCore.prototype={
     }
   },
 
-  onArticleListEvent: function(data){
+  onArticleListEvent: function(data, data2){
     for(var i=0;i<this.articleListEventNotify.length;++i){
-      this.articleListEventNotify[i](data);
+      this.articleListEventNotify[i](data, data2);
     }
   },
 

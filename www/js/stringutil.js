@@ -101,13 +101,26 @@ function parseArticleData (str1, str2) {
     var aClass = (typeof result2[2] == 'undefined') ? '' : result2[2];
     var title  = result2[1] + result2[3];
     //result2[1] //框/轉/R:
- 
+    var popular = result[2].replace(/^\s+|\s+$/g,'');
+    var level = 0;
+    if(popular == '\u7206')
+      level = 3;
+    else if(popular == '')
+      level = 0;
+    else if(typeof popular=='string' && popular.indexOf('X')!=-1)
+      level = -1;
+    else if(parseInt(popular)>9)
+      level = 2;
+    else if(parseInt(popular)>0)
+      level = 1;
+      
     return {sn: parseInt(snStr),
             date: result[3],
             author: result[4], //if article be deleted, this field will be '-'.
-            popular: result[2].replace(/^\s+|\s+$/g,''),
+            popular: popular,
             aClass: aClass,
-            title: title
+            title: title,
+            level:level
             };
   }
   return null;

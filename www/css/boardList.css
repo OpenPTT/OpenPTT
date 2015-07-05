@@ -44,3 +44,35 @@
   font-size: 12px;
   line-height: 1.4;
 }
+
+.article-popular-red {
+  color: #ff0000;
+}
+
+.article-popular-green {
+  color: #00ff00;
+}
+
+.article-popular-yellow {
+  color: #ffff00;
+}
+
+.list__item--chevron[status=delete]:before {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  color: #ddd;
+  line-height: 28px;
+  height: 28px;
+  -webkit-transform: translateY(-50%);
+  -moz-transform: translateY(-50%);
+  -ms-transform: translateY(-50%);
+  -o-transform: translateY(-50%);
+  transform: translateY(-50%);
+  font-size: 28px;
+  font-family: FontAwesome;
+  font-style: normal;
+  font-weight: normal;
+  content: "\f105";
+  opacity: 0;
+}

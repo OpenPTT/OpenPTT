@@ -5,6 +5,7 @@ angular.module('app').controller('AppController', function ($scope, $window) {
   $scope.nickname = '';
   $scope.currentBoardName = '';
   $scope.favoriteList = [];
+  $scope.articleListMap = {};
 
   $scope.init = function() {
     $scope.bbsCore = $window.app.bbsCore = new BBSCore();
@@ -33,6 +34,7 @@ angular.module('app').controller('AppController', function ($scope, $window) {
   };
 
   $scope.login = function () {
+    $scope.running = true;
     $scope.bbsCore.login($scope.username, $scope.password, $scope.savePassword);
   };
 
@@ -40,8 +42,20 @@ angular.module('app').controller('AppController', function ($scope, $window) {
     $scope.bbsCore.logout();
   };
 
-  $scope.updateArticleList = function (data) {
-    //TODO: apend list.
+  $scope.updateArticleList = function (data, data2) {
+    //TODO: we need remove some article for saving memory.
+    if(data2 && data2.length) {
+      //update article - start
+      for(var i=0;i<data2.length;++i) {
+        var index = $scope.articleListMap[data2[i].sn];
+        if(index < $scope.articleList.length && $scope.articleList [index].sn == data2[i].sn)
+          $scope.articleList [index] = data2[i];
+      }
+      //update article - start
+    }
+    
+    if(data.length == 0)
+      return;
     if(!$scope.articleList || ($scope.articleList && $scope.articleList.length == 0)) {
       $scope.articleList = data;
     } else {
@@ -51,6 +65,13 @@ angular.module('app').controller('AppController', function ($scope, $window) {
         $scope.articleList = $scope.articleList.concat(data);
       }
     }
+
+    //keep a maping table - start
+    $scope.articleListMap = {};
+    for(var i=0;i<$scope.articleList.length;++i)
+      $scope.articleListMap[ $scope.articleList[i].sn ] = i;
+    //keep a maping table - end
+
     $scope.$apply();
   };
   
@@ -58,13 +79,15 @@ angular.module('app').controller('AppController', function ($scope, $window) {
     //let robot crawl more list
     $scope.bbsCore.getArticleList({boardName: $scope.currentBoardName,
                                    direction: 'old',
-                                   min: $scope.articleList[0].sn});
+                                   min: $scope.articleList[0].sn,
+                                   max: $scope.articleList[$scope.articleList.length-1].sn});
   };
 
   $scope.onArticleListScrollBotton = function () {
     //let robot crawl more list
     $scope.bbsCore.getArticleList({boardName: $scope.currentBoardName,
                                    direction: 'new',
+                                   min: $scope.articleList[0].sn,
                                    max: $scope.articleList[$scope.articleList.length-1].sn});
   };
 
@@ -75,8 +98,14 @@ angular.module('app').controller('AppController', function ($scope, $window) {
   $scope.updateMainUI = function (status) {
     switch (status){
       case "logout":
+        $scope.running = false;
         $scope.favoriteList = [];
         $scope.$apply();
+        break;
+      case "login":
+        $scope.running = false;
+        //$scope.$apply();
+        mainNavigator.pushPage('mainUI.html');
         break;
       case "disconnect":
         break;

@@ -166,18 +166,21 @@
 
         <div class="login-form">
 
-          <input type="text" class="text-input--underbar" placeholder="Username" ng-model="username">
-          <input type="password" class="text-input--underbar" placeholder="Password" ng-model="password">
+          <input type="text" class="text-input--underbar" placeholder="Username" ng-model="username" ng-disabled="running">
+          <input type="password" class="text-input--underbar" placeholder="Password" ng-model="password" ng-disabled="running">
           <ons-list class="remember-me">
             <ons-list-item modifier="tappable">
               <label class="checkbox checkbox--list-item">
-                <input type="checkbox" ng-model="savePassword">
+                <input type="checkbox" ng-model="savePassword" ng-disabled="running">
                 <div class="checkbox__checkmark checkbox--list-item__checkmark"></div>
                 Remember password
               </label>
             </ons-list-item>
           </ons-list>
-          <ons-button modifier="large" class="login-button" ng-click="login();mainNavigator.pushPage('mainUI.html');">Login</ons-button>
+          <ons-button modifier="large" class="login-button" ng-click="login()" ng-disabled="running">
+            Login
+            <ons-icon icon="ion-load-c" spin="true" ng-show="running"></ons-icon>
+          </ons-button>
         </div>
       </ons-page>
     </ons-navigator>
@@ -239,14 +242,19 @@
           <ons-toolbar>
             <div class="left"><ons-back-button>Back</ons-back-button></div>
             <div class="center">{{currentBoardName}}</div>
+            <div class="right"><ons-toolbar-button ng-click="onArticleListScrollBotton();"><ons-icon icon="ion-navicon" style="font-size: 28px;"></ons-icon></ons-toolbar-button></div>            
           </ons-toolbar>
           <ons-list class="plan-list">
-            <ons-list-item modifier="chevron" class="plan" ng-repeat="article in articleList">
+            <ons-list-item modifier="chevron" class="plan" status="{{article.author == '-' ? 'delete' : 'normal'}}" ng-repeat="article in articleList">
               <ons-row>
                 <ons-col width="100px" class="plan-left">
                   <div class="plan-date">{{article.author}}</div>
                   <div class="plan-date">{{article.aClass}}</div>
-                  <div class="plan-duration">{{article.popular}}</div>
+                  <div class="plan-duration">
+                    <!--color in white background is an bad idea.-->
+                    <!--ng-class="{'article-popular-red': article.level == 3, 'article-popular-yellow': article.level == 2, 'article-popular-green': article.level == 1}"-->                     
+                    {{article.popular}}
+                  </div>
                 </ons-col>
                 <ons-col width="6px" class="plan-center" ng-style="{backgroundColor:$index % 2 == 1 ? '#3399ff' : '#ccc'}">
                 </ons-col>
