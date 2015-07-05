@@ -70,8 +70,8 @@ BBSCore.prototype={
     this.addTask('enterBoard', this.onNullEvent.bind(this), board);
   },
   
-  getArticleList: function(board) {
-    this.addTask('getArticleList', this.onArticleListEvent.bind(this), board);
+  getArticleList: function(extData) {
+    this.addTask('getArticleList', this.onArticleListEvent.bind(this), extData);
   },
   
   onNullEvent: function(){

@@ -30,7 +30,7 @@ angular.module('app').controller('AppController', function ($scope, $window) {
     //alert(board.sn);
     $scope.bbsCore.regArticleListEvent($scope.updateArticleList);
     $scope.bbsCore.enterBoard(board);
-    $scope.bbsCore.getArticleList(board);
+    $scope.bbsCore.getArticleList({direction: 'none'});
   };
 
   $scope.login = function () {
@@ -44,8 +44,30 @@ angular.module('app').controller('AppController', function ($scope, $window) {
 
   $scope.updateArticleList = function (data) {
     //TODO: apend list.
-    $scope.articleList = data;
+    if(!$scope.articleList) {
+      $scope.articleList = data;
+    } else {
+      if(data[data.length-1].sn < $scope.articleList[0].sn) {
+        $scope.articleList = data.concat($scope.articleList);
+      } else {
+        $scope.articleList = $scope.articleList.concat(data);
+      }
+    }
     $scope.$apply();
+  };
+  
+  $scope.onArticleListScrollTop = function () {
+    //let robot crawl more list
+    $scope.bbsCore.getArticleList({boardName: $scope.currentBoardName,
+                                   direction: 'old',
+                                   min: $scope.articleList[0].sn});
+  };
+
+  $scope.onArticleListScrollBotton = function () {
+    //let robot crawl more list
+    $scope.bbsCore.getArticleList({boardName: $scope.currentBoardName,
+                                   direction: 'new',
+                                   max: $scope.articleList[$scope.articleList.length-1].sn});
   };
 
   $scope.updateFavoriteList = function (data) {
@@ -56,6 +78,7 @@ angular.module('app').controller('AppController', function ($scope, $window) {
     switch (status){
       case "logout":
         $scope.page = 'login';
+        $scope.boardPage = 'list';
         $scope.favoriteList = [];
         $scope.$apply();
         break;

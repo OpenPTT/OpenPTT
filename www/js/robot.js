@@ -17,6 +17,7 @@ function Robot(bbsCore) {
 
   this.favoriteList = [];
   this.flMap = {};
+  this.alMap = {};
 }
 
 Robot.prototype={
@@ -135,9 +136,11 @@ Robot.prototype={
     return favoriteList;
   },
 
-  getArticleListFromMap: function(alMap, min) {
+  getArticleListFromMap: function(alMap, min, max) {
     var articleList = [];
     for(var i=min;;++i) {
+      if(max && i>=max)
+        break;
       if(alMap['a' + i]) {
         articleList.push(alMap['a' + i]);
       } else {
@@ -251,20 +254,38 @@ Robot.prototype={
   getArticleList: function() {
     this.currentTask = 4;
     var extData = this.taskList[0].extData;
+    //none: end, get first page
+    //new: left + enter + end, get all article that sn > max
+    //old: jump to min, get article that sn < min (articleList.length = 15)
     var EnterChar = this.prefs.EnterChar;
+    this.alMap = {};
     if(this.taskStage == 0) {
-      this.taskStage = 1;
       if(this.termStatus != 2) {
         //error ?
         alert('error ?');
       }
+      if(extData.direction == 'none') {
+        this.taskStage = 2;
+      } else if(extData.direction == 'new') {
+        this.taskStage = 1;
+        this.bbsCore.conn.send('\x1b[D' + EnterChar + '\x1b[4~');//left + enter + end
+      } else if(extData.direction == 'old') {
+        this.taskStage = 2;
+        this.bbsCore.conn.send(String(extData.min) + EnterChar );//jump to article ns = min
+      }
     } else if(this.taskStage == 1) {
+      var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
+      if(line.indexOf('看板《'+extData.boardName+'》') >= 0) {
+          this.taskStage = 2;
+          this.termStatus = 2;
+      }
+    } else if(this.taskStage == 2) {
       // check board name.
       var firstArticleP1 = this.bbsCore.buf.getRowText(3, 0, 30);
       var firstArticleP2 = this.bbsCore.buf.getRowText(3, 30, this.bbsCore.buf.cols);
       var firstArticleData = parseArticleData(firstArticleP1, firstArticleP2);
       if(firstArticleData) {
-        var alMap = {};
+        //var alMap = {};
         var max = 0;
         var min = 0;
 
@@ -272,7 +293,7 @@ Robot.prototype={
           var articleP1 = this.bbsCore.buf.getRowText(i, 0, 30);
           var articleP2 = this.bbsCore.buf.getRowText(i, 30, this.bbsCore.buf.cols);
           var articleData = parseArticleData(articleP1, articleP2);
-          if(articleData && articleData.sn!=0 && !alMap['a'+articleData.sn]) {
+          if(articleData && articleData.sn!=0 && !this.alMap['a'+articleData.sn]) {
             if(max==0 && min==0) {
               max = articleData.sn;
               min = articleData.sn;
@@ -281,30 +302,56 @@ Robot.prototype={
               max = articleData.sn;
             if(articleData.sn < min)
               min = articleData.sn;
-            alMap['a'+articleData.sn] = articleData;
+            this.alMap['a'+articleData.sn] = articleData;
           }
         }
-        if( max-min > 100) {
-          var tmpData = alMap['a'+min];
+        while( max-min > 10000) {
+          //fix sn
+          var tmpData = this.alMap['a'+min];
           tmpData.sn += 100000;
-          delete alMap['a'+min];
-          alMap['a'+tmpData.sn] = tmpData;
+          delete this.alMap['a'+min];
+          this.alMap['a'+tmpData.sn] = tmpData;
           min = tmpData.sn; //fine min again
-          for (var key in alMap) {
-            if (alMap.hasOwnProperty(key)) {
-              if(alMap[key].sn < min)
-                min = alMap[key].sn;
+          for (var key in this.alMap) {
+            if (this.alMap.hasOwnProperty(key)) {
+              if(this.alMap[key].sn < min)
+                min = this.alMap[key].sn;
             }
           }
         }
-        this.taskStage = 0;
-        this.termStatus = 2;
-        var articleList = this.getArticleListFromMap(alMap, min);
-        var task = this.taskList.shift();
-        task.callback(articleList);
-        this.currentTask = 0;
-        this.runNextTask();
-        return;
+        if(extData.direction == 'none' || extData.direction == 'new') {
+          this.taskStage = 0;
+          this.termStatus = 2;
+          var articleList = this.getArticleListFromMap(this.alMap, min);
+          var task = this.taskList.shift();
+          task.callback(articleList);
+          this.currentTask = 0;
+          this.runNextTask();
+          return;
+        } else if(extData.direction == 'old') {
+          //we can't end task if this.alMap.length < 15
+          var articleList = this.getArticleListFromMap(this.alMap, min, extData.min);
+          if(articleList.length<15) {
+            this.taskStage = 3;
+            //send page up and wait update. how to detect page up finish?
+            this.bbsCore.conn.send('\x1b[B\x1b[5~');//arrow down + page up
+          } else {
+            this.taskStage = 0;
+            this.termStatus = 2;
+            var articleList = this.getArticleListFromMap(this.alMap, min, extData.min);
+            var task = this.taskList.shift();
+            task.callback(articleList);
+            this.currentTask = 0;
+            this.runNextTask();
+            return;
+          }
+        }
+      }
+    } else if(this.taskStage == 3) {
+      //detect and switch to stage 2
+      var line = this.bbsCore.buf.getRowText(3, 0, 2);
+      if(line=='\u25cf') { //●
+        this.taskStage = 2;
       }
     }
     setTimeout(this.getArticleList.bind(this), this.timerInterval);
