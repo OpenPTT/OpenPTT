@@ -323,6 +323,7 @@ Robot.prototype={
           this.taskStage = 0;
           this.termStatus = 2;
           var articleList = this.getArticleListFromMap(this.alMap, min);
+          articleList.reverse(); 
           var task = this.taskList.shift();
           task.callback(articleList);
           this.currentTask = 0;
@@ -345,6 +346,8 @@ Robot.prototype={
             }
             var articleList = this.getArticleListFromMap(this.alMap, parseInt(extData.max)+1);
             var updateList = this.getArticleListFromMap(this.alMap, parseInt(extData.min), parseInt(extData.max)+1);
+            articleList.reverse();
+            updateList.reverse();
             var task = this.taskList.shift();
             task.callback(articleList, updateList);
             this.currentTask = 0;
@@ -362,6 +365,7 @@ Robot.prototype={
             this.taskStage = 0;
             this.termStatus = 2;
             var articleList = this.getArticleListFromMap(this.alMap, min, extData.min);
+            articleList.reverse();
             var task = this.taskList.shift();
             task.callback(articleList);
             this.currentTask = 0;

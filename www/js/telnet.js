@@ -210,7 +210,7 @@ TelnetProtocol.prototype={
     send: function(str) {
         if(!this.socket) return;
 
-        console.log(str);
+        //console.log(str);
         if(this.bbsCore)
         {
           this.bbsCore.resetUnusedTime();

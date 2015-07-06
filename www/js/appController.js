@@ -1,24 +1,54 @@
 angular.module('app', ['onsen']);
 
-angular.module('app').controller('AppController', function ($scope, $window) {
+angular.module('app').controller('LoginController', function ($scope, $window) {
+  $scope.init = function() {
+    if(!$window.app.bbsCore)
+      $window.app.bbsCore = new BBSCore();
+    $scope.bbsCore = $window.app.bbsCore;
+    
+    $scope.username = $scope.bbsCore.prefs.username;
+    $scope.password = $scope.bbsCore.prefs.password;
+    $scope.savePassword = $scope.bbsCore.prefs.savePassword;
+
+    $scope.bbsCore.regConnectionStatusEvent($scope.updateMainUI);
+  };
+
+  $scope.login = function () {
+    console.log('$scope.login');
+    $scope.bbsCore.login($scope.username, $scope.password, $scope.savePassword);
+  };
+
+  $scope.updateMainUI = function (status) {
+    switch (status){
+      case "logout":
+        mainNavigator.popPage('mainUI.html');
+        break;
+      case "login":
+        mainNavigator.pushPage('mainUI.html');
+        break;
+      case "disconnect":
+        break;
+      default:
+        break;
+    }
+  };
+  
+});
+angular.module('app').controller('AppController', ['$scope', '$window', '$q', function ($scope, $window, $q) {
   $scope.bbsCore = null;
   $scope.nickname = '';
   $scope.currentBoardName = '';
   $scope.favoriteList = [];
   $scope.articleListMap = {};
-
+ 
   $scope.init = function() {
-    $scope.bbsCore = $window.app.bbsCore = new BBSCore();
-    $scope.username = $scope.bbsCore.prefs.username;
-    $scope.password = $scope.bbsCore.prefs.password;
-    $scope.savePassword = $scope.bbsCore.prefs.savePassword;
-    
-    $scope.deleteDuplicate = $scope.bbsCore.prefs.deleteDuplicate;
-    $scope.savePassword = $scope.bbsCore.prefs.savePassword;
+    if(!$window.app.bbsCore)
+      $window.app.bbsCore = new BBSCore();
+    $scope.bbsCore = $window.app.bbsCore;
     
     $scope.bbsCore.regFavoriteListEvent($scope.updateFavoriteList);
-    $scope.bbsCore.regConnectionStatusEvent($scope.updateMainUI);
     $scope.bbsCore.regArticleListEvent($scope.updateArticleList);
+    $scope.bbsCore.regConnectionStatusEvent($scope.updateMainUI);
   };
 
   $scope.doSomething = function () {
@@ -34,8 +64,10 @@ angular.module('app').controller('AppController', function ($scope, $window) {
   };
 
   $scope.login = function () {
-    $scope.running = true;
-    $scope.bbsCore.login($scope.username, $scope.password, $scope.savePassword);
+    console.log('$scope.username = ' + $scope.username);
+    console.log('$scope.password = ' + $scope.password);
+    console.log('$scope.savePassword = ' + $scope.savePassword);
+    //$scope.bbsCore.login($scope.username, $scope.password, $scope.savePassword);
   };
 
   $scope.logout = function () {
@@ -59,10 +91,15 @@ angular.module('app').controller('AppController', function ($scope, $window) {
     if(!$scope.articleList || ($scope.articleList && $scope.articleList.length == 0)) {
       $scope.articleList = data;
     } else {
-      if(data[data.length-1].sn < $scope.articleList[0].sn) {
-        $scope.articleList = data.concat($scope.articleList);
-      } else {
+      // if(data[data.length-1].sn < $scope.articleList[0].sn) {
+      //   $scope.articleList = data.concat($scope.articleList);
+      // } else {
+      //   $scope.articleList = $scope.articleList.concat(data);
+      // }
+      if(data[0].sn < $scope.articleList[$scope.articleList.length-1].sn) {
         $scope.articleList = $scope.articleList.concat(data);
+      } else {
+        $scope.articleList = data.concat($scope.articleList);
       }
     }
 
@@ -79,18 +116,44 @@ angular.module('app').controller('AppController', function ($scope, $window) {
     //let robot crawl more list
     $scope.bbsCore.getArticleList({boardName: $scope.currentBoardName,
                                    direction: 'old',
-                                   min: $scope.articleList[0].sn,
-                                   max: $scope.articleList[$scope.articleList.length-1].sn});
+                                   max: $scope.articleList[0].sn,
+                                   min: $scope.articleList[$scope.articleList.length-1].sn});
   };
 
-  $scope.onArticleListScrollBotton = function () {
+  $scope.refresh = function($done) {
+    //console.log('refresh');
     //let robot crawl more list
     $scope.bbsCore.getArticleList({boardName: $scope.currentBoardName,
                                    direction: 'new',
-                                   min: $scope.articleList[0].sn,
-                                   max: $scope.articleList[$scope.articleList.length-1].sn});
+                                   max: $scope.articleList[0].sn,
+                                   min: $scope.articleList[$scope.articleList.length-1].sn});
+    $done();
   };
 
+  // $scope.infiniteScrollingDelegate = {
+  //   configureItemScope: function(index, itemScope) {
+  //     if (!itemScope.article) {
+  //       console.log("Created item #" + index);
+  //       if(index < $scope.articleList.length) {
+  //         itemScope.article = $scope.articleList[index];
+  //       }
+  //       itemScope.canceler = $q.defer();
+  //       $scope.onArticleListScrollTop();
+  //     }
+  //   },
+  //   calculateItemHeight: function(index) {
+  //     return 90;
+  //   },
+  //   countItems: function() {
+  //     return $scope.articleList.length;
+  //   },
+  //   destroyItemScope: function(index, itemScope) {
+  //     itemScope.canceler.resolve();
+  //     //console.log("Destroyed item #" + index);
+  //   }
+  // };
+
+    
   $scope.updateFavoriteList = function (data) {
     $scope.favoriteList = data;
   };
@@ -98,14 +161,10 @@ angular.module('app').controller('AppController', function ($scope, $window) {
   $scope.updateMainUI = function (status) {
     switch (status){
       case "logout":
-        $scope.running = false;
         $scope.favoriteList = [];
         $scope.$apply();
         break;
       case "login":
-        $scope.running = false;
-        //$scope.$apply();
-        mainNavigator.pushPage('mainUI.html');
         break;
       case "disconnect":
         break;
@@ -132,4 +191,4 @@ angular.module('app').controller('AppController', function ($scope, $window) {
     }
   };
 
-});
+}]);

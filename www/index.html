@@ -21,7 +21,7 @@
 <html lang="en" ng-app="app" ng-csp>
   <head>
     <meta charset="utf-8" />
-<!--    <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *">-->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *">
     <meta name="format-detection" content="telephone=no">
     <meta name="msapplication-tap-highlight" content="no">
     <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
@@ -141,7 +141,7 @@
     </style>
   </head>
 
-  <body ng-controller="AppController" ng-init="init()">
+  <body>
     <!-- Cordova reference -->
     <script type="text/javascript" src="cordova.js"></script>
     <script type="text/javascript" src="js/uao_b2u_table.js"></script>
@@ -156,9 +156,8 @@
     <script type="text/javascript" src="js/bbsCore.js"></script>
     <script type="text/javascript" src="js/index.js"></script>
     <!-- -->
-
     <ons-navigator animation="slide" var="mainNavigator">
-      <ons-page>
+      <ons-page ng-controller="LoginController" ng-init="init()">
         <ons-toolbar>
           <div class="center">Login</div>
           <div class="right"><ons-toolbar-button>Close</ons-toolbar-button></div>
@@ -166,27 +165,27 @@
 
         <div class="login-form">
 
-          <input type="text" class="text-input--underbar" placeholder="Username" ng-model="username" ng-disabled="running">
-          <input type="password" class="text-input--underbar" placeholder="Password" ng-model="password" ng-disabled="running">
+          <input type="text" class="text-input--underbar" placeholder="Username" ng-model="username">
+          <input type="password" class="text-input--underbar" placeholder="Password" ng-model="password">
           <ons-list class="remember-me">
             <ons-list-item modifier="tappable">
               <label class="checkbox checkbox--list-item">
-                <input type="checkbox" ng-model="savePassword" ng-disabled="running">
+                <input type="checkbox" ng-model="savePassword">
                 <div class="checkbox__checkmark checkbox--list-item__checkmark"></div>
                 Remember password
               </label>
             </ons-list-item>
           </ons-list>
-          <ons-button modifier="large" class="login-button" ng-click="login()" ng-disabled="running">
+          <ons-button modifier="large" class="login-button" ng-click="login()">
             Login
-            <ons-icon icon="ion-load-c" spin="true" ng-show="running"></ons-icon>
+            <!--<ons-icon icon="ion-load-c" spin="true"></ons-icon>-->
           </ons-button>
         </div>
       </ons-page>
     </ons-navigator>
 
     <ons-template id="mainUI.html">
-      <ons-page>
+      <ons-page ng-controller="AppController" ng-init="init()">
         <ons-tabbar>
           <ons-tab active="true" page="home.html">
             <div class="tab">
@@ -239,20 +238,37 @@
 
       <ons-template id="article.html">
         <ons-page>
+          <ons-pull-hook var="refreshArticle" height="0px" ng-action="refresh($done)">
           <ons-toolbar>
             <div class="left"><ons-back-button>Back</ons-back-button></div>
             <div class="center">{{currentBoardName}}</div>
-            <div class="right"><ons-toolbar-button ng-click="onArticleListScrollBotton();"><ons-icon icon="ion-navicon" style="font-size: 28px;"></ons-icon></ons-toolbar-button></div>            
+            <div class="right"><ons-toolbar-button><ons-icon icon="ion-navicon" style="font-size: 28px;"></ons-icon></ons-toolbar-button></div>            
           </ons-toolbar>
           <ons-list class="plan-list">
-            <ons-list-item modifier="chevron" class="plan" status="{{article.author == '-' ? 'delete' : 'normal'}}" ng-repeat="article in articleList">
-              <ons-row>
+            <!--<ons-list-item modifier="chevron" class="plan" status="{{article.author == '-' ? 'delete' : 'normal'}}" ons-lazy-repeat="infiniteScrollingDelegate">
+              <ons-row style="height:90px;">
                 <ons-col width="100px" class="plan-left">
                   <div class="plan-date">{{article.author}}</div>
                   <div class="plan-date">{{article.aClass}}</div>
                   <div class="plan-duration">
-                    <!--color in white background is an bad idea.-->
-                    <!--ng-class="{'article-popular-red': article.level == 3, 'article-popular-yellow': article.level == 2, 'article-popular-green': article.level == 1}"-->                     
+                    {{article.popular}}
+                  </div>
+                </ons-col>
+                <ons-col width="6px" class="plan-center" ng-style="{backgroundColor:$index % 2 == 1 ? '#3399ff' : '#ccc'}">
+                </ons-col>
+                <ons-col class="plan-right">
+                  <div class="plan-name">{{article.title}}</div>
+                  <div class="plan-info">{{article.date}}</div>
+                  <div class="plan-info">{{article.sn}}</div>
+                </ons-col>
+              </ons-row>
+            </ons-list-item>-->
+            <ons-list-item modifier="chevron" class="plan" status="{{article.author == '-' ? 'delete' : 'normal'}}" ng-repeat="article in articleList">
+              <ons-row height="60px">
+                <ons-col width="100px" class="plan-left">
+                  <div class="plan-date">{{article.author}}</div>
+                  <div class="plan-date">{{article.aClass}}</div>
+                  <div class="plan-duration">
                     {{article.popular}}
                   </div>
                 </ons-col>
@@ -266,6 +282,7 @@
               </ons-row>
             </ons-list-item>
           </ons-list>
+          </ons-pull-hook>
         </ons-page>
       </ons-template>
     </ons-template>
@@ -297,7 +314,7 @@
         </ons-list>
         <br>
         <ons-list modifier="inset" class="settings-list">
-          <ons-list-item modifier="tappable" ng-click="logout();mainNavigator.popPage('mainUI.html');">
+          <ons-list-item modifier="tappable" ng-click="logout()">
             <ons-icon icon="ion-log-out" style="opacity: 0.8"></ons-icon>
             Sign out
           </ons-list-item>
