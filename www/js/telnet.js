@@ -242,7 +242,7 @@ TelnetProtocol.prototype={
         if(extbuf) return s;
         if(s)
         {
-          s = ansiHalfColorConv(s);
+          s = this.bbsCore.strUtil.ansiHalfColorConv(s);
           this.send(s);
         }
     },

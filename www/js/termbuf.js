@@ -1004,6 +1004,26 @@ TermBuf.prototype={
         }
       }).join('');
     },
+    
+    getColorArray: function(row, colStart, colEnd) {
+      var fgColorArray = [];
+      var bgColorArray = [];
+      var lines = this.lines;
+      var line = lines[row];
+      for(var i=colStart;i<colEnd;++i) {
+      	fgColorArray.push(line[i].getFg());
+      	bgColorArray.push(line[i].getBg());
+      }
+      return {fgColorArray: fgColorArray, bgColorArray: bgColorArray};
+    },
+
+    getPosFgColor: function(row, col) {
+      return this.lines[row].getFg();
+    },
+
+    getPosBgColor: function(row, col) {
+      return this.lines[row].getBg();
+    },
 
     findText: function(text, searchrow) {
       var result = {col: -1, row: -1}

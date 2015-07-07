@@ -39,6 +39,7 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', fu
   $scope.nickname = '';
   $scope.currentBoardName = '';
   $scope.favoriteList = [];
+  $scope.highlightList = [];
   $scope.articleListMap = {};
  
   $scope.init = function() {
@@ -74,14 +75,30 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', fu
     $scope.bbsCore.logout();
   };
 
-  $scope.updateArticleList = function (data, data2) {
+  $scope.updateArticleList = function (data, updateInfo) {
+    //highlightList
+    if(updateInfo && updateInfo.highlightList && updateInfo.highlightList.length) {
+      $scope.highlightList = updateInfo.highlightList;
+      $scope.$apply();
+    }
+
     //TODO: we need remove some article for saving memory.
-    if(data2 && data2.length) {
+    if(updateInfo && updateInfo.updateList && updateInfo.updateList.length) {
+      console.log(updateInfo.updateList.length);
       //update article - start
-      for(var i=0;i<data2.length;++i) {
-        var index = $scope.articleListMap[data2[i].sn];
-        if(index < $scope.articleList.length && $scope.articleList [index].sn == data2[i].sn)
-          $scope.articleList [index] = data2[i];
+      var updateList = updateInfo.updateList;
+      var updateFields = updateInfo.updateFields;
+      for(var i=0;i<updateList.length;++i) {
+        var index = $scope.articleListMap[updateList[i].sn];
+        if(index < $scope.articleList.length && $scope.articleList [index].sn == updateList[i].sn) {
+          if(updateFields) {
+            for(var j=0;j<updateFields.length;++j) {
+              $scope.articleList [index][updateFields[j]] = updateList[i][updateFields[j]];
+            }
+          } else {
+            $scope.articleList [index] = updateList[i];
+          }
+        }
       }
       //update article - start
     }
@@ -117,17 +134,19 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', fu
     $scope.bbsCore.getArticleList({boardName: $scope.currentBoardName,
                                    direction: 'old',
                                    max: $scope.articleList[0].sn,
-                                   min: $scope.articleList[$scope.articleList.length-1].sn});
+                                   min: $scope.articleList[$scope.articleList.length-1].sn,
+                                   count: 15}); //count: how many articles you needed.
   };
 
-  $scope.refresh = function($done) {
-    //console.log('refresh');
+  $scope.refresh = function(done) {
+    console.log('refresh');
     //let robot crawl more list
     $scope.bbsCore.getArticleList({boardName: $scope.currentBoardName,
                                    direction: 'new',
                                    max: $scope.articleList[0].sn,
                                    min: $scope.articleList[$scope.articleList.length-1].sn});
-    $done();
+    if(done)
+      done();
   };
 
   // $scope.infiniteScrollingDelegate = {

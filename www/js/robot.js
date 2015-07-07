@@ -1,5 +1,6 @@
 function Robot(bbsCore) {
   this.bbsCore = bbsCore;
+  this.strUtil = bbsCore.strUtil;
   this.prefs = bbsCore.prefs;
   //this.replyCount = [];
   this.autoLoginStage = 0;
@@ -18,6 +19,8 @@ function Robot(bbsCore) {
   this.favoriteList = [];
   this.flMap = {};
   this.alMap = {};
+  this.highlightCount = 0;
+  this.highlightList = [];
 }
 
 Robot.prototype={
@@ -70,20 +73,20 @@ Robot.prototype={
     var line3 = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
 
     //TODO: Remove these chinese, replace by escape encoding.
-    if(this.postLoginStage == 1  && line1.indexOf('您想刪除其他重複登入的連線嗎') >= 0) {
+    if(this.postLoginStage == 1  && this.strUtil.getDuplicatedLogin(line1)) {
       this.postLoginStage = 2;
       if(this.prefs.deleteDuplicate) {
         this.bbsCore.conn.convSend('y' + EnterKey, Encoding);
       } else {
         this.bbsCore.conn.convSend('n' + EnterKey, Encoding);
       }
-    } else if((this.postLoginStage == 1 || this.postLoginStage == 2) && line2.indexOf('請按任意鍵繼續') >= 0) {
+    } else if((this.postLoginStage == 1 || this.postLoginStage == 2) && this.strUtil.getPressAnyKeyText(line2) ) {
       this.postLoginStage = 3;
       this.bbsCore.conn.send(' ');
-    } else if(this.postLoginStage == 3 && line2.indexOf('您要刪除以上錯誤嘗試的記錄嗎') >= 0) {
+    } else if(this.postLoginStage == 3 && this.strUtil.getErrorLoginLogs(line2)) {
       this.postLoginStage = 4;
       this.bbsCore.conn.convSend('y' + EnterKey, Encoding);
-    } else if((this.postLoginStage == 3 || this.postLoginStage == 4) && line3.indexOf('【主功能表】') >= 0) {
+    } else if((this.postLoginStage == 3 || this.postLoginStage == 4) && this.strUtil.getMainFunctionList(line3)) {
       console.log('main menu');
       this.termStatus = 0;
       this.postLoginStage = 0;
@@ -153,7 +156,6 @@ Robot.prototype={
   getFavoriteList: function() {
     //TODO: detect if favorite list empty
     this.currentTask = 1;
-
     if(this.taskStage == 0) {
       this.flMap = {};
       this.taskStage = 1;
@@ -165,15 +167,14 @@ Robot.prototype={
       var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
       var firstBoardP1 = this.bbsCore.buf.getRowText(3, 0, 63);
       var firstBoardP2 = this.bbsCore.buf.getRowText(3, 64, 67);
-      var firstBoardData = parseBoardData(firstBoardP1, firstBoardP2);
-      if(line.indexOf('【看板列表】') >= 0 && firstBoardData) {
+      var firstBoardData = this.strUtil.parseBoardData(firstBoardP1, firstBoardP2);
+      if(this.strUtil.getBoardList(line) && firstBoardData) {
         this.termStatus = 1;
         //console.log('this.bbsCore.buf.cur_x = ' + this.bbsCore.buf.cur_x);
-        console.log(firstBoardData.sn);
         for(var i=3;i<23;++i) {
           var boardP1 = this.bbsCore.buf.getRowText(i, 0, 63);
           var boardP2 = this.bbsCore.buf.getRowText(i, 64, 67);
-          var boardData = parseBoardData(boardP1, boardP2);
+          var boardData = this.strUtil.parseBoardData(boardP1, boardP2);
           if(boardData) {
             this.flMap['b'+boardData.sn] = boardData;
           }
@@ -194,13 +195,12 @@ Robot.prototype={
     else if(this.taskStage == 2) {
       var firstBoardP1 = this.bbsCore.buf.getRowText(3, 0, 63);
       var firstBoardP2 = this.bbsCore.buf.getRowText(3, 64, 67);
-      var firstBoardData = parseBoardData(firstBoardP1, firstBoardP2);
+      var firstBoardData = this.strUtil.parseBoardData(firstBoardP1, firstBoardP2);
       if(firstBoardData) {
-        console.log(firstBoardData.sn);
         for(var i=3;i<23;++i) {
           var boardP1 = this.bbsCore.buf.getRowText(i, 0, 63);
           var boardP2 = this.bbsCore.buf.getRowText(i, 64, 67);
-          var boardData = parseBoardData(boardP1, boardP2);
+          var boardData = this.strUtil.parseBoardData(boardP1, boardP2);
           if(boardData && !this.flMap['b'+boardData.sn]) {
               this.flMap['b'+boardData.sn] = boardData;
           }
@@ -227,14 +227,19 @@ Robot.prototype={
     if(this.taskStage == 0) {
       this.taskStage = 1;
       if(this.termStatus != 1) {
-        this.bbsCore.conn.send('\x1af' + String(extData.sn) +  EnterChar + EnterChar + ' ' + '\x1b[4~');//ctrl+z,f
+        //TODO: we need a command that can jump into board from any where.
+        //this command can't use when reading article
+        //this.bbsCore.conn.send('s' + String(extData.boardName) +  EnterChar + ' ' + '\x1b[4~\x1b[4~');//s,boardName,enter,space,end,end
+        
+        //NOTE: only wen board in your favorite list.        
+        this.bbsCore.conn.send('\x1af' + String(extData.sn) +  EnterChar + EnterChar + ' ' + '\x1b[4~');//ctrl+z,f        
       } else {
         this.bbsCore.conn.send(String(extData.sn) +  EnterChar + EnterChar + ' ' + '\x1b[4~');
       }
     } else if(this.taskStage == 1) {
       // check board name.
       var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
-      if(line.indexOf('看板《'+extData.boardName+'》') >= 0) {
+      if( this.strUtil.getBoardHeader(line, extData.boardName)) {
           this.taskStage = 0;
           this.termStatus = 2;
           var task = this.taskList.shift();
@@ -247,8 +252,21 @@ Robot.prototype={
     setTimeout(this.enterBoard.bind(this), this.timerInterval);
   },
 
-  findMaxMinSn: function() {
-    
+  fixArticleSN: function(alMap, min, max) {
+    while( max-min > 10000) {
+      var tmpData = alMap['a'+min];
+      tmpData.sn += 100000;
+      delete alMap['a'+min];
+      alMap['a'+tmpData.sn] = tmpData;
+      min = tmpData.sn; //fine min again
+      for (var key in alMap) {
+        if (alMap.hasOwnProperty(key)) {
+          if(alMap[key].sn < min)
+            min = alMap[key].sn;
+        }
+      }
+    }
+    return min;
   },
   
   getArticleList: function() {
@@ -265,6 +283,7 @@ Robot.prototype={
         alert('error ?');
       }
       if(extData.direction == 'none') {
+        this.highlightCount = 0;
         this.taskStage = 2;
       } else if(extData.direction == 'new') {
         this.taskStage = 1;
@@ -274,16 +293,16 @@ Robot.prototype={
         this.bbsCore.conn.send(String(extData.min) + EnterChar );//jump to article ns = min
       }
     } else if(this.taskStage == 1) {
-      var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
-      if(line.indexOf('看板《'+extData.boardName+'》') >= 0) {
-          this.taskStage = 2;
-          this.termStatus = 2;
+      var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);    
+      if(this.strUtil.getBoardHeader(line, extData.boardName)) {
+        this.taskStage = 2;
+        this.termStatus = 2;
       }
     } else if(this.taskStage == 2) {
       // check board name.
       var firstArticleP1 = this.bbsCore.buf.getRowText(3, 0, 30);
       var firstArticleP2 = this.bbsCore.buf.getRowText(3, 30, this.bbsCore.buf.cols);
-      var firstArticleData = parseArticleData(firstArticleP1, firstArticleP2);
+      var firstArticleData = this.strUtil.parseArticleData(firstArticleP1, firstArticleP2);
       if(firstArticleData) {
         //var alMap = {};
         var max = 0;
@@ -292,7 +311,7 @@ Robot.prototype={
         for(var i=3;i<23;++i) {
           var articleP1 = this.bbsCore.buf.getRowText(i, 0, 30);
           var articleP2 = this.bbsCore.buf.getRowText(i, 30, this.bbsCore.buf.cols);
-          var articleData = parseArticleData(articleP1, articleP2);
+          var articleData = this.strUtil.parseArticleData(articleP1, articleP2);
           if(articleData && articleData.sn!=0 && !this.alMap['a'+articleData.sn]) {
             if(max==0 && min==0) {
               max = articleData.sn;
@@ -303,32 +322,38 @@ Robot.prototype={
             if(articleData.sn < min)
               min = articleData.sn;
             this.alMap['a'+articleData.sn] = articleData;
-          }
-        }
-        while( max-min > 10000) {
-          //fix sn
-          var tmpData = this.alMap['a'+min];
-          tmpData.sn += 100000;
-          delete this.alMap['a'+min];
-          this.alMap['a'+tmpData.sn] = tmpData;
-          min = tmpData.sn; //fine min again
-          for (var key in this.alMap) {
-            if (this.alMap.hasOwnProperty(key)) {
-              if(this.alMap[key].sn < min)
-                min = this.alMap[key].sn;
+          } else if(articleData && articleData.sn == 0) {
+            //highlight list
+            if(extData.direction == 'none') {
+              this.highlightCount++;
+              this.highlightList.push(articleData);
             }
           }
         }
+        min = this.fixArticleSN(this.alMap, min, max);
         if(extData.direction == 'none') {
-          this.taskStage = 0;
-          this.termStatus = 2;
           var articleList = this.getArticleListFromMap(this.alMap, min);
-          articleList.reverse(); 
-          var task = this.taskList.shift();
-          task.callback(articleList);
-          this.currentTask = 0;
-          this.runNextTask();
-          return;
+          articleList.reverse();
+          this.termStatus = 2;
+          if(this.highlightCount > 0) {
+            //callback to update articleList and crawl hightlight list.
+            this.highlightList = this.highlightList.reverse();
+            task = this.taskList[0];
+            task.callback(articleList);
+            this.taskStage = 4;
+            var upStr = '';
+            for(var i=0;i<this.highlightCount-1;++i) {
+              upStr+='\x1b[A';
+            }
+            this.bbsCore.conn.send('\x1b[4~\x1b[4~' + upStr + EnterChar); //end, up * n-1, enter 
+          } else {
+            this.taskStage = 0;
+            var task = this.taskList.shift();
+            task.callback(articleList);
+            this.currentTask = 0;
+            this.runNextTask();
+            return;
+          }
         } else if(extData.direction == 'new') {
           //if(!this.alMap['a'+extData.max]) {  //only crawl newest data
           if(!this.alMap['a'+extData.min]) { //crawl all data to update article's newest status
@@ -348,16 +373,19 @@ Robot.prototype={
             var updateList = this.getArticleListFromMap(this.alMap, parseInt(extData.min), parseInt(extData.max)+1);
             articleList.reverse();
             updateList.reverse();
+            //console.log('updateList.length = ' + updateList.length);
             var task = this.taskList.shift();
-            task.callback(articleList, updateList);
+            task.callback(articleList, {updateList: updateList,
+                                        updateFields: ['author','popular','aClass','title','level']
+                                       });
             this.currentTask = 0;
             this.runNextTask();
             return;
           }
         } else if(extData.direction == 'old') {
-          //we can't end task if this.alMap.length < 15
+          //we can't end task if this.alMap.length < extData.count (default 15)
           var articleList = this.getArticleListFromMap(this.alMap, min, extData.min);
-          if(articleList.length<15) {
+          if(articleList.length < extData.count) {
             this.taskStage = 3;
             //send page up and wait update. how to detect page up finish?
             this.bbsCore.conn.send('\x1b[B\x1b[5~');//arrow down + page up
@@ -377,10 +405,44 @@ Robot.prototype={
     } else if(this.taskStage == 3) {
       //detect and switch to stage 2
       var line = this.bbsCore.buf.getRowText(3, 0, 2);
-      if(line=='\u25cf') { //●
+      if(line=='\u25cf') { //solid circle
         this.taskStage = 2;
       }
+    } else if(this.taskStage == 4) {
+      var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
+      var articleHeaderData = this.strUtil.parseArticleHeader(line);
+      if(articleHeaderData) {
+        this.taskStage = 5;
+        this.bbsCore.conn.send('Q'); //shift+q 
+      } 
+    } else if(this.taskStage == 5) {
+      var line = this.bbsCore.buf.getRowText(19, 0, this.bbsCore.buf.cols);
+      var aidData = this.strUtil.parseAid(line);
+      if(aidData) {
+        this.highlightCount--;
+        this.highlightList[this.highlightCount].aid = aidData.aid; 
+        if(this.highlightCount == 0) {
+          //console.log('finsih all');
+          this.taskStage = 0;
+          this.bbsCore.conn.send('\x1b[D');
+          var task = this.taskList.shift();
+          task.callback([],{highlightList: this.highlightList});
+          this.highlightList = [];          
+          this.currentTask = 0;
+          this.runNextTask();
+          return;
+        } else {
+          this.taskStage = 4;
+          var upStr = '';
+          for(var i=0;i<this.highlightCount-1;++i) {
+            upStr+='\x1b[A';
+          }
+          this.bbsCore.conn.send('\x1b[D\x1b[4~\x1b[4~' + upStr + EnterChar); //left,end,end,up*n,enter
+        }
+        //parseArticleHeader
+      }
     }
+    
     setTimeout(this.getArticleList.bind(this), this.timerInterval);
   },
 
@@ -392,24 +454,25 @@ Robot.prototype={
   },
 
   logout: function() {
-    //TODO: detect if favorite list empty
+    //TODO: this task is hightest priority, cancel all task in progress.
     this.currentTask = 2;
 
     if(this.taskStage == 0) {
       this.taskStage = 1;
       if(this.termStatus != 0) {
-        this.bbsCore.conn.send('\x1b[D\x1b[D\x1b[D');
+        //this.bbsCore.conn.send('\x1b[D\x1b[D\x1b[D');
+        this.bbsCore.conn.send('\x1b[D\x1ac\x1b[D');//left,ctrl+z,c,left
       }
     } else if(this.taskStage == 1) {
       var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
-      if(line.indexOf('【主功能表】') >= 0) {
+      if( this.strUtil.getMainFunctionList(line) ) {
         this.termStatus = 0;
         this.taskStage = 2;
         this.bbsCore.conn.send('g' + this.prefs.EnterChar); //g + enter
       }
     } else if(this.taskStage == 2) {
       var line = this.bbsCore.buf.getRowText(22, 0, this.bbsCore.buf.cols);
-      if(line.indexOf('您確定要離開【 批踢踢實業坊 】嗎') >= 0) {
+      if( this.strUtil.getExitMessage(line)) {
         this.bbsCore.conn.send('y' + this.prefs.EnterChar + ' '); //y + enter + space
 
         this.taskStage = 0;

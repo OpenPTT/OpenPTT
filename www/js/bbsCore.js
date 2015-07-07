@@ -1,4 +1,5 @@
 function BBSCore() {
+  this.strUtil = new StrUtil();
   this.prefs = new PrefsHandler(this);
   this.prefs.loadPrefs();
   this.conn = new TelnetProtocol(this);
