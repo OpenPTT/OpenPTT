@@ -5,6 +5,8 @@ angular.module('app').controller('LoginController', function ($scope, $window) {
     if(!$window.app.bbsCore)
       $window.app.bbsCore = new BBSCore();
     $scope.bbsCore = $window.app.bbsCore;
+    $scope.errorMessage = '';
+    $scope.sitename = 'PTT';
     
     $scope.username = $scope.bbsCore.prefs.username;
     $scope.password = $scope.bbsCore.prefs.password;
@@ -14,18 +16,26 @@ angular.module('app').controller('LoginController', function ($scope, $window) {
   };
 
   $scope.login = function () {
-    console.log('$scope.login');
-    $scope.bbsCore.login($scope.username, $scope.password, $scope.savePassword);
+    console.log('login');
+    $scope.bbsCore.login($scope.sitename, $scope.username, $scope.password, $scope.savePassword);
   };
 
-  $scope.updateMainUI = function (status) {
+  $scope.updateMainUI = function (status, message) {
     switch (status){
       case "logout":
         mainNavigator.popPage('mainUI.html');
+        $scope.errorMessage = '';
         break;
-      case "login":
+      case "login-success":
         mainNavigator.pushPage('mainUI.html');
+        loginModal.hide();
+        $scope.errorMessage = '';
         break;
+      case "login-failed":
+        //show error message
+        loginModal.hide();
+        $scope.errorMessage = message;
+        $scope.$apply();
       case "disconnect":
         break;
       default:
@@ -183,7 +193,7 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', fu
         $scope.favoriteList = [];
         $scope.$apply();
         break;
-      case "login":
+      case "login-success":
         break;
       case "disconnect":
         break;

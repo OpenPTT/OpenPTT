@@ -1,6 +1,6 @@
-function Robot(bbsCore) {
+function RobotPtt(bbsCore) {
   this.bbsCore = bbsCore;
-  this.strUtil = bbsCore.strUtil;
+  this.strParser = new StringParserPtt();
   this.prefs = bbsCore.prefs;
   //this.replyCount = [];
   this.autoLoginStage = 0;
@@ -23,7 +23,7 @@ function Robot(bbsCore) {
   this.highlightList = [];
 }
 
-Robot.prototype={
+RobotPtt.prototype={
 
   // Modified from pcmanx-gtk2
   initialAutoLogin: function() {
@@ -68,30 +68,36 @@ Robot.prototype={
 
     var Encoding = this.prefs.charset;
     var EnterKey = this.prefs.EnterChar;
+    var line0 = this.bbsCore.buf.getRowText(21, 0, this.bbsCore.buf.cols);
     var line1 = this.bbsCore.buf.getRowText(22, 0, this.bbsCore.buf.cols);
     var line2 = this.bbsCore.buf.getRowText(23, 0, this.bbsCore.buf.cols);
     var line3 = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
 
     //TODO: Remove these chinese, replace by escape encoding.
-    if(this.postLoginStage == 1  && this.strUtil.getDuplicatedLogin(line1)) {
+    if(this.postLoginStage == 1  && this.strParser.getErrorLogin(line0)) {
+      var task = this.taskList.shift();
+      task.callback('login-failed', 'Login error'); //keep error login message.
+      this.taskList = []; //empty all task
+      return;
+    } else if(this.postLoginStage == 1  && this.strParser.getDuplicatedLogin(line1)) {
       this.postLoginStage = 2;
       if(this.prefs.deleteDuplicate) {
         this.bbsCore.conn.convSend('y' + EnterKey, Encoding);
       } else {
         this.bbsCore.conn.convSend('n' + EnterKey, Encoding);
       }
-    } else if((this.postLoginStage == 1 || this.postLoginStage == 2) && this.strUtil.getPressAnyKeyText(line2) ) {
+    } else if((this.postLoginStage == 1 || this.postLoginStage == 2) && this.strParser.getPressAnyKeyText(line2) ) {
       this.postLoginStage = 3;
       this.bbsCore.conn.send(' ');
-    } else if(this.postLoginStage == 3 && this.strUtil.getErrorLoginLogs(line2)) {
+    } else if(this.postLoginStage == 3 && this.strParser.getErrorLoginLogs(line2)) {
       this.postLoginStage = 4;
       this.bbsCore.conn.convSend('y' + EnterKey, Encoding);
-    } else if((this.postLoginStage == 3 || this.postLoginStage == 4) && this.strUtil.getMainFunctionList(line3)) {
+    } else if((this.postLoginStage == 3 || this.postLoginStage == 4) && this.strParser.getMainFunctionList(line3)) {
       console.log('main menu');
       this.termStatus = 0;
       this.postLoginStage = 0;
       var task = this.taskList.shift();
-      task.callback(); //keep error login message.
+      task.callback('login-success'); //keep error login message.
       this.runNextTask();
       return;
     }
@@ -167,14 +173,14 @@ Robot.prototype={
       var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
       var firstBoardP1 = this.bbsCore.buf.getRowText(3, 0, 63);
       var firstBoardP2 = this.bbsCore.buf.getRowText(3, 64, 67);
-      var firstBoardData = this.strUtil.parseBoardData(firstBoardP1, firstBoardP2);
-      if(this.strUtil.getBoardList(line) && firstBoardData) {
+      var firstBoardData = this.strParser.parseBoardData(firstBoardP1, firstBoardP2);
+      if(this.strParser.getBoardList(line) && firstBoardData) {
         this.termStatus = 1;
         //console.log('this.bbsCore.buf.cur_x = ' + this.bbsCore.buf.cur_x);
         for(var i=3;i<23;++i) {
           var boardP1 = this.bbsCore.buf.getRowText(i, 0, 63);
           var boardP2 = this.bbsCore.buf.getRowText(i, 64, 67);
-          var boardData = this.strUtil.parseBoardData(boardP1, boardP2);
+          var boardData = this.strParser.parseBoardData(boardP1, boardP2);
           if(boardData) {
             this.flMap['b'+boardData.sn] = boardData;
           }
@@ -195,12 +201,12 @@ Robot.prototype={
     else if(this.taskStage == 2) {
       var firstBoardP1 = this.bbsCore.buf.getRowText(3, 0, 63);
       var firstBoardP2 = this.bbsCore.buf.getRowText(3, 64, 67);
-      var firstBoardData = this.strUtil.parseBoardData(firstBoardP1, firstBoardP2);
+      var firstBoardData = this.strParser.parseBoardData(firstBoardP1, firstBoardP2);
       if(firstBoardData) {
         for(var i=3;i<23;++i) {
           var boardP1 = this.bbsCore.buf.getRowText(i, 0, 63);
           var boardP2 = this.bbsCore.buf.getRowText(i, 64, 67);
-          var boardData = this.strUtil.parseBoardData(boardP1, boardP2);
+          var boardData = this.strParser.parseBoardData(boardP1, boardP2);
           if(boardData && !this.flMap['b'+boardData.sn]) {
               this.flMap['b'+boardData.sn] = boardData;
           }
@@ -239,7 +245,7 @@ Robot.prototype={
     } else if(this.taskStage == 1) {
       // check board name.
       var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
-      if( this.strUtil.getBoardHeader(line, extData.boardName)) {
+      if( this.strParser.getBoardHeader(line, extData.boardName)) {
           this.taskStage = 0;
           this.termStatus = 2;
           var task = this.taskList.shift();
@@ -294,7 +300,7 @@ Robot.prototype={
       }
     } else if(this.taskStage == 1) {
       var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);    
-      if(this.strUtil.getBoardHeader(line, extData.boardName)) {
+      if(this.strParser.getBoardHeader(line, extData.boardName)) {
         this.taskStage = 2;
         this.termStatus = 2;
       }
@@ -302,7 +308,7 @@ Robot.prototype={
       // check board name.
       var firstArticleP1 = this.bbsCore.buf.getRowText(3, 0, 30);
       var firstArticleP2 = this.bbsCore.buf.getRowText(3, 30, this.bbsCore.buf.cols);
-      var firstArticleData = this.strUtil.parseArticleData(firstArticleP1, firstArticleP2);
+      var firstArticleData = this.strParser.parseArticleData(firstArticleP1, firstArticleP2);
       if(firstArticleData) {
         //var alMap = {};
         var max = 0;
@@ -311,7 +317,7 @@ Robot.prototype={
         for(var i=3;i<23;++i) {
           var articleP1 = this.bbsCore.buf.getRowText(i, 0, 30);
           var articleP2 = this.bbsCore.buf.getRowText(i, 30, this.bbsCore.buf.cols);
-          var articleData = this.strUtil.parseArticleData(articleP1, articleP2);
+          var articleData = this.strParser.parseArticleData(articleP1, articleP2);
           if(articleData && articleData.sn!=0 && !this.alMap['a'+articleData.sn]) {
             if(max==0 && min==0) {
               max = articleData.sn;
@@ -410,14 +416,14 @@ Robot.prototype={
       }
     } else if(this.taskStage == 4) {
       var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
-      var articleHeaderData = this.strUtil.parseArticleHeader(line);
+      var articleHeaderData = this.strParser.parseArticleHeader(line);
       if(articleHeaderData) {
         this.taskStage = 5;
         this.bbsCore.conn.send('Q'); //shift+q 
       } 
     } else if(this.taskStage == 5) {
       var line = this.bbsCore.buf.getRowText(19, 0, this.bbsCore.buf.cols);
-      var aidData = this.strUtil.parseAid(line);
+      var aidData = this.strParser.parseAid(line);
       if(aidData) {
         this.highlightCount--;
         this.highlightList[this.highlightCount].aid = aidData.aid; 
@@ -446,6 +452,10 @@ Robot.prototype={
     setTimeout(this.getArticleList.bind(this), this.timerInterval);
   },
 
+  getArticleContent: function() {
+    
+  },
+  
   getBoardList: function() {
 
   },
@@ -465,14 +475,14 @@ Robot.prototype={
       }
     } else if(this.taskStage == 1) {
       var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
-      if( this.strUtil.getMainFunctionList(line) ) {
+      if( this.strParser.getMainFunctionList(line) ) {
         this.termStatus = 0;
         this.taskStage = 2;
         this.bbsCore.conn.send('g' + this.prefs.EnterChar); //g + enter
       }
     } else if(this.taskStage == 2) {
       var line = this.bbsCore.buf.getRowText(22, 0, this.bbsCore.buf.cols);
-      if( this.strUtil.getExitMessage(line)) {
+      if( this.strParser.getExitMessage(line)) {
         this.bbsCore.conn.send('y' + this.prefs.EnterChar + ' '); //y + enter + space
 
         this.taskStage = 0;
@@ -486,3 +496,18 @@ Robot.prototype={
     setTimeout(this.logout.bind(this), this.timerInterval);
   }
 };
+
+window.siteManager.regSite('PTT',
+  {
+    name: 'PTT',
+    addr: 'ptt.cc',
+    port: 23,
+    protocol: 'telnet',
+    prefsRoot: 'openptt.',
+    col: 80,
+    row: 24,
+    charset: 'big5',
+    enterChar: '^M',
+    Robot: RobotPtt
+  }
+);

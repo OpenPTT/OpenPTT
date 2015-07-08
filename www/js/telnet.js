@@ -55,6 +55,7 @@ function TelnetProtocol(bbsCore) {
 }
 
 TelnetProtocol.prototype={
+    protocolName: 'telnet',
     // transport service
     //ts: Cc["@mozilla.org/network/socket-transport-service;1"].getService(Ci.nsISocketTransportService),
     //ps: Cc["@mozilla.org/network/protocol-proxy-service;1"].getService(Ci.nsIProtocolProxyService),

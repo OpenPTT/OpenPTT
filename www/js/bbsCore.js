@@ -2,11 +2,10 @@ function BBSCore() {
   this.strUtil = new StrUtil();
   this.prefs = new PrefsHandler(this);
   this.prefs.loadPrefs();
-  this.conn = new TelnetProtocol(this);
-  //this.view = new TermView(80, 24);
+  this.conn = null;
   this.buf = new TermBuf(this, 80, 24);
   this.parser = new AnsiParser(this.buf);
-  this.robot = new Robot(this);
+  this.robot = null;
   this.favoriteListEventNotify = [];
   this.connectionStatusEventNotify = [];
   this.articleListEventNotify = [];
@@ -14,8 +13,8 @@ function BBSCore() {
 
 BBSCore.prototype={
 
-  connect: function(extData, hostkeys) {
-    this.conn.connect('ptt.cc', 23);
+  connect: function(site, port) {
+    this.conn.connect(site, port);
   },
 
   close: function() {
@@ -50,7 +49,30 @@ BBSCore.prototype={
     );
   },
   
-  login: function(username, password, savePassword) {
+  login: function(site, username, password, savePassword) {
+    var siteData = window.siteManager.getSite(site);
+    this.prefs.setRoot( siteData.prefsRoot );    
+    //this.buf.setCol(siteData.col);
+    //this.buf.setCol(siteData.row);
+
+    if(this.conn && siteData.protocol != this.conn.protocolName) {
+      //this.conn.release();
+      this.conn = null;
+    }
+    if(!this.conn) {
+      if(siteData.protocol == 'telnet') {
+        this.conn = new TelnetProtocol(this);
+      } else if(siteData.protocol == 'ssh') {
+        //this.conn = new SshProtocol(this); //not finsih
+      }
+    }
+    
+    if(this.robot && siteData.name != site) {
+      this.robot = null;
+    }
+    if(!this.robot)
+      this.robot = new siteData.Robot(this);   
+
     if(savePassword) {
       this.prefs.saveUsernameAndPassword(username, password);
     } else {
@@ -60,7 +82,7 @@ BBSCore.prototype={
     this.prefs.loginStr[2] = password;
     this.addTask('login', this.onLoginEvent.bind(this));
     this.addTask('getFavoriteList', this.onFavoriteListEvent.bind(this));
-    this.connect();
+    this.connect(siteData.addr, siteData.port);
   },
   
   logout: function() {
@@ -78,9 +100,9 @@ BBSCore.prototype={
   onNullEvent: function(){
   },
 
-  onLoginEvent: function(data){
+  onLoginEvent: function(status, message){
     for(var i=0;i<this.connectionStatusEventNotify.length;++i){
-      this.connectionStatusEventNotify[i]('login');
+      this.connectionStatusEventNotify[i](status, message);
     }
   },
 
