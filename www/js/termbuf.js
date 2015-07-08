@@ -1053,7 +1053,6 @@ TermBuf.prototype={
         if( text[colEnd].isLeadByte ) colEnd++;
       }
       else colEnd = this.cols;
-
       text = text.slice(colStart, colEnd);
       var charset = this.prefs.charset;
       return text.map( function(c, col, line){

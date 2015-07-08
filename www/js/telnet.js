@@ -48,6 +48,7 @@ function TelnetProtocol(bbsCore) {
 
     this.state=STATE_DATA;
     this.iac_sb='';
+    this.debug = false;
     //this.b52k3uao=window.uaotable;
     //this.initial=true;
     //this.utf8Buffer=[];
@@ -210,8 +211,8 @@ TelnetProtocol.prototype={
 
     send: function(str) {
         if(!this.socket) return;
-
-        //console.log(str);
+        if(this.debug)
+          console.log(str);
         if(this.bbsCore)
         {
           this.bbsCore.resetUnusedTime();

@@ -9,6 +9,7 @@ function BBSCore() {
   this.favoriteListEventNotify = [];
   this.connectionStatusEventNotify = [];
   this.articleListEventNotify = [];
+  this.articleContentEventNotify = [];
 }
 
 BBSCore.prototype={
@@ -97,6 +98,10 @@ BBSCore.prototype={
     this.addTask('getArticleList', this.onArticleListEvent.bind(this), extData);
   },
   
+  getArticleContent: function(extData) {
+    this.addTask('getArticleContent', this.onArticleContentEvent.bind(this), extData);
+  },
+  
   onNullEvent: function(){
   },
 
@@ -124,6 +129,14 @@ BBSCore.prototype={
     }
   },
 
+  onArticleContentEvent: function(data){
+    console.log('onArticleContentEvent');
+    console.log(data);
+    for(var i=0;i<this.articleContentEventNotify.length;++i){
+      this.articleContentEventNotify[i](data);
+    }
+  },
+
   regFavoriteListEvent: function(eventCallback) {
     this.favoriteListEventNotify.push(eventCallback);
   },
@@ -134,6 +147,10 @@ BBSCore.prototype={
   
   regArticleListEvent: function(eventCallback) {
     this.articleListEventNotify.push(eventCallback);
+  },
+  
+  regArticleContentEvent: function(eventCallback) {
+    this.articleContentEventNotify.push(eventCallback);
   }
 
 };

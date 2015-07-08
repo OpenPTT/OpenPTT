@@ -74,23 +74,44 @@ StringParserPtt.prototype={
      }
      return null;
   },
-  
-  parseStatusRow: function (str) {
-    var regex = new RegExp(/  瀏覽 第 (\d{1,3})(?:\/(\d{1,3}))? 頁 *\( *(\d{1,3})%\)  目前顯示: 第 0*(\d+)~0*(\d+) 行 *(?:\(y\)回應)?(?:\(X\/?%\)推文)?(?:\(h\)說明)? *\(←\/?q?\)離開 /g);
-    var result = regex.exec(str);
-    if (!result)
-      return null;
 
-    if (result.length == 6) {
+  parseArticleStatus: function (str) {
+    var regexShort = new RegExp(/  \u700F\u89BD \u7B2C {0,3}(\d{1,4}) {0,3}\u9801 {0,2}\( {0,3}(\d{1,3})%\) {0,3}\u76EE\u524D\u986F\u793A: {0,2}\u7B2C {0,2}(\d{1,4})~(\d{1,4}) {0,2}\u884C.*/g);
+    var result = regexShort.exec(str);
+    if (result && result.length == 5) {
       return {
-        pageIndex:     parseInt(result[1]),
-        pageTotal:     parseInt(result[2]),
-        pagePercent:   parseInt(result[3]),
+        pageNow: parseInt(result[1]),
+        pageTotal: 0,
+        pagePercent: parseInt(result[2]),
+        rowIndexStart: parseInt(result[3]),
+        rowIndexEnd: parseInt(result[4])
+      };
+    }
+    var regexFull = new RegExp(/  \u700F\u89BD \u7B2C {0,3}(\d{1,4})\/(\d{1,4}) {0,3}\u9801 {0,2}\( {0,3}(\d{1,3})%\) {0,3}\u76EE\u524D\u986F\u793A: {0,2}\u7B2C {0,2}(\d{1,4})~(\d{1,4}) {0,2}\u884C.*/g);
+    result = regexFull.exec(str);
+    if (result && result.length == 6) {
+      return {
+        pageNow: parseInt(result[1]),
+        pageTotal: parseInt(result[2]),
+        pagePercent: parseInt(result[3]),
         rowIndexStart: parseInt(result[4]),
-        rowIndexEnd:   parseInt(result[5])
+        rowIndexEnd: parseInt(result[5])
       };
     }
     return null;
+  },
+
+  getLastPage: function (str) {
+    var regex = new RegExp(/  \u700F\u89BD \u7B2C {0,3}([\d\/]{1,3}) {0,3}\u9801 {0,2}\( {0,3}(\d{1,3})%\) {0,3}.*/g);
+    var result = regex.exec(str);
+    if(result && result.length == 3) {
+      if(parseInt(result[2]) == 100) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+    return false;
   },
   
   getErrorLogin: function(str) {
@@ -123,5 +144,10 @@ StringParserPtt.prototype={
 
   getExitMessage: function(str) {
     return (str.indexOf('您確定要離開【 批踢踢實業坊 】嗎') >= 0);
+  },
+
+  getContentAlertMessage: function(str) {
+    return (str.indexOf('▲此頁內容會依閱讀者不同,原文未必有您的資料') >= 0);
   }
+
 };

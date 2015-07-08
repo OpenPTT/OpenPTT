@@ -9,11 +9,12 @@ function RobotPtt(bbsCore) {
   this.timerInterval = 40;
   //this.downloadArticle = new DownloadArticle(bbsCore);
 
-  //termStatus: 0 //main list;
-  //termStatus: 1 //favorite list;
-  //termStatus: 2 //article list;
+  //termStatus: 0 //main list
+  //termStatus: 1 //favorite list
+  //termStatus: 2 //article list
+  //termStatus: 3 //reading article
   this.termStatus = 0;
-  this.currentTask = 0; //1:getFavoriteList, 2:logout, 3:getBoardList, 4:getArticleList 5:enterBoard
+  this.currentTask = 0; //1:getFavoriteList, 2:logout, 3:getBoardList, 4:getArticleList 5:enterBoard 6:getArticleContent
   this.taskList = [];
 
   this.favoriteList = [];
@@ -21,10 +22,19 @@ function RobotPtt(bbsCore) {
   this.alMap = {};
   this.highlightCount = 0;
   this.highlightList = [];
+  this.articleData = {};
 }
 
 RobotPtt.prototype={
-
+  taskDefines: {
+    none: 0,
+    getFavoriteList: 1,
+    logout: 2,
+    getBoardList: 3,
+    getArticleList: 4,
+    enterBoard: 5,
+    getArticleContent: 6    
+  },
   // Modified from pcmanx-gtk2
   initialAutoLogin: function() {
     if(this.prefs.loginStr[1])
@@ -94,6 +104,7 @@ RobotPtt.prototype={
       this.bbsCore.conn.convSend('y' + EnterKey, Encoding);
     } else if((this.postLoginStage == 3 || this.postLoginStage == 4) && this.strParser.getMainFunctionList(line3)) {
       console.log('main menu');
+      this.bbsCore.conn.debug = true;
       this.termStatus = 0;
       this.postLoginStage = 0;
       var task = this.taskList.shift();
@@ -120,7 +131,7 @@ RobotPtt.prototype={
       }
     }
     this.taskList.push(task);
-    if(this.currentTask == 0)
+    if(this.currentTask == this.taskDefines.none)
       this.runNextTask();
   },
 
@@ -161,7 +172,7 @@ RobotPtt.prototype={
   
   getFavoriteList: function() {
     //TODO: detect if favorite list empty
-    this.currentTask = 1;
+    this.currentTask = this.taskDefines.getFavoriteList;
     if(this.taskStage == 0) {
       this.flMap = {};
       this.taskStage = 1;
@@ -190,7 +201,7 @@ RobotPtt.prototype={
           this.taskStage = 0;
           var task = this.taskList.shift();
           task.callback(favoriteList);
-          this.currentTask = 0;
+          this.currentTask = this.taskDefines.none;
           this.runNextTask();
           return;          
         }
@@ -216,7 +227,7 @@ RobotPtt.prototype={
           this.taskStage = 0;
           var task = this.taskList.shift();
           task.callback(favoriteList);
-          this.currentTask = 0;
+          this.currentTask = this.taskDefines.none;
           this.runNextTask();
           return;
         }
@@ -227,7 +238,7 @@ RobotPtt.prototype={
   },
   
   enterBoard: function() {
-    this.currentTask = 5;
+    this.currentTask = this.taskDefines.enterBoard;
     var extData = this.taskList[0].extData;
     var EnterChar = this.prefs.EnterChar;
     if(this.taskStage == 0) {
@@ -250,7 +261,7 @@ RobotPtt.prototype={
           this.termStatus = 2;
           var task = this.taskList.shift();
           task.callback();
-          this.currentTask = 0;
+          this.currentTask = this.taskDefines.none;
           this.runNextTask();
           return;
       }
@@ -276,7 +287,7 @@ RobotPtt.prototype={
   },
   
   getArticleList: function() {
-    this.currentTask = 4;
+    this.currentTask = this.taskDefines.getArticleList;
     var extData = this.taskList[0].extData;
     //none: end, get first page
     //new: left + enter + end, get all article that sn > max
@@ -356,7 +367,7 @@ RobotPtt.prototype={
             this.taskStage = 0;
             var task = this.taskList.shift();
             task.callback(articleList);
-            this.currentTask = 0;
+            this.currentTask = this.taskDefines.none;
             this.runNextTask();
             return;
           }
@@ -384,14 +395,14 @@ RobotPtt.prototype={
             task.callback(articleList, {updateList: updateList,
                                         updateFields: ['author','popular','aClass','title','level']
                                        });
-            this.currentTask = 0;
+            this.currentTask = this.taskDefines.none;
             this.runNextTask();
             return;
           }
         } else if(extData.direction == 'old') {
           //we can't end task if this.alMap.length < extData.count (default 15)
           var articleList = this.getArticleListFromMap(this.alMap, min, extData.min);
-          if(articleList.length < extData.count) {
+          if(articleList.length < extData.count && !this.alMap['a1']) {
             this.taskStage = 3;
             //send page up and wait update. how to detect page up finish?
             this.bbsCore.conn.send('\x1b[B\x1b[5~');//arrow down + page up
@@ -402,7 +413,7 @@ RobotPtt.prototype={
             articleList.reverse();
             var task = this.taskList.shift();
             task.callback(articleList);
-            this.currentTask = 0;
+            this.currentTask = this.taskDefines.none;
             this.runNextTask();
             return;
           }
@@ -433,8 +444,8 @@ RobotPtt.prototype={
           this.bbsCore.conn.send('\x1b[D');
           var task = this.taskList.shift();
           task.callback([],{highlightList: this.highlightList});
-          this.highlightList = [];          
-          this.currentTask = 0;
+          this.highlightList = [];
+          this.currentTask = this.taskDefines.none;
           this.runNextTask();
           return;
         } else {
@@ -453,11 +464,181 @@ RobotPtt.prototype={
   },
 
   getArticleContent: function() {
-    
+    this.currentTask = this.taskDefines.getArticleContent;
+    var extData = this.taskList[0].extData;
+    var EnterChar = this.prefs.EnterChar;
+    if(this.taskStage == 0) {
+      this.articleData = {
+        currentPage: 1,
+        totalPage: 0,
+        currentLine: 0,
+        finish: false,
+        lines: []
+      };
+      if(this.termStatus != 2) {
+      }
+      if(extData.article.aid) { //have aid, user aid to jump to article
+        this.taskStage = 3;
+        this.bbsCore.conn.send('#' + extData.article.aid + EnterChar + EnterChar);//left + enter + end
+      } else { //no aid, user sn to jump to article, then crawl aid.
+        this.taskStage = 1;
+        this.bbsCore.conn.send(extData.article.sn + EnterChar + EnterChar);
+      }
+    } else if(this.taskStage == 1) {      
+      var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
+      console.log(line);
+      var articleHeaderData = this.strParser.parseArticleHeader(line);
+      if(articleHeaderData) {
+        this.termStatus = 3;
+        this.taskStage = 2;
+        this.bbsCore.conn.send('Q'); //shift+q 
+      } 
+    } else if(this.taskStage == 2) {
+      var line = this.bbsCore.buf.getRowText(19, 0, this.bbsCore.buf.cols);
+      var aidData = this.strParser.parseAid(line);
+      if(aidData) {
+        extData.article.aid = aidData.aid;
+        this.taskStage = 3;
+        this.bbsCore.conn.send(' ' + EnterChar); //space,enter
+      }
+    } else if(this.taskStage == 3) {
+      var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
+      var articleHeaderData = this.strParser.parseArticleHeader(line);
+      if(articleHeaderData) {
+        var statusText = this.bbsCore.buf.getRowText(23, 0, this.bbsCore.buf.cols);
+        if(this.strParser.getContentAlertMessage(statusText)) {
+          if(this.strParser.getLastPage(statusText)) {
+            //only one page, crawl this page and exit
+            for(var i=22;i>=0;--i) {
+              var content = this.bbsCore.buf.getRowText(i, 0, this.bbsCore.buf.cols); //need parse to html tag.
+              if(content.replace(/^\s+|\s+$/g,'') !== '' && !this.articleData.finish) {
+                this.articleData.finish = true;
+                this.articleData.lines.unshift(content);
+              } else if(this.articleData.finish) {
+                this.articleData.lines.unshift(content);
+              }
+            }
+            this.articleData.currentPage = 1;
+            this.articleData.totalPage = 1;
+            this.currentLine = this.articleData.lines.length;
+            this.taskStage = 0;
+            this.termStatus = 2;
+            this.bbsCore.conn.send('\x1b[D'); //left
+            var task = this.taskList.shift();
+            task.callback(this.articleData);
+            this.currentTask = this.taskDefines.none;
+            this.runNextTask();
+            return;
+          } else {
+            this.taskStage = 5;
+            this.bbsCore.conn.send('\x1b[B'); //arrow down
+          }
+        }
+        var statusInfo = this.strParser.parseArticleStatus(statusText);
+        if(statusInfo) {
+          if(statusInfo.pagePercent == 100) {
+            //only one page, crawl this page and exit
+            for(var i=22;i>=0;--i) {
+              var content = this.bbsCore.buf.getRowText(i, 0, this.bbsCore.buf.cols); //need parse to html tag.
+              if(content.replace(/^\s+|\s+$/g,'') !== '' && !this.articleData.finish) {
+                this.articleData.finish = true;
+                this.articleData.lines.unshift(content);
+              } else if(this.articleData.finish) {
+                this.articleData.lines.unshift(content);
+              }
+            }
+            this.articleData.currentPage = 1;
+            this.articleData.totalPage = 1;
+            this.currentLine = this.articleData.lines.length;
+            this.taskStage = 0;
+            this.termStatus = 2;
+            this.bbsCore.conn.send('\x1b[D'); //left
+            var task = this.taskList.shift();
+            task.callback(this.articleData);
+            this.currentTask = this.taskDefines.none;
+            this.runNextTask();
+            return;
+            //
+          } else {
+            if(statusInfo.pageTotal == 0) {
+              this.taskStage = 7;
+              this.bbsCore.conn.send('\x1b[4~'); //end
+            } else {
+              //get all info. crawl first data
+              //
+              for(var i=0;i<23;++i) {
+                var content = this.bbsCore.buf.getRowText(i, 0, this.bbsCore.buf.cols); //need parse to html tag.
+                this.articleData.lines.push(content);
+              }
+              this.taskStage = 4;
+              this.articleData.currentLine = statusInfo.rowIndexEnd;
+              this.articleData.totalPage = statusInfo.pageTotal;
+              this.articleData.currentPage++;
+              this.bbsCore.conn.send('\x1b[6~'); //page down
+            }
+          }
+        }
+        //start crawl data
+      }
+    } else if(this.taskStage == 4) {
+      var statusText = this.bbsCore.buf.getRowText(23, 0, this.bbsCore.buf.cols);
+      if(this.strParser.getContentAlertMessage(statusText)) {
+        this.taskStage = 6;
+        this.bbsCore.conn.send('\x1b[A'); //arrow up
+      } else {
+        var statusInfo = this.strParser.parseArticleStatus(statusText);
+        if(statusInfo && this.articleData.currentPage == statusInfo.pageNow) {
+          if(statusInfo.pagePercent == 100) {
+            //last page, crawl this page and exit
+            var skipCount = this.articleData.currentLine - statusInfo.rowIndexStart + 1;
+            for(var i=skipCount; i<23 && this.articleData.currentLine<statusInfo.rowIndexEnd; ++i,this.articleData.currentLine++) {
+              var content = this.bbsCore.buf.getRowText(i, 0, this.bbsCore.buf.cols); //need parse to html tag.
+              this.articleData.lines.push(content);
+            }
+            this.articleData.currentPage = statusInfo.pageNow;
+            this.taskStage = 0;
+            this.termStatus = 2;
+            this.bbsCore.conn.send('\x1b[D'); //left
+            var task = this.taskList.shift();
+            task.callback(this.articleData);
+            this.currentTask = this.taskDefines.none;
+            this.runNextTask();
+            return;
+          } else {             
+            //crawl all data in current page            
+            for(var i=0;i<23;++i,this.articleData.currentLine++) {
+              var content = this.bbsCore.buf.getRowText(i, 0, this.bbsCore.buf.cols); //need parse to html tag.
+              this.articleData.lines.push(content);
+            }
+            this.articleData.currentPage++;
+            this.bbsCore.conn.send('\x1b[6~'); //page down
+          }
+        }
+      }
+    } else if(this.taskStage == 5) {
+      var line = this.bbsCore.buf.getRowText(0, 1, 6);
+      if(line == '\u6A19\u984C') { //title
+        this.taskStage = 3;
+        this.bbsCore.conn.send('\x1b[A'); //arrow up
+      } 
+    } else if(this.taskStage == 6) {
+      var line = this.bbsCore.buf.getRowText(0, 1, 6);
+      if(line == '\u6A19\u984C') { //title
+        this.taskStage = 3;
+        this.bbsCore.conn.send('\x1b[B'); //arrow down
+      } 
+    } else if(this.taskStage == 7) {
+      var line = this.bbsCore.buf.getRowText(23, 0, this.bbsCore.buf.cols);
+      if(this.strParser.getLastPage(line)) {
+        this.taskStage = 3;
+        this.bbsCore.conn.send('\x1b[1~'); //home
+      } 
+    }
+    setTimeout(this.getArticleContent.bind(this), this.timerInterval);
   },
   
   getBoardList: function() {
-
+    this.currentTask = this.taskDefines.getBoardList;
   },
   
   login:function() {
@@ -465,7 +646,7 @@ RobotPtt.prototype={
 
   logout: function() {
     //TODO: this task is hightest priority, cancel all task in progress.
-    this.currentTask = 2;
+    this.currentTask = this.taskDefines.logout;
 
     if(this.taskStage == 0) {
       this.taskStage = 1;

@@ -7,6 +7,7 @@ angular.module('app').controller('LoginController', function ($scope, $window) {
     $scope.bbsCore = $window.app.bbsCore;
     $scope.errorMessage = '';
     $scope.sitename = 'PTT';
+    $scope.filterResult = [];
     
     $scope.username = $scope.bbsCore.prefs.username;
     $scope.password = $scope.bbsCore.prefs.password;
@@ -44,6 +45,7 @@ angular.module('app').controller('LoginController', function ($scope, $window) {
   };
   
 });
+
 angular.module('app').controller('AppController', ['$scope', '$window', '$q', function ($scope, $window, $q) {
   $scope.bbsCore = null;
   $scope.nickname = '';
@@ -60,6 +62,7 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', fu
     $scope.bbsCore.regFavoriteListEvent($scope.updateFavoriteList);
     $scope.bbsCore.regArticleListEvent($scope.updateArticleList);
     $scope.bbsCore.regConnectionStatusEvent($scope.updateMainUI);
+    $scope.bbsCore.regArticleContentEvent($scope.updateArticleContent);
   };
 
   $scope.doSomething = function () {
@@ -68,6 +71,7 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', fu
 
   $scope.enterBoard = function (board) {
     $scope.articleList = [];
+    $scope.$apply();
     $scope.currentBoardName = board.boardName;
     //alert(board.sn);
     $scope.bbsCore.enterBoard(board);
@@ -85,6 +89,11 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', fu
     $scope.bbsCore.logout();
   };
 
+  $scope.updateArticleContent = function (data) {
+    $scope.articleContent = data.lines.join('');
+    $scope.$apply();
+  };
+  
   $scope.updateArticleList = function (data, updateInfo) {
     //highlightList
     if(updateInfo && updateInfo.highlightList && updateInfo.highlightList.length) {
@@ -182,7 +191,15 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', fu
   //   }
   // };
 
-    
+  $scope.replyArticle = function (article) {
+
+  };
+
+  $scope.readArticle = function (article) {
+    $scope.bbsCore.getArticleContent({boardName: $scope.currentBoardName,
+                                      article: article});
+  };
+
   $scope.updateFavoriteList = function (data) {
     $scope.favoriteList = data;
   };
