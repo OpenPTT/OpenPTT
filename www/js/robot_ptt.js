@@ -2,6 +2,7 @@ function RobotPtt(bbsCore) {
   this.bbsCore = bbsCore;
   this.strParser = new StringParserPtt();
   this.prefs = bbsCore.prefs;
+  this.view = bbsCore.view;
   //this.replyCount = [];
   this.autoLoginStage = 0;
   this.postLoginStage = 0;
@@ -468,7 +469,7 @@ RobotPtt.prototype={
     var extData = this.taskList[0].extData;
     var EnterChar = this.prefs.EnterChar;
     if(this.taskStage == 0) {
-      this.articleData = {
+      extData.context = this.articleData = {
         currentPage: 1,
         totalPage: 0,
         currentLine: 0,
@@ -513,14 +514,14 @@ RobotPtt.prototype={
               var content = this.bbsCore.buf.getRowText(i, 0, this.bbsCore.buf.cols); //need parse to html tag.
               if(content.replace(/^\s+|\s+$/g,'') !== '' && !this.articleData.finish) {
                 this.articleData.finish = true;
-                this.articleData.lines.unshift(content);
+                this.articleData.lines.unshift(this.view.getRowHtmlCode(i));
               } else if(this.articleData.finish) {
-                this.articleData.lines.unshift(content);
+                this.articleData.lines.unshift(this.view.getRowHtmlCode(i));
               }
             }
             this.articleData.currentPage = 1;
             this.articleData.totalPage = 1;
-            this.currentLine = this.articleData.lines.length;
+            this.articleData.currentLine = this.articleData.lines.length;
             this.taskStage = 0;
             this.termStatus = 2;
             this.bbsCore.conn.send('\x1b[D'); //left
@@ -542,14 +543,14 @@ RobotPtt.prototype={
               var content = this.bbsCore.buf.getRowText(i, 0, this.bbsCore.buf.cols); //need parse to html tag.
               if(content.replace(/^\s+|\s+$/g,'') !== '' && !this.articleData.finish) {
                 this.articleData.finish = true;
-                this.articleData.lines.unshift(content);
+                this.articleData.lines.unshift(this.view.getRowHtmlCode(i));
               } else if(this.articleData.finish) {
-                this.articleData.lines.unshift(content);
+                this.articleData.lines.unshift(this.view.getRowHtmlCode(i));
               }
             }
             this.articleData.currentPage = 1;
             this.articleData.totalPage = 1;
-            this.currentLine = this.articleData.lines.length;
+            this.articleData.currentLine = this.articleData.lines.length;
             this.taskStage = 0;
             this.termStatus = 2;
             this.bbsCore.conn.send('\x1b[D'); //left
@@ -567,8 +568,8 @@ RobotPtt.prototype={
               //get all info. crawl first data
               //
               for(var i=0;i<23;++i) {
-                var content = this.bbsCore.buf.getRowText(i, 0, this.bbsCore.buf.cols); //need parse to html tag.
-                this.articleData.lines.push(content);
+                //var content = this.bbsCore.buf.getRowText(i, 0, this.bbsCore.buf.cols); //need parse to html tag.
+                this.articleData.lines.push(this.view.getRowHtmlCode(i));
               }
               this.taskStage = 4;
               this.articleData.currentLine = statusInfo.rowIndexEnd;
@@ -592,10 +593,11 @@ RobotPtt.prototype={
             //last page, crawl this page and exit
             var skipCount = this.articleData.currentLine - statusInfo.rowIndexStart + 1;
             for(var i=skipCount; i<23 && this.articleData.currentLine<statusInfo.rowIndexEnd; ++i,this.articleData.currentLine++) {
-              var content = this.bbsCore.buf.getRowText(i, 0, this.bbsCore.buf.cols); //need parse to html tag.
-              this.articleData.lines.push(content);
+              //var content = this.bbsCore.buf.getRowText(i, 0, this.bbsCore.buf.cols); //need parse to html tag.
+              this.articleData.lines.push(this.view.getRowHtmlCode(i));
             }
             this.articleData.currentPage = statusInfo.pageNow;
+            this.articleData.finish = true;
             this.taskStage = 0;
             this.termStatus = 2;
             this.bbsCore.conn.send('\x1b[D'); //left
@@ -607,8 +609,8 @@ RobotPtt.prototype={
           } else {             
             //crawl all data in current page            
             for(var i=0;i<23;++i,this.articleData.currentLine++) {
-              var content = this.bbsCore.buf.getRowText(i, 0, this.bbsCore.buf.cols); //need parse to html tag.
-              this.articleData.lines.push(content);
+              //var content = this.bbsCore.buf.getRowText(i, 0, this.bbsCore.buf.cols); //need parse to html tag.
+              this.articleData.lines.push(this.view.getRowHtmlCode(i));
             }
             this.articleData.currentPage++;
             this.bbsCore.conn.send('\x1b[6~'); //page down

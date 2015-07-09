@@ -4,6 +4,7 @@ function BBSCore() {
   this.prefs.loadPrefs();
   this.conn = null;
   this.buf = new TermBuf(this, 80, 24);
+  this.view = new TermView(this, this.buf);
   this.parser = new AnsiParser(this.buf);
   this.robot = null;
   this.favoriteListEventNotify = [];
@@ -130,8 +131,6 @@ BBSCore.prototype={
   },
 
   onArticleContentEvent: function(data){
-    console.log('onArticleContentEvent');
-    console.log(data);
     for(var i=0;i<this.articleContentEventNotify.length;++i){
       this.articleContentEventNotify[i](data);
     }

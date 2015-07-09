@@ -89,25 +89,25 @@ TermChar.prototype={
     }
 };
 
-//function TermHtml() {
-//    this.html='';
-//    //this.html = [];
-//}
-//
-//TermHtml.prototype={
-//
-//    setHtml: function(str) {
-//        this.html=str;
-//    },
-//
-//    addHtml: function(str) {
-//        this.html+=str;
-//    },
-//
-//    getHtml: function() {
-//        return this.html;
-//    }
-//};
+function TermHtml() {
+   this.html='';
+   //this.html = [];
+}
+
+TermHtml.prototype={
+
+   setHtml: function(str) {
+       this.html=str;
+   },
+
+   addHtml: function(str) {
+       this.html+=str;
+   },
+
+   getHtml: function() {
+       return this.html;
+   }
+};
 
 function TermBuf(bbsCore, cols, rows) {
     this.cols=cols;

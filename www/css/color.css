@@ -1,0 +1,78 @@
+.BBSWindow {
+  background-color: black;
+}
+
+.bbsline {
+  width: 100%;
+  font-size: 70%;
+  margin: 0px;
+  padding: 0px;
+  display: block;
+  color: #C0C0C0;
+  background-color: black;
+  white-space: pre;
+  word-wrap: break-word;
+}
+
+.y
+{
+ background-image:url(../icon/http.bmp);
+ background-repeat: repeat-x;
+ background-position: 0% 90%;
+}
+
+.y:hover {
+  color: inherit;
+}
+
+.qq{color:RGBA(0,0,0,0);}
+.qq0{color:RGBA(0,0,0,0);}
+.qq1{color:RGBA(0,0,0,0);background-color:#800000;}
+.qq2{color:RGBA(0,0,0,0);background-color:#008000;}
+.qq3{color:RGBA(0,0,0,0);background-color:#808000;}
+.qq4{color:RGBA(0,0,0,0);background-color:#000080;}
+.qq5{color:RGBA(0,0,0,0);background-color:#800080;}
+.qq6{color:RGBA(0,0,0,0);background-color:#008080;}
+.qq7{color:RGBA(0,0,0,0);background-color:#c0c0c0;}
+.qq8{color:RGBA(0,0,0,0);background-color:#808080;}
+.qq9{color:RGBA(0,0,0,0);background-color:#ff0000;}
+.qq10{color:RGBA(0,0,0,0);background-color:#00ff00;}
+.qq11{color:RGBA(0,0,0,0);background-color:#ffff00;}
+.qq12{color:RGBA(0,0,0,0);background-color:#0000ff;}
+.qq13{color:RGBA(0,0,0,0);background-color:#ff00ff;}
+.qq14{color:RGBA(0,0,0,0);background-color:#00ffff;}
+.qq15{color:RGBA(0,0,0,0);background-color:#ffffff;}
+.q0{color:#000000;}
+.q1{color:#800000;}
+.q2{color:#008000;}
+.q3{color:#808000;}
+.q4{color:#000080;}
+.q5{color:#800080;}
+.q6{color:#008080;}
+.q7{color:#c0c0c0;}
+.q8{color:#808080;}
+.q9{color:#ff0000;}
+.q10{color:#00ff00;}
+.q11{color:#ffff00;}
+.q12{color:#0000ff;}
+.q13{color:#ff00ff;}
+.q14{color:#00ffff;}
+.q15{color:#ffffff;}
+.b0{background-color:transparent;}
+.b1{background-color:#800000;}
+.b2{background-color:#008000;}
+.b3{background-color:#808000;}
+.b4{background-color:#000080;}
+.b5{background-color:#800080;}
+.b6{background-color:#008080;}
+.b7{background-color:#c0c0c0;}
+.b8{background-color:#808080;}
+.b9{background-color:#ff0000;}
+.b10{background-color:#00ff00;}
+.b11{background-color:#ffff00;}
+.b12{background-color:#0000ff;}
+.b13{background-color:#ff00ff;}
+.b14{background-color:#00ffff;}
+.b15{background-color:#ffffff;}
+.o{position:relative;display:inline-block;}
+.o::after{content:attr(t);position:absolute;left:0px;width:50%;overflow:hidden;-webkit-user-select: none;pointer-events:none;}

@@ -31,6 +31,7 @@
     <!-- JS dependencies (order matters!) -->
     <!--<script src="scripts/platformOverrides.js"></script>-->
     <script src="lib/angular/angular.js"></script>
+    <script src="lib/angular/angular-sanitize.js"></script>
     <script src="lib/onsen/js/onsenui.js"></script>
     <script src="js/appController.js"></script>
 
@@ -41,20 +42,20 @@
     <link rel="stylesheet" type="text/css" href="css/login.css">
     <link rel="stylesheet" type="text/css" href="css/boardList.css">
     <link rel="stylesheet" type="text/css" href="css/articleList.css">
+    <link rel="stylesheet" type="text/css" href="css/color.css">
 
     <!-- CSP support mode (required for Windows Universal apps) -->
     <link rel="stylesheet" href="lib/angular/angular-csp.css" />
     <link rel="stylesheet" type="text/css" href="css/main.css">
-
-
     <!-- --------------- App init --------------- -->
-    <title>Open PTT</title>
+    <title>OpenPTT</title>
   </head>
 
   <body>
     <!-- Cordova reference -->
     <script type="text/javascript" src="cordova.js"></script>
     <script type="text/javascript" src="js/index.js"></script>
+    <script type="text/javascript" src="js/symbolTable.js"></script>
     <script type="text/javascript" src="js/uao_b2u_table.js"></script>
     <script type="text/javascript" src="js/uao_u2b_table.js"></script>
     <script type="text/javascript" src="js/uao_conv.js"></script>
@@ -63,6 +64,7 @@
     <script type="text/javascript" src="js/robot_ptt.js"></script>
     <script type="text/javascript" src="js/ansiparser.js"></script>
     <script type="text/javascript" src="js/termbuf.js"></script>
+    <script type="text/javascript" src="js/term_view.js"></script>
     <script type="text/javascript" src="js/telnet.js"></script>
     <script type="text/javascript" src="js/prefsHandler.js"></script>
     <script type="text/javascript" src="js/bbsCore.js"></script>
@@ -158,122 +160,121 @@
           </ons-list>
         </ons-page>
       </ons-navigator>
+    </ons-template>
 
-      <ons-template id="article.html">
-        <ons-page>
-          <!--<ons-pull-hook var="refreshArticle" height="0px" ng-action="refresh($done)">-->
-          <ons-toolbar>
-            <div class="left"><ons-back-button>Back</ons-back-button></div>
-            <div class="center">{{currentBoardName}}</div>
-            <div class="right"><ons-toolbar-button ng-click="refresh()"><ons-icon icon="ion-navicon" style="font-size: 28px;"></ons-icon></ons-toolbar-button></div>            
-          </ons-toolbar>
-          <ons-list class="plan-list">
-            <!--<ons-list-item modifier="chevron" class="plan" status="{{article.author == '-' ? 'delete' : 'normal'}}" ons-lazy-repeat="infiniteScrollingDelegate">
-              <ons-row style="height:90px;">
-                <ons-col width="100px" class="plan-left">
-                  <div class="plan-date">{{article.author}}</div>
-                  <div class="plan-date">{{article.aClass}}</div>
-                  <div class="plan-duration">
-                    {{article.popular}}
-                  </div>
-                </ons-col>
-                <ons-col width="6px" class="plan-center" ng-style="{backgroundColor:$index % 2 == 1 ? '#3399ff' : '#ccc'}">
-                </ons-col>
-                <ons-col class="plan-right">
-                  <div class="plan-name">{{article.title}}</div>
-                  <div class="plan-info">{{article.date}}</div>
-                  <div class="plan-info">{{article.sn}}</div>
-                </ons-col>
-              </ons-row>
-            </ons-list-item>-->
-            <ons-list-item modifier="chevron" class="plan" status="{{article.author == '-' ? 'delete' : 'normal'}}" ng-repeat="article in highlightList">
-              <ons-row height="50px">
-                <ons-col width="60px" class="plan-left" ng-click="replyArticle(article)">                  
-                  <div class="plan-date">{{article.aClass}}</div>
-                  <div class="plan-info">{{article.aid}}</div>
-                  <div class="plan-duration">{{article.popular}}</div>
-                </ons-col>
-                <ons-col width="6px" class="plan-center" ng-style="{backgroundColor:$index % 2 == 1 ? '#3399ff' : '#ccc'}">
-                </ons-col>
-                <ons-col class="plan-right" ng-click="readArticle(article);favoriteNavigator.pushPage('reading.html');">
-                  <div class="plan-name">{{article.title}}</div>
-                  <div class="plan-date">{{article.date}}&nbsp;{{article.author}}</div>
-                </ons-col>
-              </ons-row>
-            </ons-list-item>            
-            <ons-list-item modifier="chevron" class="plan" status="{{article.author == '-' ? 'delete' : 'normal'}}" ng-repeat="article in articleList">
-              <ons-row height="50px">
-                <ons-col width="60px" class="plan-left" ng-click="replyArticle(article)">                  
-                  <div class="plan-date">{{article.aClass}}</div>
-                  <div class="plan-info">{{article.sn}}</div>
-                  <div class="plan-duration">{{article.popular}}</div>
-                </ons-col>
-                <ons-col width="6px" class="plan-center" ng-style="{backgroundColor:$index % 2 == 1 ? '#3399ff' : '#ccc'}">
-                </ons-col>
-                <ons-col class="plan-right" ng-click="readArticle(article);favoriteNavigator.pushPage('reading.html');">
-                  <div class="plan-name">{{article.title}}</div>
-                  <div class="plan-date">{{article.date}}&nbsp;{{article.author}}</div>
-                </ons-col>
-              </ons-row>
-            </ons-list-item>
-          </ons-list>
-          <!--</ons-pull-hook>-->
-        </ons-page>
-      </ons-template>
+    <ons-template id="article.html">
+      <ons-page>
+        <!--<ons-pull-hook var="refreshArticle" height="0px" ng-action="refresh($done)">-->
+        <ons-toolbar>
+          <div class="left"><ons-back-button>Back</ons-back-button></div>
+          <div class="center">{{currentBoardName}}</div>
+          <div class="right"><ons-toolbar-button ng-click="refresh()"><ons-icon icon="ion-navicon" style="font-size: 28px;"></ons-icon></ons-toolbar-button></div>
+        </ons-toolbar>
+        <ons-list class="plan-list">
+          <!--<ons-list-item modifier="chevron" class="plan" status="{{article.author == '-' ? 'delete' : 'normal'}}" ons-lazy-repeat="infiniteScrollingDelegate">
+            <ons-row style="height:90px;">
+              <ons-col width="100px" class="plan-left">
+                <div class="plan-date">{{article.author}}</div>
+                <div class="plan-date">{{article.aClass}}</div>
+                <div class="plan-duration">
+                  {{article.popular}}
+                </div>
+              </ons-col>
+              <ons-col width="6px" class="plan-center" ng-style="{backgroundColor:$index % 2 == 1 ? '#3399ff' : '#ccc'}">
+              </ons-col>
+              <ons-col class="plan-right">
+                <div class="plan-name">{{article.title}}</div>
+                <div class="plan-info">{{article.date}}</div>
+                <div class="plan-info">{{article.sn}}</div>
+              </ons-col>
+            </ons-row>
+          </ons-list-item>-->
+          <ons-list-item modifier="chevron" class="plan" status="{{article.author == '-' ? 'delete' : 'normal'}}" ng-repeat="article in highlightList">
+            <ons-row height="50px">
+              <ons-col width="60px" class="plan-left" ng-click="replyArticle(article)">                  
+                <div class="plan-date">{{article.aClass}}</div>
+                <div class="plan-info">{{article.aid}}</div>
+                <div class="plan-duration">{{article.popular}}</div>
+              </ons-col>
+              <ons-col width="6px" class="plan-center" ng-style="{backgroundColor:$index % 2 == 1 ? '#3399ff' : '#ccc'}"></ons-col>
+              <ons-col class="plan-right" ng-click="readArticle(article);favoriteNavigator.pushPage('reading.html');">
+                <div class="plan-name">{{article.title}}</div>
+                <div class="plan-date">{{article.date}}&nbsp;{{article.author}}</div>
+              </ons-col>
+            </ons-row>
+          </ons-list-item>            
+          <ons-list-item modifier="chevron" class="plan" status="{{article.author == '-' ? 'delete' : 'normal'}}" ng-repeat="article in articleList">
+            <ons-row height="50px">
+              <ons-col width="60px" class="plan-left" ng-click="replyArticle(article)">                  
+                <div class="plan-date">{{article.aClass}}</div>
+                <div class="plan-info">{{article.sn}}</div>
+                <div class="plan-duration">{{article.popular}}</div>
+              </ons-col>
+              <ons-col width="6px" class="plan-center" ng-style="{backgroundColor:$index % 2 == 1 ? '#3399ff' : '#ccc'}">
+              </ons-col>
+              <ons-col class="plan-right" ng-click="readArticle(article);favoriteNavigator.pushPage('reading.html');">
+                <div class="plan-name">{{article.title}}</div>
+                <div class="plan-date">{{article.date}}&nbsp;{{article.author}}</div>
+              </ons-col>
+            </ons-row>
+          </ons-list-item>
+        </ons-list>
+        <!--</ons-pull-hook>-->
+      </ons-page>
+    </ons-template>
 
-      <ons-template id="filter.html">
-        <ons-page>
-          <ons-toolbar>
-            <div class="left"><ons-back-button>Back</ons-back-button></div>
-            <div class="center">{{currentBoardName}}</div>
-            <div class="right"><ons-toolbar-button ng-click="refresh()"><ons-icon icon="ion-navicon" style="font-size: 28px;"></ons-icon></ons-toolbar-button></div>            
-          </ons-toolbar>
-          <ons-list class="plan-list">
-            <!-- need hiht light ? -->
-            <!--<ons-list-item modifier="chevron" class="plan" status="{{article.author == '-' ? 'delete' : 'normal'}}" ng-repeat="article in filterResult">
-              <ons-row height="50px">
-                <ons-col width="60px" class="plan-left">                  
-                  <div class="plan-date">{{article.aClass}}</div>
-                  <div class="plan-info">{{article.aid}}</div>
-                  <div class="plan-duration">{{article.popular}}</div>
-                </ons-col>
-                <ons-col width="6px" class="plan-center" ng-style="{backgroundColor:$index % 2 == 1 ? '#3399ff' : '#ccc'}">
-                </ons-col>
-                <ons-col class="plan-right">
-                  <div class="plan-name">{{article.title}}</div>
-                  <div class="plan-date">{{article.author}}&nbsp;{{article.date}}</div>
-                </ons-col>
-              </ons-row>
-            </ons-list-item>-->
-            <ons-list-item modifier="chevron" class="plan" status="{{article.author == '-' ? 'delete' : 'normal'}}" ng-repeat="article in filterResult">
-              <ons-row height="50px">
-                <ons-col width="60px" class="plan-left">                  
-                  <div class="plan-date">{{article.aClass}}</div>
-                  <div class="plan-info">{{article.sn}}</div>
-                  <div class="plan-duration">{{article.popular}}</div>
-                </ons-col>
-                <ons-col width="6px" class="plan-center" ng-style="{backgroundColor:$index % 2 == 1 ? '#3399ff' : '#ccc'}">
-                </ons-col>
-                <ons-col class="plan-right">
-                  <div class="plan-name">{{article.title}}</div>
-                  <div class="plan-date">{{article.author}}&nbsp;{{article.date}}</div>
-                </ons-col>
-              </ons-row>
-            </ons-list-item>
-          </ons-list>
-        </ons-page>
-      </ons-template>
+    <ons-template id="filter.html">
+      <ons-page>
+        <ons-toolbar>
+          <div class="left"><ons-back-button>Back</ons-back-button></div>
+          <div class="center">{{currentBoardName}}</div>
+          <div class="right"><ons-toolbar-button ng-click="refresh()"><ons-icon icon="ion-navicon" style="font-size: 28px;"></ons-icon></ons-toolbar-button></div>            
+        </ons-toolbar>
+        <ons-list class="plan-list">
+          <!-- need hiht light ? -->
+          <!--<ons-list-item modifier="chevron" class="plan" status="{{article.author == '-' ? 'delete' : 'normal'}}" ng-repeat="article in filterResult">
+            <ons-row height="50px">
+              <ons-col width="60px" class="plan-left">                  
+                <div class="plan-date">{{article.aClass}}</div>
+                <div class="plan-info">{{article.aid}}</div>
+                <div class="plan-duration">{{article.popular}}</div>
+              </ons-col>
+              <ons-col width="6px" class="plan-center" ng-style="{backgroundColor:$index % 2 == 1 ? '#3399ff' : '#ccc'}">
+              </ons-col>
+              <ons-col class="plan-right">
+                <div class="plan-name">{{article.title}}</div>
+                <div class="plan-date">{{article.author}}&nbsp;{{article.date}}</div>
+              </ons-col>
+            </ons-row>
+          </ons-list-item>-->
+          <ons-list-item modifier="chevron" class="plan" status="{{article.author == '-' ? 'delete' : 'normal'}}" ng-repeat="article in filterResult">
+            <ons-row height="50px">
+              <ons-col width="60px" class="plan-left">                  
+                <div class="plan-date">{{article.aClass}}</div>
+                <div class="plan-info">{{article.sn}}</div>
+                <div class="plan-duration">{{article.popular}}</div>
+              </ons-col>
+              <ons-col width="6px" class="plan-center" ng-style="{backgroundColor:$index % 2 == 1 ? '#3399ff' : '#ccc'}">
+              </ons-col>
+              <ons-col class="plan-right">
+                <div class="plan-name">{{article.title}}</div>
+                <div class="plan-date">{{article.author}}&nbsp;{{article.date}}</div>
+              </ons-col>
+            </ons-row>
+          </ons-list-item>
+        </ons-list>
+      </ons-page>
+    </ons-template>
 
-      <ons-template id="reading.html">
-        <ons-page>
-          <ons-toolbar>
-            <div class="left"><ons-back-button>Back</ons-back-button></div>           
-          </ons-toolbar>
-          <span>
-            {{articleContent}}
-          </span>
-        </ons-page>
-      </ons-template>
+    <ons-template id="reading.html">
+      <ons-page>
+        <ons-toolbar>
+          <div class="left"><ons-back-button>Back</ons-back-button></div>
+        </ons-toolbar>
+        <div id="BBSWindow" class="BBSWindow">
+          <span class="bbsline" ng-repeat="line in lines"><span type="bbsrow" srow="line.sn" ng-bind-html="line.html"></span></span>
+        </div>
+      </ons-page>
     </ons-template>
 
     <ons-template id="settings.html">

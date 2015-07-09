@@ -1,4 +1,4 @@
-angular.module('app', ['onsen']);
+angular.module('app', ['onsen', 'ngSanitize']);
 
 angular.module('app').controller('LoginController', function ($scope, $window) {
   $scope.init = function() {
@@ -46,7 +46,7 @@ angular.module('app').controller('LoginController', function ($scope, $window) {
   
 });
 
-angular.module('app').controller('AppController', ['$scope', '$window', '$q', function ($scope, $window, $q) {
+angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$sce', function ($scope, $window, $q, $sce) {
   $scope.bbsCore = null;
   $scope.nickname = '';
   $scope.currentBoardName = '';
@@ -90,7 +90,11 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', fu
   };
 
   $scope.updateArticleContent = function (data) {
-    $scope.articleContent = data.lines.join('');
+    //$scope.articleContent = data.lines.join('');
+    $scope.lines = [];
+    for(var i=0;i<data.lines.length;++i) {
+      $scope.lines.push({sn: i, html: $sce.trustAsHtml(data.lines[i])});
+    }
     $scope.$apply();
   };
   
