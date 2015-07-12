@@ -64,6 +64,7 @@ TelnetProtocol.prototype={
     //oconv: Cc["@mozilla.org/intl/scriptableunicodeconverter"].createInstance(Ci.nsIScriptableUnicodeConverter),
 
     connect: function(host, port) {
+      //call by bbsCore
       this.state=STATE_DATA;
       this.iac_sb='';
       //alert('connect');

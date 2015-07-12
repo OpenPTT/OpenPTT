@@ -65,7 +65,7 @@ BBSCore.prototype={
       if(siteData.protocol == 'telnet') {
         this.conn = new TelnetProtocol(this);
       } else if(siteData.protocol == 'ssh') {
-        //this.conn = new SshProtocol(this); //not finsih
+        this.conn = new SshProtocol(this);
       }
     }
     

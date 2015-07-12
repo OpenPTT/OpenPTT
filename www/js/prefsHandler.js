@@ -70,6 +70,13 @@ PrefsHandler.prototype={
   },
 
   savePrefsValue : function (key, value) {
+    console.log('savePrefsValue, key = ' + key + ', value = ' + value);
     window.localStorage.setItem(this.prefsRoot + key, value);
+  },
+
+  loadPrefsValue : function (key) {
+    var value = window.localStorage.getItem(this.prefsRoot + key);
+    console.log('loadPrefsValue, key = ' + key + ', value = ' + value);
+    return value;
   }
 };

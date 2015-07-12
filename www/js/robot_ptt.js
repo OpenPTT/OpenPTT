@@ -2,6 +2,7 @@ function RobotPtt(bbsCore) {
   this.bbsCore = bbsCore;
   this.strParser = new StringParserPtt();
   this.prefs = bbsCore.prefs;
+  this.prefs.loginPrompt = this.strParser.getLoginPrompt();
   this.view = bbsCore.view;
   //this.replyCount = [];
   this.autoLoginStage = 0;
@@ -53,7 +54,15 @@ RobotPtt.prototype={
       return;
     }
 
-    var line = this.bbsCore.buf.getRowText(row, 0, this.bbsCore.buf.cols);
+    var line;
+    if(this.autoLoginStage == 2)
+      line = this.bbsCore.buf.getRowText(20, 0, this.bbsCore.buf.cols);
+    else if(this.autoLoginStage == 3)
+      line = this.bbsCore.buf.getRowText(21, 0, this.bbsCore.buf.cols);
+    else
+      line = this.bbsCore.buf.getRowText(row, 0, this.bbsCore.buf.cols);
+    console.log('line = ' + line);
+    console.log('loginPrompt = ' + this.prefs.loginPrompt[this.autoLoginStage - 1]);
     if(line.indexOf(this.prefs.loginPrompt[this.autoLoginStage - 1]) < 0)
       return;
 

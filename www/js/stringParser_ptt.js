@@ -148,6 +148,10 @@ StringParserPtt.prototype={
 
   getContentAlertMessage: function(str) {
     return (str.indexOf('▲此頁內容會依閱讀者不同,原文未必有您的資料') >= 0);
+  },
+
+  getLoginPrompt: function() {
+    return ['','請輸入代號，或以 guest 參觀',''];
   }
 
 };
