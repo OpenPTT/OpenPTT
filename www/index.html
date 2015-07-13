@@ -145,7 +145,7 @@
       <ons-navigator animation="slide" var="favoriteNavigator">
         <ons-page>
           <ons-list class="plan-list">
-            <ons-list-item modifier="chevron" class="plan" ng-repeat="favorite in favoriteList" ng-click="enterBoard(favorite);favoriteNavigator.pushPage('article.html');">
+            <ons-list-item modifier="chevron" class="plan" ng-repeat="favorite in favoriteList" ng-click="enterBoard(favorite);">
               <ons-row>
                 <ons-col width="80px" class="plan-left">
                   <div class="plan-date">{{favorite.bClass}}</div>
@@ -162,6 +162,30 @@
           </ons-list>
         </ons-page>
       </ons-navigator>
+    </ons-template>
+
+    <ons-template id="boardList.html">
+      <ons-page>
+        <ons-toolbar>
+          <div class="left"><ons-back-button>Back</ons-back-button></div>
+        </ons-toolbar>
+        <ons-list class="plan-list">
+          <ons-list-item modifier="chevron" class="plan" ng-repeat="board in boardList" ng-click="enterBoard(board);">
+            <ons-row>
+              <ons-col width="80px" class="plan-left">
+                <div class="plan-date">{{board.bClass}}</div>
+                <div class="plan-duration">{{board.popular}}</div>
+              </ons-col>
+              <ons-col width="6px" class="plan-center" ng-style="{backgroundColor:$index % 2 == 1 ? '#3399ff' : '#ccc'}">
+              </ons-col>
+              <ons-col class="plan-right">
+                <div class="plan-name">{{board.boardName}}</div>    
+                <div class="plan-info">{{board.description}}</div>
+              </ons-col>
+            </ons-row>
+          </ons-list-item>
+        </ons-list>
+      </ons-page>
     </ons-template>
 
     <ons-template id="article.html">

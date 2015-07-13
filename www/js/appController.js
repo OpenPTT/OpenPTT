@@ -72,13 +72,20 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
   };
 
   $scope.enterBoard = function (board) {
-    $scope.highlightList = [];
-    $scope.articleList = [];
-    $scope.$apply();
-    $scope.currentBoardName = board.boardName;
-    //alert(board.sn);
-    $scope.bbsCore.enterBoard(board);
-    $scope.bbsCore.getArticleList({direction: 'none'});
+    if(board.isDirectory) {
+      favoriteNavigator.pushPage('boardList.html');
+      //TODO: need handle multi-layer structure.
+      //TODO: need implement getBoardList task in robot.js
+    } else {
+      $scope.highlightList = [];
+      $scope.articleList = [];
+      $scope.$apply();
+      $scope.currentBoardName = board.boardName;
+      //alert(board.sn);
+      $scope.bbsCore.enterBoard(board);
+      $scope.bbsCore.getArticleList({direction: 'none'});
+      favoriteNavigator.pushPage('article.html');
+    }
   };
 
   $scope.login = function () {

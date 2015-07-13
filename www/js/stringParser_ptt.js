@@ -4,13 +4,14 @@ function StringParserPtt() {
 StringParserPtt.prototype={
 
   parseBoardData: function (str1, str2) {
-    var regex = new RegExp(/\u25cf?\s{0,7}(\d{0,7})\s{1,2}[\u02c7 ]([\w ]{12})\s(.{1,4})\s[\u25ce\u25cf\u03a3](.*)/g);
+    var regex = new RegExp(/\u25cf?\s{0,7}(\d{0,7})\s{1,2}[\u02c7 ]([\w ]{12})\s(.{1,4})\s([\u25ce\u25cf\u03a3])(.*)/g);
     var result = regex.exec(str1);
-    if(result && result.length == 5) {
+    if(result && result.length == 6) {
       return {sn: parseInt(result[1]),
               boardName: result[2].replace(/^\s+|\s+$/g,''),
               bClass: result[3],
-              description: result[4],
+              description: result[5],
+              isDirectory: (result[4] == '\u03a3' ? true : false),
               popular: str2.replace(/^\s+|\s+$/g,'')};
     }
     return null;
