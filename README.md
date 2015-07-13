@@ -18,3 +18,7 @@
 目前可以先寫信到這邊 ettoolong@hotmail.com，
 
 方便的話可以說明一下你有興趣的部份(核心/UI/功能/畫面/測試)，以方便後續開發討論。
+
+## 專案現況
+![x1](https://cloud.githubusercontent.com/assets/909570/8646123/b980b968-297f-11e5-8666-9cc3f2069742.png)
+![x2](https://cloud.githubusercontent.com/assets/909570/8646122/b9454b62-297f-11e5-8be8-f735882ffd67.png)
