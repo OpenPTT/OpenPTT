@@ -450,7 +450,9 @@ RobotPtt.prototype={
       //if(articleHeaderData) {
       var line = this.bbsCore.buf.getRowText(23, 0, this.bbsCore.buf.cols);
       var articleStatus = this.strParser.parseArticleStatus(line);
-      if(articleStatus || this.strParser.getContentAlertMessage(line)) {
+      if(this.strParser.getAnsiAnimateMessage(line)){
+        this.bbsCore.conn.send('n'); //n or q?
+      } else if(articleStatus || this.strParser.getContentAlertMessage(line)) {
         this.taskStage = 5;
         this.bbsCore.conn.send('Q'); //shift+q 
       } 
@@ -507,14 +509,15 @@ RobotPtt.prototype={
         this.bbsCore.conn.send(extData.article.sn + EnterChar + EnterChar);
       }
     } else if(this.taskStage == 1) {      
-      var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
-      var articleHeaderData = this.strParser.parseArticleHeader(line);
-      if(articleHeaderData) {
+      var line = this.bbsCore.buf.getRowText(23, 0, this.bbsCore.buf.cols);
+      var articlePageInfo = this.strParser.parseArticlePageInfo(line);
+      if(articlePageInfo) {
         this.termStatus = 3;
         this.taskStage = 2;
         this.bbsCore.conn.send('Q'); //shift+q 
       } 
     } else if(this.taskStage == 2) {
+      //TODO: parse article web url here!
       var line = this.bbsCore.buf.getRowText(19, 0, this.bbsCore.buf.cols);
       var aidData = this.strParser.parseAid(line);
       if(aidData) {
@@ -523,13 +526,14 @@ RobotPtt.prototype={
         this.bbsCore.conn.send(' ' + EnterChar); //space,enter
       }
     } else if(this.taskStage == 3) {
-      var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
-      var articleHeaderData = this.strParser.parseArticleHeader(line);
-      if(articleHeaderData) {
-        var statusText = this.bbsCore.buf.getRowText(23, 0, this.bbsCore.buf.cols);
+      var statusText = this.bbsCore.buf.getRowText(23, 0, this.bbsCore.buf.cols);
+      var articlePageInfo = this.strParser.parseArticlePageInfo(statusText);
+      if(articlePageInfo) {
+        //var statusText = this.bbsCore.buf.getRowText(23, 0, this.bbsCore.buf.cols);
         if(this.strParser.getContentAlertMessage(statusText)) {
           if(this.strParser.getLastPage(statusText)) {
             //only one page, crawl this page and exit
+            this.articleData.lines = []; //clean up all lines.
             for(var i=22;i>=0;--i) {
               var content = this.bbsCore.buf.getRowText(i, 0, this.bbsCore.buf.cols); //need parse to html tag.
               if(content.replace(/^\s+|\s+$/g,'') !== '' && !this.articleData.finish) {
@@ -559,6 +563,7 @@ RobotPtt.prototype={
         if(statusInfo) {
           if(statusInfo.pagePercent == 100) {
             //only one page, crawl this page and exit
+            this.articleData.lines = []; //clean up all lines.
             for(var i=22;i>=0;--i) {
               var content = this.bbsCore.buf.getRowText(i, 0, this.bbsCore.buf.cols); //need parse to html tag.
               if(content.replace(/^\s+|\s+$/g,'') !== '' && !this.articleData.finish) {
@@ -695,10 +700,10 @@ RobotPtt.prototype={
 
     if(this.taskStage == 0) {
       this.taskStage = 1;
-      if(this.termStatus != 0) {
-        //this.bbsCore.conn.send('\x1b[D\x1b[D\x1b[D');
-        this.bbsCore.conn.send('\x1b[D\x1ac\x1b[D');//left,ctrl+z,c,left
-      }
+      //if(this.termStatus != 0) {
+        this.bbsCore.conn.send('\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D');
+        //this.bbsCore.conn.send('\x1b[D\x1ac\x1b[D');//left,ctrl+z,c,left
+      //}
     } else if(this.taskStage == 1) {
       var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
       if( this.strParser.getMainFunctionList(line) ) {
@@ -727,8 +732,8 @@ window.siteManager.regSite('PTT',
   {
     name: 'PTT',
     addr: 'ptt.cc',
-    port: 23,
-    protocol: 'telnet',
+    port: 23, //set 22 for ssh
+    protocol: 'telnet', //set 'ssh' for ssh
     prefsRoot: 'openptt.',
     col: 80,
     row: 24,

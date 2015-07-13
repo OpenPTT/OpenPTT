@@ -101,6 +101,28 @@ StringParserPtt.prototype={
     return null;
   },
 
+  parseArticlePageInfo:function (str) {
+    var regexShort = new RegExp(/  \u700F\u89BD \u7B2C {0,3}(\d{1,4}) {0,3}\u9801 {0,2}\( {0,3}(\d{1,3})%\) {0,3}.*/g);
+    var result = regexShort.exec(str);
+    if (result) {
+      return {
+        pageNow: parseInt(result[1]),
+        pageTotal: 0,
+        pagePercent: parseInt(result[2])
+      };
+    }
+    var regexFull = new RegExp(/  \u700F\u89BD \u7B2C {0,3}(\d{1,4})\/(\d{1,4}) {0,3}\u9801 {0,2}\( {0,3}(\d{1,3})%\) {0,3}.*/g);
+    result = regexFull.exec(str);
+    if (result) {
+      return {
+        pageNow: parseInt(result[1]),
+        pageTotal: parseInt(result[2]),
+        pagePercent: parseInt(result[3])
+      };
+    }
+    return null;
+  },
+
   getLastPage: function (str) {
     var regex = new RegExp(/  \u700F\u89BD \u7B2C {0,3}([\d\/]{1,3}) {0,3}\u9801 {0,2}\( {0,3}(\d{1,3})%\) {0,3}.*/g);
     var result = regex.exec(str);
@@ -148,6 +170,10 @@ StringParserPtt.prototype={
 
   getContentAlertMessage: function(str) {
     return (str.indexOf('▲此頁內容會依閱讀者不同,原文未必有您的資料') >= 0);
+  },
+
+  getAnsiAnimateMessage: function(str) {
+   return (str.indexOf('★ 這份文件是可播放的文字動畫，要開始播放嗎') >= 0);
   },
 
   getLoginPrompt: function() {

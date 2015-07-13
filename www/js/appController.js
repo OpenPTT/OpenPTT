@@ -53,6 +53,8 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
   $scope.favoriteList = [];
   $scope.highlightList = [];
   $scope.articleListMap = {};
+  $scope.currentArticle = {};
+  $scope.lines = [];
  
   $scope.init = function() {
     if(!$window.app.bbsCore)
@@ -92,6 +94,7 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
 
   $scope.updateArticleContent = function (data) {
     //$scope.articleContent = data.lines.join('');
+    $scope.currentArticle = data;
     $scope.lines = [];
     for(var i=0;i<data.lines.length;++i) {
       $scope.lines.push({sn: i, html: $sce.trustAsHtml(data.lines[i])});
@@ -201,8 +204,25 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
   };
 
   $scope.readArticle = function (article) {
+    
+    //robot crawl all article content.
+    //for very long article content that took long time.
+    //we need crawl maybe one or two page and waiting user scroll(then crawl more).
     $scope.bbsCore.getArticleContent({boardName: $scope.currentBoardName,
                                       article: article});
+                                      
+    //TODO: need finish this function
+    //about page:
+    //0 -> get all page/update/from current to newest
+    //n -> get n page
+    //$scope.bbsCore.getArticleContent({boardName: $scope.currentBoardName,
+    //                                  article: article,
+    //                                  page: 0 });
+    
+    //$scope.bbsCore.getArticleContent({boardName: $scope.currentBoardName,
+    //                                  article: article,
+    //                                  articleData: currentArticle,
+    //                                  page: 2 });
   };
 
   $scope.updateFavoriteList = function (data) {
