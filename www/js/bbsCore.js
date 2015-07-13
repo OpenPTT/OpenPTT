@@ -92,6 +92,7 @@ BBSCore.prototype={
   },
   
   enterBoard: function(board) {
+    this.addTask('gotoMainFunctionList', this.onNullEvent.bind(this), board);
     this.addTask('enterBoard', this.onNullEvent.bind(this), board);
   },
   

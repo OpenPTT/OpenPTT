@@ -18,6 +18,7 @@ function RobotPtt(bbsCore) {
   this.termStatus = 0;
   this.currentTask = 0; //1:getFavoriteList, 2:logout, 3:getBoardList, 4:getArticleList 5:enterBoard 6:getArticleContent
   this.taskList = [];
+  this.taskQueue = [];
 
   this.favoriteList = [];
   this.flMap = {};
@@ -35,7 +36,8 @@ RobotPtt.prototype={
     getBoardList: 3,
     getArticleList: 4,
     enterBoard: 5,
-    getArticleContent: 6    
+    getArticleContent: 6,
+    gotoMainFunctionList: 7  
   },
   // Modified from pcmanx-gtk2
   initialAutoLogin: function() {
@@ -61,8 +63,8 @@ RobotPtt.prototype={
       line = this.bbsCore.buf.getRowText(21, 0, this.bbsCore.buf.cols);
     else
       line = this.bbsCore.buf.getRowText(row, 0, this.bbsCore.buf.cols);
-    console.log('line = ' + line);
-    console.log('loginPrompt = ' + this.prefs.loginPrompt[this.autoLoginStage - 1]);
+    //console.log('line = ' + line);
+    //console.log('loginPrompt = ' + this.prefs.loginPrompt[this.autoLoginStage - 1]);
     if(line.indexOf(this.prefs.loginPrompt[this.autoLoginStage - 1]) < 0)
       return;
 
@@ -132,22 +134,28 @@ RobotPtt.prototype={
   },
 
   addTask: function(task, force) {
-    if(!force) { //if force== false, check exists.
-      var count = this.taskList.length;
-      for(var i=0;i<count;++i) {
-        if(this.taskList[i].name == task.name) {
-          return;
-        }
-      }
-    }
-    this.taskList.push(task);
+    // if(!force) { //if force== false, check exists.
+    //   var count = this.taskList.length;
+    //   for(var i=0;i<count;++i) {
+    //     if(this.taskList[i].name == task.name) {
+    //       return;
+    //     }
+    //   }
+    // }
+    this.taskQueue.push(task);
     if(this.currentTask == this.taskDefines.none)
       this.runNextTask();
   },
 
   runNextTask: function() {
-    if(this.taskList.length > 0)
+    if(this.taskList.length > 0) {
       this.taskList[0].run();
+    } else if (this.taskQueue.length > 0) {
+      var tmpList = this.taskQueue;
+      this.taskQueue = this.taskList;
+      this.taskList = tmpList;
+      this.taskList[0].run();
+    }
   },
   
   removeAllTask: function() {
@@ -253,16 +261,17 @@ RobotPtt.prototype={
     var EnterChar = this.prefs.EnterChar;
     if(this.taskStage == 0) {
       this.taskStage = 1;
-      if(this.termStatus != 1) {
+      //if(this.termStatus != 1) {
         //TODO: we need a command that can jump into board from any where.
         //this command can't use when reading article
         //this.bbsCore.conn.send('s' + String(extData.boardName) +  EnterChar + ' ' + '\x1b[4~\x1b[4~');//s,boardName,enter,space,end,end
         
         //NOTE: only wen board in your favorite list.        
-        this.bbsCore.conn.send('\x1af' + String(extData.sn) +  EnterChar + EnterChar + ' ' + '\x1b[4~');//ctrl+z,f        
-      } else {
-        this.bbsCore.conn.send(String(extData.sn) +  EnterChar + EnterChar + ' ' + '\x1b[4~');
-      }
+      //  this.bbsCore.conn.send('\x1af' + String(extData.sn) +  EnterChar + EnterChar + ' ' + '\x1b[4~');//ctrl+z,f        
+      //} else {
+      //  this.bbsCore.conn.send(String(extData.sn) +  EnterChar + EnterChar + ' ' + '\x1b[4~');
+      //}
+      this.bbsCore.conn.send('s' + String(extData.boardName) + EnterChar + ' ' + '\x1b[4~'); //s,boardName,enter,space,end
     } else if(this.taskStage == 1) {
       // check board name.
       var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
@@ -370,7 +379,7 @@ RobotPtt.prototype={
             this.taskStage = 4;
             var upStr = '';
             for(var i=0;i<this.highlightCount-1;++i) {
-              upStr+='\x1b[A';
+              upStr+='\x1b[A'; //arrow up
             }
             this.bbsCore.conn.send('\x1b[4~\x1b[4~' + upStr + EnterChar); //end, up * n-1, enter 
           } else {
@@ -436,9 +445,12 @@ RobotPtt.prototype={
         this.taskStage = 2;
       }
     } else if(this.taskStage == 4) {
-      var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
-      var articleHeaderData = this.strParser.parseArticleHeader(line);
-      if(articleHeaderData) {
+      //var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
+      //var articleHeaderData = this.strParser.parseArticleHeader(line);
+      //if(articleHeaderData) {
+      var line = this.bbsCore.buf.getRowText(23, 0, this.bbsCore.buf.cols);
+      var articleStatus = this.strParser.parseArticleStatus(line);
+      if(articleStatus || this.strParser.getContentAlertMessage(line)) {
         this.taskStage = 5;
         this.bbsCore.conn.send('Q'); //shift+q 
       } 
@@ -496,7 +508,6 @@ RobotPtt.prototype={
       }
     } else if(this.taskStage == 1) {      
       var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
-      console.log(line);
       var articleHeaderData = this.strParser.parseArticleHeader(line);
       if(articleHeaderData) {
         this.termStatus = 3;
@@ -653,6 +664,29 @@ RobotPtt.prototype={
   },
   
   login:function() {
+  },
+
+  gotoMainFunctionList: function() {
+    this.currentTask = this.taskDefines.gotoMainFunctionList;
+    if(this.taskStage == 0) {
+      this.taskStage = 1;
+      //if(this.termStatus != 0) {
+        //this.bbsCore.conn.send('\x1b[D\x1b[D\x1b[D');
+        this.bbsCore.conn.send('\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D');//left,left,left...
+      //}
+    } else if(this.taskStage == 1) {
+      var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
+      if( this.strParser.getMainFunctionList(line) ) {
+        this.termStatus = 0;
+        this.taskStage = 0;
+        var task = this.taskList.shift();
+        task.callback();
+        this.currentTask = this.taskDefines.none;
+        this.runNextTask();
+        return;
+      }
+    }
+    setTimeout(this.gotoMainFunctionList.bind(this), this.timerInterval);
   },
 
   logout: function() {

@@ -70,6 +70,7 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
   };
 
   $scope.enterBoard = function (board) {
+    $scope.highlightList = [];
     $scope.articleList = [];
     $scope.$apply();
     $scope.currentBoardName = board.boardName;
