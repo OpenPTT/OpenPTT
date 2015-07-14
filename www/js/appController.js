@@ -244,6 +244,7 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
   
   $scope.updateBoardList = function (data) {
     $scope.boardList = data;
+    $scope.$apply();
   };
   
   $scope.updateMainUI = function (status) {

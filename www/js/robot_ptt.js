@@ -216,7 +216,7 @@ RobotPtt.prototype={
           if(boardData && !this.flMap['b'+boardData.sn]) {
             console.log(boardData.boardName);
             if(boardData.isDirectory)
-              boardData.isDirectory.path = ['f'];
+              boardData.path = ['f'];
             this.flMap['b'+boardData.sn] = boardData;
           }
         }
@@ -247,7 +247,7 @@ RobotPtt.prototype={
           if(boardData && !this.flMap['b'+boardData.sn]) {
             console.log(boardData.boardName);
             if(boardData.isDirectory)
-              boardData.isDirectory.path = ['f'];
+              boardData.path = ['f'];
             this.flMap['b'+boardData.sn] = boardData;
           }
         }
@@ -274,6 +274,7 @@ RobotPtt.prototype={
     var EnterChar = this.prefs.EnterChar;
     if(this.taskStage == 0) {
       this.taskStage = 1;
+      console.log('path = ' + extData.path.join(','));
       this.bbsCore.conn.send(extData.path.join(EnterChar) + EnterChar + String(extData.sn) + EnterChar + EnterChar + ' ' + '\x1b[4~'); //s,boardName,enter,space,end
     } else if(this.taskStage == 1) {
       // there no any way to check where we are?
@@ -713,6 +714,7 @@ RobotPtt.prototype={
         //error ??
       }
     } else if(this.taskStage == 1) {
+      //TODO: need fix, how to detect board list page finish ?
       var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
       var firstBoardP1 = this.bbsCore.buf.getRowText(3, 0, 63);
       var firstBoardP2 = this.bbsCore.buf.getRowText(3, 64, 67);
@@ -727,15 +729,15 @@ RobotPtt.prototype={
           if(boardData && !this.blMap['b'+boardData.sn]) {
             console.log(boardData.boardName);
             if(boardData.isDirectory)
-              boardData.isDirectory.path = ['f'];
+              boardData.path = extData.path.concat([String(extData.sn)]);
             this.blMap['b'+boardData.sn] = boardData;
           }
         }
         if(this.blMap['b1']) {
-          var favoriteList = this.getBoardListFromMap(this.blMap);
+          var boardList = this.getBoardListFromMap(this.blMap);
           this.taskStage = 0;
           var task = this.taskList.shift();
-          task.callback(favoriteList);
+          task.callback(boardList);
           this.currentTask = this.taskDefines.none;
           this.runNextTask();
           return;          
@@ -758,7 +760,7 @@ RobotPtt.prototype={
           if(boardData && !this.blMap['b'+boardData.sn]) {
             console.log(boardData.boardName);
             if(boardData.isDirectory)
-              boardData.isDirectory.path = extData.path.concat([String(extData.sn)]);
+              boardData.path = extData.path.concat([String(extData.sn)]);
             this.blMap['b'+boardData.sn] = boardData;
           }
         }
