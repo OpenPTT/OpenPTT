@@ -15,6 +15,7 @@ function RobotPtt(bbsCore) {
   //termStatus: 1 //favorite list
   //termStatus: 2 //article list
   //termStatus: 3 //reading article
+  //termStatus: 4 //board list
   this.termStatus = 0;
   this.currentTask = 0; //1:getFavoriteList, 2:logout, 3:getBoardList, 4:getArticleList 5:enterBoard 6:getArticleContent
   this.taskList = [];
@@ -22,6 +23,7 @@ function RobotPtt(bbsCore) {
 
   this.favoriteList = [];
   this.flMap = {};
+  this.blMap = {};
   this.alMap = {};
   this.highlightCount = 0;
   this.highlightList = [];
@@ -37,7 +39,8 @@ RobotPtt.prototype={
     getArticleList: 4,
     enterBoard: 5,
     getArticleContent: 6,
-    gotoMainFunctionList: 7  
+    gotoMainFunctionList: 7,
+    enterDirectory: 8
   },
   // Modified from pcmanx-gtk2
   initialAutoLogin: function() {
@@ -162,16 +165,16 @@ RobotPtt.prototype={
     this.taskList = [];
   },
 
-  getFavoriteListFromMap: function() {
-    var favoriteList = [];
+  getBoardListFromMap: function(blMap) {
+    var boardList = [];
     for(var i=1;i<65535;++i) {
-      if(this.flMap['b' + i]) {
-        favoriteList.push(this.flMap['b' + i]);
+      if(blMap['b' + i]) {
+        boardList.push(blMap['b' + i]);
       } else {
         break;
       }
     }
-    return favoriteList;
+    return boardList;
   },
 
   getArticleListFromMap: function(alMap, min, max) {
@@ -210,12 +213,15 @@ RobotPtt.prototype={
           var boardP1 = this.bbsCore.buf.getRowText(i, 0, 63);
           var boardP2 = this.bbsCore.buf.getRowText(i, 64, 67);
           var boardData = this.strParser.parseBoardData(boardP1, boardP2);
-          if(boardData) {
+          if(boardData && !this.flMap['b'+boardData.sn]) {
+            console.log(boardData.boardName);
+            if(boardData.isDirectory)
+              boardData.isDirectory.path = ['f'];
             this.flMap['b'+boardData.sn] = boardData;
           }
         }
         if(this.flMap['b1']) {
-          var favoriteList = this.getFavoriteListFromMap();
+          var favoriteList = this.getBoardListFromMap(this.flMap);
           this.taskStage = 0;
           var task = this.taskList.shift();
           task.callback(favoriteList);
@@ -223,6 +229,8 @@ RobotPtt.prototype={
           this.runNextTask();
           return;          
         }
+        this.NextBoardSn = firstBoardData.sn - 20;
+        console.log('this.NextBoardSn = ' + this.NextBoardSn);
         this.taskStage = 2;
         this.bbsCore.conn.send('\x1b[5~'); //page up.
       }
@@ -231,17 +239,20 @@ RobotPtt.prototype={
       var firstBoardP1 = this.bbsCore.buf.getRowText(3, 0, 63);
       var firstBoardP2 = this.bbsCore.buf.getRowText(3, 64, 67);
       var firstBoardData = this.strParser.parseBoardData(firstBoardP1, firstBoardP2);
-      if(firstBoardData) {
+      if(firstBoardData && firstBoardData.sn == this.NextBoardSn) {
         for(var i=3;i<23;++i) {
           var boardP1 = this.bbsCore.buf.getRowText(i, 0, 63);
           var boardP2 = this.bbsCore.buf.getRowText(i, 64, 67);
           var boardData = this.strParser.parseBoardData(boardP1, boardP2);
           if(boardData && !this.flMap['b'+boardData.sn]) {
-              this.flMap['b'+boardData.sn] = boardData;
+            console.log(boardData.boardName);
+            if(boardData.isDirectory)
+              boardData.isDirectory.path = ['f'];
+            this.flMap['b'+boardData.sn] = boardData;
           }
         }
         if(this.flMap['b1']) {
-          var favoriteList = this.getFavoriteListFromMap();
+          var favoriteList = this.getBoardListFromMap(this.flMap);
           this.taskStage = 0;
           var task = this.taskList.shift();
           task.callback(favoriteList);
@@ -249,12 +260,40 @@ RobotPtt.prototype={
           this.runNextTask();
           return;
         }
+        this.NextBoardSn = firstBoardData.sn - 20;
+        console.log('this.NextBoardSn = ' + this.NextBoardSn);
         this.bbsCore.conn.send('\x1b[5~'); //page up.
-      }      
+      }
     }
     setTimeout(this.getFavoriteList.bind(this), this.timerInterval);
   },
   
+  enterDirectory: function() {
+    this.currentTask = this.taskDefines.enterDirectory;
+    var extData = this.taskList[0].extData;
+    var EnterChar = this.prefs.EnterChar;
+    if(this.taskStage == 0) {
+      this.taskStage = 1;
+      this.bbsCore.conn.send(extData.path.join(EnterChar) + EnterChar + String(extData.sn) + EnterChar + EnterChar + ' ' + '\x1b[4~'); //s,boardName,enter,space,end
+    } else if(this.taskStage == 1) {
+      // there no any way to check where we are?
+      var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
+      var firstBoardP1 = this.bbsCore.buf.getRowText(3, 0, 63);
+      var firstBoardP2 = this.bbsCore.buf.getRowText(3, 64, 67);
+      var firstBoardData = this.strParser.parseBoardData(firstBoardP1, firstBoardP2);
+      if( this.strParser.getBoardList(line) && firstBoardData && firstBoardData.sn == 1) {
+          this.taskStage = 0;
+          this.termStatus = 4;
+          var task = this.taskList.shift();
+          task.callback();
+          this.currentTask = this.taskDefines.none;
+          this.runNextTask();
+          return;
+      }
+    }
+    setTimeout(this.enterDirectory.bind(this), this.timerInterval);
+  },
+
   enterBoard: function() {
     this.currentTask = this.taskDefines.enterBoard;
     var extData = this.taskList[0].extData;
@@ -666,6 +705,78 @@ RobotPtt.prototype={
   
   getBoardList: function() {
     this.currentTask = this.taskDefines.getBoardList;
+    var extData = this.taskList[0].extData;
+    if(this.taskStage == 0) {
+      this.blMap = {};
+      this.taskStage = 1;
+      if(this.termStatus != 4) {
+        //error ??
+      }
+    } else if(this.taskStage == 1) {
+      var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
+      var firstBoardP1 = this.bbsCore.buf.getRowText(3, 0, 63);
+      var firstBoardP2 = this.bbsCore.buf.getRowText(3, 64, 67);
+      var firstBoardData = this.strParser.parseBoardData(firstBoardP1, firstBoardP2);
+      if(this.strParser.getBoardList(line) && firstBoardData) {
+        this.termStatus = 1;
+        //console.log('this.bbsCore.buf.cur_x = ' + this.bbsCore.buf.cur_x);
+        for(var i=3;i<23;++i) {
+          var boardP1 = this.bbsCore.buf.getRowText(i, 0, 63);
+          var boardP2 = this.bbsCore.buf.getRowText(i, 64, 67);
+          var boardData = this.strParser.parseBoardData(boardP1, boardP2);
+          if(boardData && !this.blMap['b'+boardData.sn]) {
+            console.log(boardData.boardName);
+            if(boardData.isDirectory)
+              boardData.isDirectory.path = ['f'];
+            this.blMap['b'+boardData.sn] = boardData;
+          }
+        }
+        if(this.blMap['b1']) {
+          var favoriteList = this.getBoardListFromMap(this.blMap);
+          this.taskStage = 0;
+          var task = this.taskList.shift();
+          task.callback(favoriteList);
+          this.currentTask = this.taskDefines.none;
+          this.runNextTask();
+          return;          
+        }
+        this.NextBoardSn = firstBoardData.sn - 20;
+        console.log('this.NextBoardSn = ' + this.NextBoardSn);
+        this.taskStage = 2;
+        this.bbsCore.conn.send('\x1b[5~'); //page up.
+      }
+    }
+    else if(this.taskStage == 2) {
+      var firstBoardP1 = this.bbsCore.buf.getRowText(3, 0, 63);
+      var firstBoardP2 = this.bbsCore.buf.getRowText(3, 64, 67);
+      var firstBoardData = this.strParser.parseBoardData(firstBoardP1, firstBoardP2);
+      if(firstBoardData && firstBoardData.sn == this.NextBoardSn) {
+        for(var i=3;i<23;++i) {
+          var boardP1 = this.bbsCore.buf.getRowText(i, 0, 63);
+          var boardP2 = this.bbsCore.buf.getRowText(i, 64, 67);
+          var boardData = this.strParser.parseBoardData(boardP1, boardP2);
+          if(boardData && !this.blMap['b'+boardData.sn]) {
+            console.log(boardData.boardName);
+            if(boardData.isDirectory)
+              boardData.isDirectory.path = extData.path.concat([String(extData.sn)]);
+            this.blMap['b'+boardData.sn] = boardData;
+          }
+        }
+        if(this.blMap['b1']) {
+          var boardList = this.getBoardListFromMap(this.blMap);
+          this.taskStage = 0;
+          var task = this.taskList.shift();
+          task.callback(boardList);
+          this.currentTask = this.taskDefines.none;
+          this.runNextTask();
+          return;
+        }
+        this.NextBoardSn = firstBoardData.sn - 20;
+        console.log('this.NextBoardSn = ' + this.NextBoardSn);
+        this.bbsCore.conn.send('\x1b[5~'); //page up.
+      }
+    }
+    setTimeout(this.getBoardList.bind(this), this.timerInterval);
   },
   
   login:function() {

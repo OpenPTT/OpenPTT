@@ -8,6 +8,7 @@ function BBSCore() {
   this.parser = new AnsiParser(this.buf);
   this.robot = null;
   this.favoriteListEventNotify = [];
+  this.boardListEventNotify = [];
   this.connectionStatusEventNotify = [];
   this.articleListEventNotify = [];
   this.articleContentEventNotify = [];
@@ -95,7 +96,16 @@ BBSCore.prototype={
     this.addTask('gotoMainFunctionList', this.onNullEvent.bind(this), board);
     this.addTask('enterBoard', this.onNullEvent.bind(this), board);
   },
-  
+
+  enterDirectory: function(board) {
+    this.addTask('gotoMainFunctionList', this.onNullEvent.bind(this), board);
+    this.addTask('enterDirectory', this.onNullEvent.bind(this), board);
+  },
+
+  getBoardList: function(directory) {
+    this.addTask('getBoardList', this.onBoardListEvent.bind(this), directory);
+  },
+
   getArticleList: function(extData) {
     this.addTask('getArticleList', this.onArticleListEvent.bind(this), extData);
   },
@@ -110,6 +120,12 @@ BBSCore.prototype={
   onLoginEvent: function(status, message){
     for(var i=0;i<this.connectionStatusEventNotify.length;++i){
       this.connectionStatusEventNotify[i](status, message);
+    }
+  },
+
+  onBoardListEvent: function(data){
+    for(var i=0;i<this.boardListEventNotify.length;++i){
+      this.boardListEventNotify[i](data);
     }
   },
 
@@ -139,6 +155,10 @@ BBSCore.prototype={
 
   regFavoriteListEvent: function(eventCallback) {
     this.favoriteListEventNotify.push(eventCallback);
+  },
+
+  regBoardListEvent: function(eventCallback) {
+    this.boardListEventNotify.push(eventCallback);
   },
 
   regConnectionStatusEvent: function(eventCallback) {

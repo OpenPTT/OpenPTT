@@ -51,6 +51,7 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
   $scope.nickname = '';
   $scope.currentBoardName = '';
   $scope.favoriteList = [];
+  $scope.boardList = [];
   $scope.highlightList = [];
   $scope.articleListMap = {};
   $scope.currentArticle = {};
@@ -61,6 +62,7 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
       $window.app.bbsCore = new BBSCore();
     $scope.bbsCore = $window.app.bbsCore;
     
+    $scope.bbsCore.regBoardListEvent($scope.updateBoardList);
     $scope.bbsCore.regFavoriteListEvent($scope.updateFavoriteList);
     $scope.bbsCore.regArticleListEvent($scope.updateArticleList);
     $scope.bbsCore.regConnectionStatusEvent($scope.updateMainUI);
@@ -73,6 +75,10 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
 
   $scope.enterBoard = function (board) {
     if(board.isDirectory) {
+      $scope.boardList = [];
+      $scope.$apply();
+      $scope.bbsCore.enterDirectory(board);
+      $scope.bbsCore.getBoardList(board);
       favoriteNavigator.pushPage('boardList.html');
       //TODO: need handle multi-layer structure.
       //TODO: need implement getBoardList task in robot.js
@@ -234,6 +240,10 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
 
   $scope.updateFavoriteList = function (data) {
     $scope.favoriteList = data;
+  };
+  
+  $scope.updateBoardList = function (data) {
+    $scope.boardList = data;
   };
   
   $scope.updateMainUI = function (status) {
