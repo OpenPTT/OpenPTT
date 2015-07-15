@@ -550,11 +550,15 @@ RobotPtt.prototype={
       }
     } else if(this.taskStage == 1) {      
       var line = this.bbsCore.buf.getRowText(23, 0, this.bbsCore.buf.cols);
-      var articlePageInfo = this.strParser.parseArticlePageInfo(line);
-      if(articlePageInfo) {
-        this.termStatus = 3;
-        this.taskStage = 2;
-        this.bbsCore.conn.send('Q'); //shift+q 
+      if(this.strParser.getAnsiAnimateMessage(line)){
+        this.bbsCore.conn.send('n'); //n or q?
+      } else {
+        var articlePageInfo = this.strParser.parseArticlePageInfo(line);
+        if(articlePageInfo) {
+          this.termStatus = 3;
+          this.taskStage = 2;
+          this.bbsCore.conn.send('Q'); //shift+q 
+        }
       } 
     } else if(this.taskStage == 2) {
       //TODO: parse article web url here!
@@ -567,84 +571,87 @@ RobotPtt.prototype={
       }
     } else if(this.taskStage == 3) {
       var statusText = this.bbsCore.buf.getRowText(23, 0, this.bbsCore.buf.cols);
-      var articlePageInfo = this.strParser.parseArticlePageInfo(statusText);
-      if(articlePageInfo) {
-        //var statusText = this.bbsCore.buf.getRowText(23, 0, this.bbsCore.buf.cols);
-        if(this.strParser.getContentAlertMessage(statusText)) {
-          if(this.strParser.getLastPage(statusText)) {
-            //only one page, crawl this page and exit
-            this.articleData.lines = []; //clean up all lines.
-            for(var i=22;i>=0;--i) {
-              var content = this.bbsCore.buf.getRowText(i, 0, this.bbsCore.buf.cols); //need parse to html tag.
-              if(content.replace(/^\s+|\s+$/g,'') !== '' && !this.articleData.finish) {
-                this.articleData.finish = true;
-                this.articleData.lines.unshift(this.view.getRowHtmlCode(i));
-              } else if(this.articleData.finish) {
-                this.articleData.lines.unshift(this.view.getRowHtmlCode(i));
+      if(this.strParser.getAnsiAnimateMessage(statusText)){
+        this.bbsCore.conn.send('n'); //n or q?
+      } else {
+        var articlePageInfo = this.strParser.parseArticlePageInfo(statusText);
+        if(articlePageInfo) {
+          //var statusText = this.bbsCore.buf.getRowText(23, 0, this.bbsCore.buf.cols);
+          if(this.strParser.getContentAlertMessage(statusText)) {
+            if(this.strParser.getLastPage(statusText)) {
+              //only one page, crawl this page and exit
+              this.articleData.lines = []; //clean up all lines.
+              for(var i=22;i>=0;--i) {
+                var content = this.bbsCore.buf.getRowText(i, 0, this.bbsCore.buf.cols); //need parse to html tag.
+                if(content.replace(/^\s+|\s+$/g,'') !== '' && !this.articleData.finish) {
+                  this.articleData.finish = true;
+                  this.articleData.lines.unshift(this.view.getRowHtmlCode(i));
+                } else if(this.articleData.finish) {
+                  this.articleData.lines.unshift(this.view.getRowHtmlCode(i));
+                }
               }
-            }
-            this.articleData.currentPage = 1;
-            this.articleData.totalPage = 1;
-            this.articleData.currentLine = this.articleData.lines.length;
-            this.taskStage = 0;
-            this.termStatus = 2;
-            this.bbsCore.conn.send('\x1b[D'); //left
-            var task = this.taskList.shift();
-            task.callback(this.articleData);
-            this.currentTask = this.taskDefines.none;
-            this.runNextTask();
-            return;
-          } else {
-            this.taskStage = 5;
-            this.bbsCore.conn.send('\x1b[B'); //arrow down
-          }
-        }
-        var statusInfo = this.strParser.parseArticleStatus(statusText);
-        if(statusInfo) {
-          if(statusInfo.pagePercent == 100) {
-            //only one page, crawl this page and exit
-            this.articleData.lines = []; //clean up all lines.
-            for(var i=22;i>=0;--i) {
-              var content = this.bbsCore.buf.getRowText(i, 0, this.bbsCore.buf.cols); //need parse to html tag.
-              if(content.replace(/^\s+|\s+$/g,'') !== '' && !this.articleData.finish) {
-                this.articleData.finish = true;
-                this.articleData.lines.unshift(this.view.getRowHtmlCode(i));
-              } else if(this.articleData.finish) {
-                this.articleData.lines.unshift(this.view.getRowHtmlCode(i));
-              }
-            }
-            this.articleData.currentPage = 1;
-            this.articleData.totalPage = 1;
-            this.articleData.currentLine = this.articleData.lines.length;
-            this.taskStage = 0;
-            this.termStatus = 2;
-            this.bbsCore.conn.send('\x1b[D'); //left
-            var task = this.taskList.shift();
-            task.callback(this.articleData);
-            this.currentTask = this.taskDefines.none;
-            this.runNextTask();
-            return;
-            //
-          } else {
-            if(statusInfo.pageTotal == 0) {
-              this.taskStage = 7;
-              this.bbsCore.conn.send('\x1b[4~'); //end
+              this.articleData.currentPage = 1;
+              this.articleData.totalPage = 1;
+              this.articleData.currentLine = this.articleData.lines.length;
+              this.taskStage = 0;
+              this.termStatus = 2;
+              this.bbsCore.conn.send('\x1b[D'); //left
+              var task = this.taskList.shift();
+              task.callback(this.articleData);
+              this.currentTask = this.taskDefines.none;
+              this.runNextTask();
+              return;
             } else {
-              //get all info. crawl first data
-              //
-              for(var i=0;i<23;++i) {
-                //var content = this.bbsCore.buf.getRowText(i, 0, this.bbsCore.buf.cols); //need parse to html tag.
-                this.articleData.lines.push(this.view.getRowHtmlCode(i));
+              this.taskStage = 5;
+              this.bbsCore.conn.send('\x1b[B'); //arrow down
+            }
+          }
+          var statusInfo = this.strParser.parseArticleStatus(statusText);
+          if(statusInfo) {
+            if(statusInfo.pagePercent == 100) {
+              //only one page, crawl this page and exit
+              this.articleData.lines = []; //clean up all lines.
+              for(var i=22;i>=0;--i) {
+                var content = this.bbsCore.buf.getRowText(i, 0, this.bbsCore.buf.cols); //need parse to html tag.
+                if(content.replace(/^\s+|\s+$/g,'') !== '' && !this.articleData.finish) {
+                  this.articleData.finish = true;
+                  this.articleData.lines.unshift(this.view.getRowHtmlCode(i));
+                } else if(this.articleData.finish) {
+                  this.articleData.lines.unshift(this.view.getRowHtmlCode(i));
+                }
               }
-              this.taskStage = 4;
-              this.articleData.currentLine = statusInfo.rowIndexEnd;
-              this.articleData.totalPage = statusInfo.pageTotal;
-              this.articleData.currentPage++;
-              this.bbsCore.conn.send('\x1b[6~'); //page down
+              this.articleData.currentPage = 1;
+              this.articleData.totalPage = 1;
+              this.articleData.currentLine = this.articleData.lines.length;
+              this.taskStage = 0;
+              this.termStatus = 2;
+              this.bbsCore.conn.send('\x1b[D'); //left
+              var task = this.taskList.shift();
+              task.callback(this.articleData);
+              this.currentTask = this.taskDefines.none;
+              this.runNextTask();
+              return;
+              //
+            } else {
+              if(statusInfo.pageTotal == 0) {
+                this.taskStage = 7;
+                this.bbsCore.conn.send('\x1b[4~'); //end
+              } else {
+                //get all info. crawl first data
+                //
+                for(var i=0;i<23;++i) {
+                  //var content = this.bbsCore.buf.getRowText(i, 0, this.bbsCore.buf.cols); //need parse to html tag.
+                  this.articleData.lines.push(this.view.getRowHtmlCode(i));
+                }
+                this.taskStage = 4;
+                this.articleData.currentLine = statusInfo.rowIndexEnd;
+                this.articleData.totalPage = statusInfo.pageTotal;
+                this.articleData.currentPage++;
+                this.bbsCore.conn.send('\x1b[6~'); //page down
+              }
             }
           }
         }
-        //start crawl data
       }
     } else if(this.taskStage == 4) {
       var statusText = this.bbsCore.buf.getRowText(23, 0, this.bbsCore.buf.cols);
@@ -720,32 +727,43 @@ RobotPtt.prototype={
       var firstBoardP2 = this.bbsCore.buf.getRowText(3, 64, 67);
       var firstBoardData = this.strParser.parseBoardData(firstBoardP1, firstBoardP2);
       if(this.strParser.getBoardList(line) && firstBoardData) {
-        this.termStatus = 1;
-        //console.log('this.bbsCore.buf.cur_x = ' + this.bbsCore.buf.cur_x);
+        var findCursor = false;
         for(var i=3;i<23;++i) {
-          var boardP1 = this.bbsCore.buf.getRowText(i, 0, 63);
-          var boardP2 = this.bbsCore.buf.getRowText(i, 64, 67);
-          var boardData = this.strParser.parseBoardData(boardP1, boardP2);
-          if(boardData && !this.blMap['b'+boardData.sn]) {
-            console.log(boardData.boardName);
-            if(boardData.isDirectory)
-              boardData.path = extData.path.concat([String(extData.sn)]);
-            this.blMap['b'+boardData.sn] = boardData;
+          var cursor = this.bbsCore.buf.getRowText(i, 0, 2);
+          if(cursor=='\u25cf') { //solid circle
+            findCursor = true;
+            break;
           }
         }
-        if(this.blMap['b1']) {
-          var boardList = this.getBoardListFromMap(this.blMap);
-          this.taskStage = 0;
-          var task = this.taskList.shift();
-          task.callback(boardList);
-          this.currentTask = this.taskDefines.none;
-          this.runNextTask();
-          return;          
+        if(findCursor) {
+          this.termStatus = 1;
+          //console.log('this.bbsCore.buf.cur_x = ' + this.bbsCore.buf.cur_x);
+          for(var i=3;i<23;++i) {
+            var boardP1 = this.bbsCore.buf.getRowText(i, 0, 63);
+            var boardP2 = this.bbsCore.buf.getRowText(i, 64, 67);
+            var boardData = this.strParser.parseBoardData(boardP1, boardP2);
+            if(boardData && !this.blMap['b'+boardData.sn]) {
+              console.log(boardData.boardName);
+              if(boardData.isDirectory)
+                boardData.path = extData.path.concat([String(extData.sn)]);
+              this.blMap['b'+boardData.sn] = boardData;
+            }
+          }
+          if(this.blMap['b1']) {
+            var boardList = this.getBoardListFromMap(this.blMap);
+            this.taskStage = 0;
+            var task = this.taskList.shift();
+            console.log('boardList.length = ' + boardList.length);
+            task.callback(boardList);
+            this.currentTask = this.taskDefines.none;
+            this.runNextTask();
+            return;          
+          }
+          this.NextBoardSn = firstBoardData.sn - 20;
+          console.log('this.NextBoardSn = ' + this.NextBoardSn);
+          this.taskStage = 2;
+          this.bbsCore.conn.send('\x1b[5~'); //page up.
         }
-        this.NextBoardSn = firstBoardData.sn - 20;
-        console.log('this.NextBoardSn = ' + this.NextBoardSn);
-        this.taskStage = 2;
-        this.bbsCore.conn.send('\x1b[5~'); //page up.
       }
     }
     else if(this.taskStage == 2) {
