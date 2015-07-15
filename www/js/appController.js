@@ -51,6 +51,7 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
   $scope.nickname = '';
   $scope.currentBoardName = '';
   $scope.favoriteList = [];
+  $scope.boardListStack = [];
   $scope.boardList = [];
   $scope.highlightList = [];
   $scope.articleListMap = {};
@@ -74,14 +75,15 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
   };
 
   $scope.enterBoard = function (board) {
+    if(board.isHidden)
+      return;
+
     if(board.isDirectory) {
       $scope.boardList = [];
       $scope.$apply();
       $scope.bbsCore.enterDirectory(board);
       $scope.bbsCore.getBoardList(board);
       favoriteNavigator.pushPage('boardList.html');
-      //TODO: need handle multi-layer structure.
-      //TODO: need implement getBoardList task in robot.js
     } else {
       $scope.highlightList = [];
       $scope.articleList = [];
@@ -91,7 +93,18 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
       $scope.bbsCore.enterBoard(board);
       $scope.bbsCore.getArticleList({direction: 'none'});
       favoriteNavigator.pushPage('article.html');
+      $scope.boardListStack.push([]);
+      $scope.boardList = [];
     }
+  };
+  
+  $scope.exitBoard = function () {
+    console.log('exitBoard');
+    $scope.boardListStack.pop();
+    if($scope.boardListStack.length > 0)
+      $scope.boardList = $scope.boardListStack[$scope.boardListStack.length-1];
+    else
+      $scope.boardList = [];
   };
 
   $scope.login = function () {
@@ -217,7 +230,8 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
   };
 
   $scope.readArticle = function (article) {
-    
+    if(article.author == '-')
+      return;
     //robot crawl all article content.
     //for very long article content that took long time.
     //we need crawl maybe one or two page and waiting user scroll(then crawl more).
@@ -236,6 +250,9 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
     //                                  article: article,
     //                                  articleData: currentArticle,
     //                                  page: 2 });
+    favoriteNavigator.pushPage('reading.html');
+    $scope.boardListStack.push([]);
+    $scope.boardList = [];
   };
 
   $scope.updateFavoriteList = function (data) {
@@ -243,6 +260,7 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
   };
   
   $scope.updateBoardList = function (data) {
+    $scope.boardListStack.push(data);
     $scope.boardList = data;
     $scope.$apply();
   };

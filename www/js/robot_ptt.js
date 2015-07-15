@@ -230,7 +230,7 @@ RobotPtt.prototype={
           return;          
         }
         this.NextBoardSn = firstBoardData.sn - 20;
-        console.log('this.NextBoardSn = ' + this.NextBoardSn);
+        //console.log('this.NextBoardSn = ' + this.NextBoardSn);
         this.taskStage = 2;
         this.bbsCore.conn.send('\x1b[5~'); //page up.
       }
@@ -261,7 +261,7 @@ RobotPtt.prototype={
           return;
         }
         this.NextBoardSn = firstBoardData.sn - 20;
-        console.log('this.NextBoardSn = ' + this.NextBoardSn);
+        //console.log('this.NextBoardSn = ' + this.NextBoardSn);
         this.bbsCore.conn.send('\x1b[5~'); //page up.
       }
     }
@@ -274,15 +274,21 @@ RobotPtt.prototype={
     var EnterChar = this.prefs.EnterChar;
     if(this.taskStage == 0) {
       this.taskStage = 1;
-      console.log('path = ' + extData.path.join(','));
-      this.bbsCore.conn.send(extData.path.join(EnterChar) + EnterChar + String(extData.sn) + EnterChar + EnterChar + ' ' + '\x1b[4~'); //s,boardName,enter,space,end
+      var path = '';
+      for(var i=0;i<extData.path.length;++i){
+        path += (extData.path[i] + EnterChar);
+        if(extData.path[i] != 'f' && extData.path[i] != 'c') {
+          path += (EnterChar + ' ');
+        }
+      }
+      this.bbsCore.conn.send(path + String(extData.sn) + EnterChar + EnterChar + ' ' + '\x1b[4~'); //s,boardName,enter,space,end
     } else if(this.taskStage == 1) {
       // there no any way to check where we are?
       var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
       var firstBoardP1 = this.bbsCore.buf.getRowText(3, 0, 63);
       var firstBoardP2 = this.bbsCore.buf.getRowText(3, 64, 67);
       var firstBoardData = this.strParser.parseBoardData(firstBoardP1, firstBoardP2);
-      if( this.strParser.getBoardList(line) && firstBoardData && firstBoardData.sn == 1) {
+      if( this.strParser.getBoardList(line) && firstBoardData) {
           this.taskStage = 0;
           this.termStatus = 4;
           var task = this.taskList.shift();
@@ -544,11 +550,11 @@ RobotPtt.prototype={
       if(extData.article.aid) { //have aid, user aid to jump to article
         this.taskStage = 3;
         this.bbsCore.conn.send('#' + extData.article.aid + EnterChar + EnterChar);//left + enter + end
-      } else { //no aid, user sn to jump to article, then crawl aid.
+      } else { //no aid, use sn to jump to article, then crawl aid.
         this.taskStage = 1;
-        this.bbsCore.conn.send(extData.article.sn + EnterChar + EnterChar);
+        this.bbsCore.conn.send(String(extData.article.sn) + EnterChar + EnterChar);
       }
-    } else if(this.taskStage == 1) {      
+    } else if(this.taskStage == 1) {
       var line = this.bbsCore.buf.getRowText(23, 0, this.bbsCore.buf.cols);
       if(this.strParser.getAnsiAnimateMessage(line)){
         this.bbsCore.conn.send('n'); //n or q?
@@ -760,7 +766,7 @@ RobotPtt.prototype={
             return;          
           }
           this.NextBoardSn = firstBoardData.sn - 20;
-          console.log('this.NextBoardSn = ' + this.NextBoardSn);
+          //console.log('this.NextBoardSn = ' + this.NextBoardSn);
           this.taskStage = 2;
           this.bbsCore.conn.send('\x1b[5~'); //page up.
         }
@@ -786,13 +792,14 @@ RobotPtt.prototype={
           var boardList = this.getBoardListFromMap(this.blMap);
           this.taskStage = 0;
           var task = this.taskList.shift();
+          console.log('boardList.length = ' + boardList.length);
           task.callback(boardList);
           this.currentTask = this.taskDefines.none;
           this.runNextTask();
           return;
         }
         this.NextBoardSn = firstBoardData.sn - 20;
-        console.log('this.NextBoardSn = ' + this.NextBoardSn);
+        //console.log('this.NextBoardSn = ' + this.NextBoardSn);
         this.bbsCore.conn.send('\x1b[5~'); //page up.
       }
     }
@@ -808,7 +815,7 @@ RobotPtt.prototype={
       this.taskStage = 1;
       //if(this.termStatus != 0) {
         //this.bbsCore.conn.send('\x1b[D\x1b[D\x1b[D');
-        this.bbsCore.conn.send('\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D');//left,left,left...
+        this.bbsCore.conn.send('\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D');//left,left,left...
       //}
     } else if(this.taskStage == 1) {
       var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
@@ -832,7 +839,7 @@ RobotPtt.prototype={
     if(this.taskStage == 0) {
       this.taskStage = 1;
       //if(this.termStatus != 0) {
-        this.bbsCore.conn.send('\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D');
+        this.bbsCore.conn.send('\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D');
         //this.bbsCore.conn.send('\x1b[D\x1ac\x1b[D');//left,ctrl+z,c,left
       //}
     } else if(this.taskStage == 1) {

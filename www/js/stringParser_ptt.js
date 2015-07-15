@@ -12,7 +12,19 @@ StringParserPtt.prototype={
               bClass: result[3],
               description: result[5],
               isDirectory: (result[4] == '\u03a3' ? true : false),
+              isHidden: false,
               popular: str2.replace(/^\s+|\s+$/g,'')};
+    }
+    var regex2 = new RegExp(/\u25cf?\s{0,7}(\d{0,7})X\s{0,1}[\u02c7 ]([\w -]{12})\s(\[\u96B1\u677F\])\s([\u25ce\u25cf\u03a3 ])(.*)/g);
+    result = regex2.exec(str1);
+    if(result && result.length == 6) {
+      return {sn: parseInt(result[1]),
+              boardName: result[2].replace(/^\s+|\s+$/g,''),
+              bClass: result[3].replace(/^\[|\]$/g,''),
+              description: result[5],
+              isDirectory: false,
+              isHidden: true,
+              popular: ''};
     }
     return null;
   },
@@ -57,7 +69,7 @@ StringParserPtt.prototype={
   },
 
   parseAid: function (str) {
-    var regex = new RegExp(/\u2502 \u6587\u7AE0\u4EE3\u78BC\(AID\): #([\w\-]{8}) \((\w{2,12})\).*/g);
+    var regex = new RegExp(/\u2502 \u6587\u7AE0\u4EE3\u78BC\(AID\): #([\w\-]{8}) \(([\w -]{2,12})\).*/g);
     var result = regex.exec(str);
     if(result && result.length == 3) {
       return {aid: result[1],
@@ -67,7 +79,7 @@ StringParserPtt.prototype={
   },
 
   parseArticleHeader: function (str) {
-    var regex = new RegExp(/ \u4F5C\u8005  (\w{1,12}) \(.{0,23}\)\s{0,70}\u770B\u677F  (\w{2,12})/g);
+    var regex = new RegExp(/ \u4F5C\u8005  (\w{1,12}) \(.{0,23}\)\s{0,70}\u770B\u677F  ([\w -]{2,12})/g);
     var result = regex.exec(str);
      if(result && result.length == 3) {
        return {author: result[1],

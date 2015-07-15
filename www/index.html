@@ -142,7 +142,7 @@
     </ons-template>
     
     <ons-template id="favorite.html">
-      <ons-navigator animation="slide" var="favoriteNavigator">
+      <ons-navigator animation="slide" var="favoriteNavigator" ons-postpop="exitBoard();">
         <ons-page>
           <ons-list class="plan-list">
             <ons-list-item modifier="chevron" class="plan" ng-repeat="favorite in favoriteList" ng-click="enterBoard(favorite);">
@@ -170,7 +170,7 @@
           <div class="left"><ons-back-button>Back</ons-back-button></div>
         </ons-toolbar>
         <ons-list class="plan-list">
-          <ons-list-item modifier="chevron" class="plan" ng-repeat="board in boardList" ng-click="enterBoard(board);">
+          <ons-list-item modifier="chevron" class="plan" status="{{board.isHidden ? 'delete' : 'normal'}}" ng-repeat="board in boardList" ng-click="enterBoard(board);">
             <ons-row>
               <ons-col width="80px" class="plan-left">
                 <div class="plan-date">{{board.bClass}}</div>
@@ -223,7 +223,7 @@
                 <div class="plan-duration">{{article.popular}}</div>
               </ons-col>
               <ons-col width="6px" class="plan-center" ng-style="{backgroundColor:$index % 2 == 1 ? '#3399ff' : '#ccc'}"></ons-col>
-              <ons-col class="plan-right" ng-click="readArticle(article);favoriteNavigator.pushPage('reading.html');">
+              <ons-col class="plan-right" ng-click="readArticle(article);">
                 <div class="plan-name">{{article.title}}</div>
                 <div class="plan-date">{{article.date}}&nbsp;{{article.author}}</div>
               </ons-col>
@@ -238,7 +238,7 @@
               </ons-col>
               <ons-col width="6px" class="plan-center" ng-style="{backgroundColor:$index % 2 == 1 ? '#3399ff' : '#ccc'}">
               </ons-col>
-              <ons-col class="plan-right" ng-click="readArticle(article);favoriteNavigator.pushPage('reading.html');">
+              <ons-col class="plan-right" ng-click="readArticle(article);">
                 <div class="plan-name">{{article.title}}</div>
                 <div class="plan-date">{{article.date}}&nbsp;{{article.author}}</div>
               </ons-col>
