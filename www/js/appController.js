@@ -50,51 +50,61 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
   $scope.bbsCore = null;
   $scope.nickname = '';
   $scope.currentBoardName = '';
-  $scope.favoriteList = [];
+
+  $scope.favorites = {};
+  $scope.favorites.subBoardList = []; // board/directory array
+
   $scope.boardListStack = [];
-  $scope.boardList = [];
-  $scope.highlightList = [];
-  $scope.articleListMap = {};
+  $scope.currentBoard = {};
+  $scope.currentBoard.articleList = [];
+  $scope.currentBoard.highlightList = [];
+  
+  $scope.currentDirectory = {};
+  $scope.currentDirectory.subBoardList = [];
+  
   $scope.currentArticle = {};
-  $scope.lines = [];
+  $scope.currentArticle.lines = [];
  
   $scope.init = function() {
     if(!$window.app.bbsCore)
       $window.app.bbsCore = new BBSCore();
     $scope.bbsCore = $window.app.bbsCore;
-    
-    $scope.bbsCore.regBoardListEvent($scope.updateBoardList);
     $scope.bbsCore.regFavoriteListEvent($scope.updateFavoriteList);
-    $scope.bbsCore.regArticleListEvent($scope.updateArticleList);
-    $scope.bbsCore.regConnectionStatusEvent($scope.updateMainUI);
-    $scope.bbsCore.regArticleContentEvent($scope.updateArticleContent);
+    $scope.bbsCore.regConnectionStatusEvent($scope.updateMainUI);    
+    $scope.bbsCore.setApplyDataEvent($scope.applyDataEvent);
   };
 
-  $scope.doSomething = function () {
-    ons.notification.alert({ message: 'tapped' });
-  };
+  $scope.applyDataEvent = function(subject, obj) {
+    if(subject == 'updateArticleContent') {
+      if(obj !== $scope.currentArticle)
+        return;
+
+      $scope.currentArticle.lines = [];
+      for(var i=0;i<obj.content.lines.length;++i) {
+        $scope.currentArticle.lines.push({sn: i, html: $sce.trustAsHtml(obj.content.lines[i])});
+      }
+    }
+    $scope.$apply();
+  },
 
   $scope.enterBoard = function (board) {
-    if(board.isHidden)
+    if(!board.enter())
       return;
 
     if(board.isDirectory) {
-      $scope.boardList = [];
-      $scope.$apply();
-      $scope.bbsCore.enterDirectory(board);
-      $scope.bbsCore.getBoardList(board);
+      //$scope.boardList = board.subBoardList;
       favoriteNavigator.pushPage('boardList.html');
+      $scope.boardListStack.push(board);
+      //$scope.boardList = board.subBoardList;
+      $scope.currentDirectory = board;
     } else {
-      $scope.highlightList = [];
-      $scope.articleList = [];
-      $scope.$apply();
       $scope.currentBoardName = board.boardName;
-      //alert(board.sn);
-      $scope.bbsCore.enterBoard(board);
-      $scope.bbsCore.getArticleList({direction: 'none'});
+      $scope.currentBoard = board;
+      $scope.$apply();
       favoriteNavigator.pushPage('article.html');
-      $scope.boardListStack.push([]);
-      $scope.boardList = [];
+      $scope.boardListStack.push({});
+      $scope.currentDirectory = {};
+      $scope.currentDirectory.subBoardList = [];
     }
   };
   
@@ -102,173 +112,49 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
     console.log('exitBoard');
     $scope.boardListStack.pop();
     if($scope.boardListStack.length > 0)
-      $scope.boardList = $scope.boardListStack[$scope.boardListStack.length-1];
+      $scope.currentDirectory = $scope.boardListStack[$scope.boardListStack.length-1];
     else
-      $scope.boardList = [];
-  };
-
-  $scope.login = function () {
-    console.log('$scope.username = ' + $scope.username);
-    console.log('$scope.password = ' + $scope.password);
-    console.log('$scope.savePassword = ' + $scope.savePassword);
-    //$scope.bbsCore.login($scope.username, $scope.password, $scope.savePassword);
+      $scope.currentDirectory = {};
   };
 
   $scope.logout = function () {
     $scope.bbsCore.logout();
   };
-
-  $scope.updateArticleContent = function (data) {
-    //$scope.articleContent = data.lines.join('');
-    $scope.currentArticle = data;
-    $scope.lines = [];
-    for(var i=0;i<data.lines.length;++i) {
-      $scope.lines.push({sn: i, html: $sce.trustAsHtml(data.lines[i])});
-    }
-    $scope.$apply();
-  };
-  
-  $scope.updateArticleList = function (data, updateInfo) {
-    //highlightList
-    if(updateInfo && updateInfo.highlightList && updateInfo.highlightList.length) {
-      $scope.highlightList = updateInfo.highlightList;
-      $scope.$apply();
-    }
-
-    //TODO: we need remove some article for saving memory.
-    if(updateInfo && updateInfo.updateList && updateInfo.updateList.length) {
-      console.log(updateInfo.updateList.length);
-      //update article - start
-      var updateList = updateInfo.updateList;
-      var updateFields = updateInfo.updateFields;
-      for(var i=0;i<updateList.length;++i) {
-        var index = $scope.articleListMap[updateList[i].sn];
-        if(index < $scope.articleList.length && $scope.articleList [index].sn == updateList[i].sn) {
-          if(updateFields) {
-            for(var j=0;j<updateFields.length;++j) {
-              $scope.articleList [index][updateFields[j]] = updateList[i][updateFields[j]];
-            }
-          } else {
-            $scope.articleList [index] = updateList[i];
-          }
-        }
-      }
-      //update article - start
-    }
-    
-    if(data.length == 0)
-      return;
-    if(!$scope.articleList || ($scope.articleList && $scope.articleList.length == 0)) {
-      $scope.articleList = data;
-    } else {
-      // if(data[data.length-1].sn < $scope.articleList[0].sn) {
-      //   $scope.articleList = data.concat($scope.articleList);
-      // } else {
-      //   $scope.articleList = $scope.articleList.concat(data);
-      // }
-      if(data[0].sn < $scope.articleList[$scope.articleList.length-1].sn) {
-        $scope.articleList = $scope.articleList.concat(data);
-      } else {
-        $scope.articleList = data.concat($scope.articleList);
-      }
-    }
-
-    //keep a maping table - start
-    $scope.articleListMap = {};
-    for(var i=0;i<$scope.articleList.length;++i)
-      $scope.articleListMap[ $scope.articleList[i].sn ] = i;
-    //keep a maping table - end
-
-    $scope.$apply();
-  };
   
   $scope.onArticleListScrollTop = function () {
     //let robot crawl more list
-    $scope.bbsCore.getArticleList({boardName: $scope.currentBoardName,
-                                   direction: 'old',
-                                   max: $scope.articleList[0].sn,
-                                   min: $scope.articleList[$scope.articleList.length-1].sn,
-                                   count: 15}); //count: how many articles you needed.
+    $scope.currentBoard.getOldData(15);
   };
 
-  $scope.refresh = function(done) {
+  $scope.refresh = function() {
     console.log('refresh');
-    //let robot crawl more list
-    $scope.bbsCore.getArticleList({boardName: $scope.currentBoardName,
-                                   direction: 'new',
-                                   max: $scope.articleList[0].sn,
-                                   min: $scope.articleList[$scope.articleList.length-1].sn});
-    if(done)
-      done();
+    $scope.currentBoard.refresh();
   };
-
-  // $scope.infiniteScrollingDelegate = {
-  //   configureItemScope: function(index, itemScope) {
-  //     if (!itemScope.article) {
-  //       console.log("Created item #" + index);
-  //       if(index < $scope.articleList.length) {
-  //         itemScope.article = $scope.articleList[index];
-  //       }
-  //       itemScope.canceler = $q.defer();
-  //       $scope.onArticleListScrollTop();
-  //     }
-  //   },
-  //   calculateItemHeight: function(index) {
-  //     return 90;
-  //   },
-  //   countItems: function() {
-  //     return $scope.articleList.length;
-  //   },
-  //   destroyItemScope: function(index, itemScope) {
-  //     itemScope.canceler.resolve();
-  //     //console.log("Destroyed item #" + index);
-  //   }
-  // };
 
   $scope.replyArticle = function (article) {
 
   };
 
   $scope.readArticle = function (article) {
-    if(article.author == '-')
+    if(!article.read())
       return;
-    //robot crawl all article content.
-    //for very long article content that took long time.
-    //we need crawl maybe one or two page and waiting user scroll(then crawl more).
-    $scope.bbsCore.getArticleContent({boardName: $scope.currentBoardName,
-                                      article: article});
-                                      
-    //TODO: need finish this function
-    //about page:
-    //0 -> get all page/update/from current to newest
-    //n -> get n page
-    //$scope.bbsCore.getArticleContent({boardName: $scope.currentBoardName,
-    //                                  article: article,
-    //                                  page: 0 });
-    
-    //$scope.bbsCore.getArticleContent({boardName: $scope.currentBoardName,
-    //                                  article: article,
-    //                                  articleData: currentArticle,
-    //                                  page: 2 });
+
+    $scope.currentArticle = article;
     favoriteNavigator.pushPage('reading.html');
-    $scope.boardListStack.push([]);
-    $scope.boardList = [];
+    $scope.boardListStack.push({});
+    $scope.currentDirectory = {};
+    $scope.currentDirectory.subBoardList = [];
   };
 
   $scope.updateFavoriteList = function (data) {
-    $scope.favoriteList = data;
-  };
-  
-  $scope.updateBoardList = function (data) {
-    $scope.boardListStack.push(data);
-    $scope.boardList = data;
-    $scope.$apply();
+    //$scope.favoriteList = data;
+    $scope.favorites.subBoardList = data;
   };
   
   $scope.updateMainUI = function (status) {
     switch (status){
       case "logout":
-        $scope.favoriteList = [];
+        $scope.favorites.subBoardList = [];
         $scope.$apply();
         break;
       case "login-success":

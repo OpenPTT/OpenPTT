@@ -1,6 +1,6 @@
 function RobotPtt(bbsCore) {
   this.bbsCore = bbsCore;
-  this.strParser = new StringParserPtt();
+  this.strParser = new StringParserPtt(bbsCore);
   this.prefs = bbsCore.prefs;
   this.prefs.loginPrompt = this.strParser.getLoginPrompt();
   this.view = bbsCore.view;
@@ -369,7 +369,7 @@ RobotPtt.prototype={
         this.taskStage = 2;
       } else if(extData.direction == 'new') {
         this.taskStage = 1;
-        this.bbsCore.conn.send('\x1b[D' + EnterChar + '\x1b[4~');//left + enter + end
+        //this.bbsCore.conn.send('\x1b[D' + EnterChar + '\x1b[4~');//left + enter + end
       } else if(extData.direction == 'old') {
         this.taskStage = 2;
         this.bbsCore.conn.send(String(extData.min) + EnterChar );//jump to article ns = min
@@ -445,12 +445,15 @@ RobotPtt.prototype={
           } else {
             this.taskStage = 0;
             this.termStatus = 2;
+            /* for debug.
             var tmparr = [];
             for (var key in this.alMap) {
               if (this.alMap.hasOwnProperty(key)) {
                 tmparr.push(key);
               }
             }
+            console.log( tmparr.join(',') );
+            */
             var articleList = this.getArticleListFromMap(this.alMap, parseInt(extData.max)+1);
             var updateList = this.getArticleListFromMap(this.alMap, parseInt(extData.min), parseInt(extData.max)+1);
             articleList.reverse();
@@ -460,6 +463,7 @@ RobotPtt.prototype={
             task.callback(articleList, {updateList: updateList,
                                         updateFields: ['author','popular','aClass','title','level']
                                        });
+            console.log('fresh finish');
             this.currentTask = this.taskDefines.none;
             this.runNextTask();
             return;
@@ -538,7 +542,7 @@ RobotPtt.prototype={
     var extData = this.taskList[0].extData;
     var EnterChar = this.prefs.EnterChar;
     if(this.taskStage == 0) {
-      extData.context = this.articleData = {
+        this.articleData = {
         currentPage: 1,
         totalPage: 0,
         currentLine: 0,
@@ -547,12 +551,12 @@ RobotPtt.prototype={
       };
       if(this.termStatus != 2) {
       }
-      if(extData.article.aid) { //have aid, user aid to jump to article
+      if(extData.aid) { //have aid, user aid to jump to article
         this.taskStage = 3;
-        this.bbsCore.conn.send('#' + extData.article.aid + EnterChar + EnterChar);//left + enter + end
+        this.bbsCore.conn.send('#' + extData.aid + EnterChar + EnterChar);//left + enter + end
       } else { //no aid, use sn to jump to article, then crawl aid.
         this.taskStage = 1;
-        this.bbsCore.conn.send(String(extData.article.sn) + EnterChar + EnterChar);
+        this.bbsCore.conn.send(String(extData.sn) + EnterChar + EnterChar);
       }
     } else if(this.taskStage == 1) {
       var line = this.bbsCore.buf.getRowText(23, 0, this.bbsCore.buf.cols);
@@ -571,7 +575,7 @@ RobotPtt.prototype={
       var line = this.bbsCore.buf.getRowText(19, 0, this.bbsCore.buf.cols);
       var aidData = this.strParser.parseAid(line);
       if(aidData) {
-        extData.article.aid = aidData.aid;
+        extData.aid = aidData.aid;
         this.taskStage = 3;
         this.bbsCore.conn.send(' ' + EnterChar); //space,enter
       }

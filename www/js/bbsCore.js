@@ -8,10 +8,8 @@ function BBSCore() {
   this.parser = new AnsiParser(this.buf);
   this.robot = null;
   this.favoriteListEventNotify = [];
-  this.boardListEventNotify = [];
   this.connectionStatusEventNotify = [];
-  this.articleListEventNotify = [];
-  this.articleContentEventNotify = [];
+  this.applyDataEvent = null;
 }
 
 BBSCore.prototype={
@@ -41,15 +39,16 @@ BBSCore.prototype={
   },
 
   addTask: function(taskName, callback, extData) {
-    if(taskName in this.robot)
-    this.robot.addTask(
-      {
-        name: taskName,
-        run: this.robot[taskName].bind(this.robot),
-        callback: callback,
-        extData: extData
-      }
-    );
+    if(taskName in this.robot) {
+      this.robot.addTask(
+        {
+          name: taskName,
+          run: this.robot[taskName].bind(this.robot),
+          callback: callback,
+          extData: extData
+        }
+      );
+    }
   },
   
   login: function(site, username, password, savePassword) {
@@ -91,41 +90,10 @@ BBSCore.prototype={
   logout: function() {
     this.addTask('logout', this.onLogoutEvent.bind(this));
   },
-  
-  enterBoard: function(board) {
-    this.addTask('gotoMainFunctionList', this.onNullEvent.bind(this), board);
-    this.addTask('enterBoard', this.onNullEvent.bind(this), board);
-  },
-
-  enterDirectory: function(board) {
-    this.addTask('gotoMainFunctionList', this.onNullEvent.bind(this), board);
-    this.addTask('enterDirectory', this.onNullEvent.bind(this), board);
-  },
-
-  getBoardList: function(directory) {
-    this.addTask('getBoardList', this.onBoardListEvent.bind(this), directory);
-  },
-
-  getArticleList: function(extData) {
-    this.addTask('getArticleList', this.onArticleListEvent.bind(this), extData);
-  },
-  
-  getArticleContent: function(extData) {
-    this.addTask('getArticleContent', this.onArticleContentEvent.bind(this), extData);
-  },
-  
-  onNullEvent: function(){
-  },
 
   onLoginEvent: function(status, message){
     for(var i=0;i<this.connectionStatusEventNotify.length;++i){
       this.connectionStatusEventNotify[i](status, message);
-    }
-  },
-
-  onBoardListEvent: function(data){
-    for(var i=0;i<this.boardListEventNotify.length;++i){
-      this.boardListEventNotify[i](data);
     }
   },
 
@@ -141,36 +109,20 @@ BBSCore.prototype={
     }
   },
 
-  onArticleListEvent: function(data, data2){
-    for(var i=0;i<this.articleListEventNotify.length;++i){
-      this.articleListEventNotify[i](data, data2);
-    }
-  },
-
-  onArticleContentEvent: function(data){
-    for(var i=0;i<this.articleContentEventNotify.length;++i){
-      this.articleContentEventNotify[i](data);
-    }
-  },
-
   regFavoriteListEvent: function(eventCallback) {
     this.favoriteListEventNotify.push(eventCallback);
-  },
-
-  regBoardListEvent: function(eventCallback) {
-    this.boardListEventNotify.push(eventCallback);
   },
 
   regConnectionStatusEvent: function(eventCallback) {
     this.connectionStatusEventNotify.push(eventCallback);
   },
+
+  setApplyDataEvent: function(eventCallback) {
+    this.applyDataEvent = eventCallback;
+  },  
   
-  regArticleListEvent: function(eventCallback) {
-    this.articleListEventNotify.push(eventCallback);
-  },
-  
-  regArticleContentEvent: function(eventCallback) {
-    this.articleContentEventNotify.push(eventCallback);
+  apply: function(subject, obj) {
+    this.applyDataEvent(subject, obj);    
   }
 
 };

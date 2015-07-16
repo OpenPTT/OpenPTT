@@ -1,4 +1,5 @@
-function StringParserPtt() {
+function StringParserPtt(bbsCore) {
+  this.bbsCore = bbsCore;
 }
 
 StringParserPtt.prototype={
@@ -7,24 +8,28 @@ StringParserPtt.prototype={
     var regex = new RegExp(/\u25cf?\s{0,7}(\d{0,7})\s{1,2}[\u02c7 ]([\w -]{12})\s(.{1,4})\s([\u25ce\u25cf\u03a3])(.*)/g);
     var result = regex.exec(str1);
     if(result && result.length == 6) {
-      return {sn: parseInt(result[1]),
-              boardName: result[2].replace(/^\s+|\s+$/g,''),
-              bClass: result[3],
-              description: result[5],
-              isDirectory: (result[4] == '\u03a3' ? true : false),
-              isHidden: false,
-              popular: str2.replace(/^\s+|\s+$/g,'')};
+      return new BoardPtt(this.bbsCore,
+                          parseInt(result[1]), //sn
+                          result[2].replace(/^\s+|\s+$/g,''), //boardName
+                          result[3], //bClass
+                          result[5], //description
+                          (result[4] == '\u03a3' ? true : false), //isDirectory
+                          false, //isHidden
+                          str2.replace(/^\s+|\s+$/g,'') //popular
+                          );
     }
     var regex2 = new RegExp(/\u25cf?\s{0,7}(\d{0,7})X\s{0,1}[\u02c7 ]([\w -]{12})\s(\[\u96B1\u677F\])\s([\u25ce\u25cf\u03a3 ])(.*)/g);
     result = regex2.exec(str1);
     if(result && result.length == 6) {
-      return {sn: parseInt(result[1]),
-              boardName: result[2].replace(/^\s+|\s+$/g,''),
-              bClass: result[3].replace(/^\[|\]$/g,''),
-              description: result[5],
-              isDirectory: false,
-              isHidden: true,
-              popular: ''};
+      return new BoardPtt(this.bbsCore,
+                          parseInt(result[1]), //sn
+                          result[2].replace(/^\s+|\s+$/g,''), //boardName
+                          result[3].replace(/^\[|\]$/g,''), //bClass
+                          result[5], //description
+                          false, //isDirectory
+                          true, //isHidden
+                          '' //popular
+                          );
     }
     return null;
   },
@@ -56,14 +61,14 @@ StringParserPtt.prototype={
       else if(parseInt(popular)>0)
         level = 1;
       
-      return {sn: parseInt(snStr),
-              date: result[3],
-              author: result[4], //if article be deleted, this field will be '-'.
-              popular: popular,
-              aClass: aClass,
-              title: title,
-              level:level
-             };
+      return new ArticlePtt(this.bbsCore,
+                            parseInt(snStr), //sn
+                            result[3], //date
+                            result[4], //author, if article be deleted, this field will be '-'.
+                            popular,
+                            aClass,
+                            title,
+                            level );      
     }
     return null;
   },

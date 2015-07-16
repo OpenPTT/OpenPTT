@@ -60,6 +60,7 @@
     <script type="text/javascript" src="js/uao_u2b_table.js"></script>
     <script type="text/javascript" src="js/uao_conv.js"></script>
     <script type="text/javascript" src="js/stringutil.js"></script>
+    <script type="text/javascript" src="js/objDefine_ptt.js"></script>
     <script type="text/javascript" src="js/stringParser_ptt.js"></script>
     <script type="text/javascript" src="js/robot_ptt.js"></script>
     <script type="text/javascript" src="js/ansiparser.js"></script>
@@ -145,7 +146,7 @@
       <ons-navigator animation="slide" var="favoriteNavigator" ons-postpop="exitBoard();">
         <ons-page>
           <ons-list class="plan-list">
-            <ons-list-item modifier="chevron" class="plan" ng-repeat="favorite in favoriteList" ng-click="enterBoard(favorite);">
+            <ons-list-item modifier="chevron" class="plan" ng-repeat="favorite in favorites.subBoardList" ng-click="enterBoard(favorite);">
               <ons-row>
                 <ons-col width="80px" class="plan-left">
                   <div class="plan-date">{{favorite.bClass}}</div>
@@ -170,7 +171,7 @@
           <div class="left"><ons-back-button>Back</ons-back-button></div>
         </ons-toolbar>
         <ons-list class="plan-list">
-          <ons-list-item modifier="chevron" class="plan" status="{{board.isHidden ? 'delete' : 'normal'}}" ng-repeat="board in boardList" ng-click="enterBoard(board);">
+          <ons-list-item modifier="chevron" class="plan" status="{{board.isHidden ? 'delete' : 'normal'}}" ng-repeat="board in currentDirectory.subBoardList" ng-click="enterBoard(board);">
             <ons-row>
               <ons-col width="80px" class="plan-left">
                 <div class="plan-date">{{board.bClass}}</div>
@@ -193,7 +194,7 @@
         <!--<ons-pull-hook var="refreshArticle" height="0px" ng-action="refresh($done)">-->
         <ons-toolbar>
           <div class="left"><ons-back-button>Back</ons-back-button></div>
-          <div class="center">{{currentBoardName}}</div>
+          <div class="center">{{currentBoard.boardName}}</div>
           <div class="right"><ons-toolbar-button ng-click="refresh()"><ons-icon icon="ion-navicon" style="font-size: 28px;"></ons-icon></ons-toolbar-button></div>
         </ons-toolbar>
         <ons-list class="plan-list">
@@ -215,7 +216,7 @@
               </ons-col>
             </ons-row>
           </ons-list-item>-->
-          <ons-list-item modifier="chevron" class="plan" status="{{article.author == '-' ? 'delete' : 'normal'}}" ng-repeat="article in highlightList">
+          <ons-list-item modifier="chevron" class="plan" status="{{article.author == '-' ? 'delete' : 'normal'}}" ng-repeat="article in currentBoard.highlightList">
             <ons-row height="50px">
               <ons-col width="60px" class="plan-left" ng-click="replyArticle(article)">                  
                 <div class="plan-date">{{article.aClass}}</div>
@@ -229,7 +230,7 @@
               </ons-col>
             </ons-row>
           </ons-list-item>            
-          <ons-list-item modifier="chevron" class="plan" status="{{article.author == '-' ? 'delete' : 'normal'}}" ng-repeat="article in articleList">
+          <ons-list-item modifier="chevron" class="plan" status="{{article.author == '-' ? 'delete' : 'normal'}}" ng-repeat="article in currentBoard.articleList">
             <ons-row height="50px">
               <ons-col width="60px" class="plan-left" ng-click="replyArticle(article)">                  
                 <div class="plan-date">{{article.aClass}}</div>
@@ -298,7 +299,7 @@
           <div class="left"><ons-back-button>Back</ons-back-button></div>
         </ons-toolbar>
         <div id="BBSWindow" class="BBSWindow">
-          <span class="bbsline" ng-repeat="line in lines"><span type="bbsrow" srow="line.sn" ng-bind-html="line.html"></span></span>
+          <span class="bbsline" ng-repeat="line in currentArticle.lines"><span type="bbsrow" srow="line.sn" ng-bind-html="line.html"></span></span>
         </div>
       </ons-page>
     </ons-template>
