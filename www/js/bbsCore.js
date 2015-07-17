@@ -7,7 +7,6 @@ function BBSCore() {
   this.view = new TermView(this, this.buf);
   this.parser = new AnsiParser(this.buf);
   this.robot = null;
-  this.favoriteListEventNotify = [];
   this.connectionStatusEventNotify = [];
   this.applyDataEvent = null;
 }
@@ -83,8 +82,14 @@ BBSCore.prototype={
     this.prefs.loginStr[1] = username;
     this.prefs.loginStr[2] = password;
     this.addTask('login', this.onLoginEvent.bind(this));
-    this.addTask('getFavoriteList', this.onFavoriteListEvent.bind(this));
     this.connect(siteData.addr, siteData.port);
+  },
+  
+  getFavorite: function() {
+    if('getFavorite' in this.robot) {
+      return this.robot.getFavorite();
+    }
+    return null;
   },
   
   logout: function() {
@@ -97,20 +102,10 @@ BBSCore.prototype={
     }
   },
 
-  onFavoriteListEvent: function(data){
-    for(var i=0;i<this.favoriteListEventNotify.length;++i){
-      this.favoriteListEventNotify[i](data);
-    }
-  },
-
   onLogoutEvent: function(data){
     for(var i=0;i<this.connectionStatusEventNotify.length;++i){
       this.connectionStatusEventNotify[i]('logout');
     }
-  },
-
-  regFavoriteListEvent: function(eventCallback) {
-    this.favoriteListEventNotify.push(eventCallback);
   },
 
   regConnectionStatusEvent: function(eventCallback) {

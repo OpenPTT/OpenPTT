@@ -51,8 +51,6 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
   $scope.nickname = '';
   $scope.currentBoardName = '';
 
-  $scope.favorites = {};
-  $scope.favorites.subBoardList = []; // board/directory array
 
   $scope.boardListStack = [];
   $scope.currentBoard = {};
@@ -69,9 +67,9 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
     if(!$window.app.bbsCore)
       $window.app.bbsCore = new BBSCore();
     $scope.bbsCore = $window.app.bbsCore;
-    $scope.bbsCore.regFavoriteListEvent($scope.updateFavoriteList);
     $scope.bbsCore.regConnectionStatusEvent($scope.updateMainUI);    
     $scope.bbsCore.setApplyDataEvent($scope.applyDataEvent);
+    $scope.favorites = $scope.bbsCore.getFavorite();
   };
 
   $scope.applyDataEvent = function(subject, obj) {
@@ -92,11 +90,15 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
       return;
 
     if(board.isDirectory) {
-      //$scope.boardList = board.subBoardList;
-      favoriteNavigator.pushPage('boardList.html');
-      $scope.boardListStack.push(board);
-      //$scope.boardList = board.subBoardList;
-      $scope.currentDirectory = board;
+      if(board.boardName == 'favorite') {
+
+      } else {
+        //$scope.boardList = board.subBoardList;
+        favoriteNavigator.pushPage('boardList.html');
+        $scope.boardListStack.push(board);
+        //$scope.boardList = board.subBoardList;
+        $scope.currentDirectory = board;
+      }
     } else {
       $scope.currentBoardName = board.boardName;
       $scope.currentBoard = board;
@@ -146,15 +148,10 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
     $scope.currentDirectory.subBoardList = [];
   };
 
-  $scope.updateFavoriteList = function (data) {
-    //$scope.favoriteList = data;
-    $scope.favorites.subBoardList = data;
-  };
   
   $scope.updateMainUI = function (status) {
     switch (status){
       case "logout":
-        $scope.favorites.subBoardList = [];
         $scope.$apply();
         break;
       case "login-success":

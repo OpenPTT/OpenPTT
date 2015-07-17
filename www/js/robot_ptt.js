@@ -191,97 +191,24 @@ RobotPtt.prototype={
     return articleList;
   },
   
-  getFavoriteList: function() {
-    //TODO: detect if favorite list empty
-    this.currentTask = this.taskDefines.getFavoriteList;
-    if(this.taskStage == 0) {
-      this.flMap = {};
-      this.taskStage = 1;
-      if(this.termStatus != 0) {
-        this.bbsCore.conn.send('\x1b[D\x1b[D\x1b[D');
-      }
-      this.bbsCore.conn.send('f' + this.prefs.EnterChar + '\x1b[4~'); //f + enter + end -> show last item.
-    } else if(this.taskStage == 1) {
-      var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
-      var firstBoardP1 = this.bbsCore.buf.getRowText(3, 0, 63);
-      var firstBoardP2 = this.bbsCore.buf.getRowText(3, 64, 67);
-      var firstBoardData = this.strParser.parseBoardData(firstBoardP1, firstBoardP2);
-      if(this.strParser.getBoardList(line) && firstBoardData) {
-        this.termStatus = 1;
-        //console.log('this.bbsCore.buf.cur_x = ' + this.bbsCore.buf.cur_x);
-        for(var i=3;i<23;++i) {
-          var boardP1 = this.bbsCore.buf.getRowText(i, 0, 63);
-          var boardP2 = this.bbsCore.buf.getRowText(i, 64, 67);
-          var boardData = this.strParser.parseBoardData(boardP1, boardP2);
-          if(boardData && !this.flMap['b'+boardData.sn]) {
-            console.log(boardData.boardName);
-            if(boardData.isDirectory)
-              boardData.path = ['f'];
-            this.flMap['b'+boardData.sn] = boardData;
-          }
-        }
-        if(this.flMap['b1']) {
-          var favoriteList = this.getBoardListFromMap(this.flMap);
-          this.taskStage = 0;
-          var task = this.taskList.shift();
-          task.callback(favoriteList);
-          this.currentTask = this.taskDefines.none;
-          this.runNextTask();
-          return;          
-        }
-        this.NextBoardSn = firstBoardData.sn - 20;
-        //console.log('this.NextBoardSn = ' + this.NextBoardSn);
-        this.taskStage = 2;
-        this.bbsCore.conn.send('\x1b[5~'); //page up.
-      }
-    }
-    else if(this.taskStage == 2) {
-      var firstBoardP1 = this.bbsCore.buf.getRowText(3, 0, 63);
-      var firstBoardP2 = this.bbsCore.buf.getRowText(3, 64, 67);
-      var firstBoardData = this.strParser.parseBoardData(firstBoardP1, firstBoardP2);
-      if(firstBoardData && firstBoardData.sn == this.NextBoardSn) {
-        for(var i=3;i<23;++i) {
-          var boardP1 = this.bbsCore.buf.getRowText(i, 0, 63);
-          var boardP2 = this.bbsCore.buf.getRowText(i, 64, 67);
-          var boardData = this.strParser.parseBoardData(boardP1, boardP2);
-          if(boardData && !this.flMap['b'+boardData.sn]) {
-            console.log(boardData.boardName);
-            if(boardData.isDirectory)
-              boardData.path = ['f'];
-            this.flMap['b'+boardData.sn] = boardData;
-          }
-        }
-        if(this.flMap['b1']) {
-          var favoriteList = this.getBoardListFromMap(this.flMap);
-          this.taskStage = 0;
-          var task = this.taskList.shift();
-          task.callback(favoriteList);
-          this.currentTask = this.taskDefines.none;
-          this.runNextTask();
-          return;
-        }
-        this.NextBoardSn = firstBoardData.sn - 20;
-        //console.log('this.NextBoardSn = ' + this.NextBoardSn);
-        this.bbsCore.conn.send('\x1b[5~'); //page up.
-      }
-    }
-    setTimeout(this.getFavoriteList.bind(this), this.timerInterval);
-  },
-  
   enterDirectory: function() {
     this.currentTask = this.taskDefines.enterDirectory;
     var extData = this.taskList[0].extData;
     var EnterChar = this.prefs.EnterChar;
     if(this.taskStage == 0) {
       this.taskStage = 1;
-      var path = '';
-      for(var i=0;i<extData.path.length;++i){
-        path += (extData.path[i] + EnterChar);
-        if(extData.path[i] != 'f' && extData.path[i] != 'c') {
-          path += (EnterChar + ' ');
+      if(extData.boardName == 'favorite') {
+        this.bbsCore.conn.send('f' + EnterChar + '\x1b[4~'); //f,enter,end
+      } else {
+        var path = '';
+        for(var i=0;i<extData.path.length;++i){
+          path += (extData.path[i] + EnterChar);
+          if(extData.path[i] != 'f' && extData.path[i] != 'c') {
+            path += (EnterChar + ' ');
+          }
         }
+        this.bbsCore.conn.send(path + String(extData.sn) + EnterChar + EnterChar + ' ' + '\x1b[4~'); //s,boardName,enter,space,end
       }
-      this.bbsCore.conn.send(path + String(extData.sn) + EnterChar + EnterChar + ' ' + '\x1b[4~'); //s,boardName,enter,space,end
     } else if(this.taskStage == 1) {
       // there no any way to check where we are?
       var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
@@ -834,6 +761,18 @@ RobotPtt.prototype={
       }
     }
     setTimeout(this.gotoMainFunctionList.bind(this), this.timerInterval);
+  },
+  
+  getFavorite: function() {
+    return new BoardPtt(this.bbsCore,
+                          'f', //sn
+                          'favorite', //boardName
+                          '', //bClass
+                          '', //description
+                          true, //isDirectory
+                          false, //isHidden
+                          '' //popular
+                          );
   },
 
   logout: function() {

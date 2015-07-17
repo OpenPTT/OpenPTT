@@ -8,17 +8,24 @@ function BoardPtt(bbsCore, sn, boardName, bClass, description, isDirectory, isHi
   this.isDirectory = isDirectory;
   this.isHidden = isHidden;
   this.popular = popular;
-  //path
+  this.path = [];
   this.subBoardList = [];
   this.articleList = [];
   this.highlightList = [];
   this.articleListMap = {};
+  
+  this.subBoardListReady = false;
 }
 
 BoardPtt.prototype={
   enter: function () {
     if(this.isHidden)
       return false;
+
+    if(this.isDirectory && this.subBoardListReady) {
+      this.bbsCore.apply('updateBoardList', this);
+      return true;
+    }
 
     this.robot.addTask({
       name: 'gotoMainFunctionList',
@@ -38,6 +45,7 @@ BoardPtt.prototype={
         run: this.robot.getBoardList.bind(this.robot),
         callback: function(subBoardList){
                     this.subBoardList = subBoardList;
+                    this.subBoardListReady = true;
                     this.bbsCore.apply('updateBoardList', this);
                   }.bind(this),
         extData: this
@@ -115,12 +123,10 @@ BoardPtt.prototype={
   },
   
   _updateArticleList: function (data, updateInfo) {
-    console.log('_updateArticleList - 1');
     if(updateInfo && updateInfo.highlightList && updateInfo.highlightList.length) {
       this.highlightList = updateInfo.highlightList;
       this.bbsCore.apply('updateArticleList', this);
     }
-    console.log('_updateArticleList - 2');
 
     //TODO: we need remove some article for saving memory.
     if(updateInfo && updateInfo.updateList && updateInfo.updateList.length) {
@@ -142,7 +148,6 @@ BoardPtt.prototype={
       }
       //update article - start
     }
-    console.log('_updateArticleList - 3');
 
     if(!data || data.length == 0)
       return;
@@ -155,7 +160,6 @@ BoardPtt.prototype={
         this.articleList = data.concat(this.articleList);
       }
     }
-    console.log('_updateArticleList - 4');
 
     //keep a maping table - start
     this.articleListMap = {};
@@ -164,7 +168,6 @@ BoardPtt.prototype={
     //keep a maping table - end
 
     this.bbsCore.apply('updateArticleList', this);
-    console.log('_updateArticleList - 5');
   }
 };
 
