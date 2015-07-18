@@ -20,23 +20,12 @@
     "use strict";
         
     function onDeviceReady() {
-        //detect device language
-        navigator.globalization.getPreferredLanguage(
-            function (language) {                
-                console.log('language: ' + language.value.toLowerCase());
-                if(language.value.toLowerCase().match('^zh')){
-                    window.location="file:///android_asset/www/zh-tw.html";
-                }
-                else{
-                    window.location="file:///android_asset/www/en.html";
-                }
-            },
-            function () {
-                console.error('Error getting language');
-                window.location="en.html";
-            }
-        );
+        // Handle the Cordova pause and resume events
+        //document.addEventListener( 'pause', onPause.bind(this), false );
+        //document.addEventListener( 'resume', onResume.bind(this), false );
+        // TODO: Cordova has been loaded. Perform any initialization that requires Cordova here.
     }
+
     function onPause() {
         // TODO: This application has been suspended. Save application state here.
     }
@@ -55,5 +44,18 @@
     document.addEventListener( 'deviceready', onDeviceReady.bind( this ), false );
     window.addEventListener('load', onLoad.bind(this), false);
     window.addEventListener('unload', onUnload.bind(this), false);
+    
+    window.app = {
+        bbsCore: null
+    };
+    window.siteManager = {
+        siteData: {},
+        regSite: function(siteName, siteData){
+          this.siteData[siteName] = siteData;
+        },
+        getSite: function(siteName){
+          return this.siteData[siteName];
+        }
+    };
 
 } )();
