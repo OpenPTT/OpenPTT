@@ -92,6 +92,13 @@ BBSCore.prototype={
     return null;
   },
   
+  getClassBoardDirectories: function() {
+    if('getClassBoardDirectories' in this.robot) {
+      return this.robot.getClassBoardDirectories();
+    }
+    return null;
+  },
+  
   logout: function() {
     this.addTask('logout', this.onLogoutEvent.bind(this));
   },

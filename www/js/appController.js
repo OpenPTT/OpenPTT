@@ -62,6 +62,7 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
   
   $scope.currentArticle = {};
   $scope.currentArticle.lines = [];
+  $scope.rootMenu = 'mainUI.html';
  
   $scope.init = function() {
     if(!$window.app.bbsCore)
@@ -70,6 +71,7 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
     $scope.bbsCore.regConnectionStatusEvent($scope.updateMainUI);    
     $scope.bbsCore.setApplyDataEvent($scope.applyDataEvent);
     $scope.favorites = $scope.bbsCore.getFavorite();
+    $scope.classBoards = $scope.bbsCore.getClassBoardDirectories();
   };
 
   $scope.applyDataEvent = function(subject, obj) {
@@ -91,10 +93,14 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
 
     if(board.isDirectory) {
       if(board.boardName == 'favorite') {
-
+        $scope.boardListStack.push($scope.favorites);
+        $scope.currentDirectory = $scope.favorites;
       } else {
         //$scope.boardList = board.subBoardList;
-        favoriteNavigator.pushPage('boardList.html');
+        if($scope.rootMenu == 'mainUI.html')
+          homeNavigator.pushPage('boardList.html');
+        else if($scope.rootMenu == 'favorite.html')
+          favoriteNavigator.pushPage('boardList.html');
         $scope.boardListStack.push(board);
         //$scope.boardList = board.subBoardList;
         $scope.currentDirectory = board;
@@ -103,13 +109,16 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
       $scope.currentBoardName = board.boardName;
       $scope.currentBoard = board;
       $scope.$apply();
-      favoriteNavigator.pushPage('article.html');
+      if($scope.rootMenu == 'mainUI.html')
+        homeNavigator.pushPage('article.html');
+      else if($scope.rootMenu == 'favorite.html')
+        favoriteNavigator.pushPage('article.html');
       $scope.boardListStack.push({});
       $scope.currentDirectory = {};
       $scope.currentDirectory.subBoardList = [];
     }
   };
-  
+
   $scope.exitBoard = function () {
     console.log('exitBoard');
     $scope.boardListStack.pop();
@@ -117,6 +126,10 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
       $scope.currentDirectory = $scope.boardListStack[$scope.boardListStack.length-1];
     else
       $scope.currentDirectory = {};
+  };
+
+  $scope.enterClassBoard = function () {
+    homeNavigator.pushPage('classBoard.html');
   };
 
   $scope.logout = function () {
@@ -142,12 +155,29 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
       return;
 
     $scope.currentArticle = article;
-    favoriteNavigator.pushPage('reading.html');
+    if($scope.rootMenu == 'mainUI.html')
+      homeNavigator.pushPage('reading.html');
+    else if($scope.rootMenu == 'favorite.html')
+      favoriteNavigator.pushPage('reading.html');
     $scope.boardListStack.push({});
     $scope.currentDirectory = {};
     $scope.currentDirectory.subBoardList = [];
   };
 
+  $scope.switchTab = function (tab) {
+    $scope.rootMenu=tab;
+    switch (tab){
+      case "mainUI.html":
+        break;
+      case "favorite.html":
+        $scope.enterBoard($scope.favorites);
+        break;
+      case "settings.html":
+        break;
+      default:
+        break;
+    }
+  };
   
   $scope.updateMainUI = function (status) {
     switch (status){

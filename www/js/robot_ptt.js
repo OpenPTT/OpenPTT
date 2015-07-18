@@ -199,6 +199,8 @@ RobotPtt.prototype={
       this.taskStage = 1;
       if(extData.boardName == 'favorite') {
         this.bbsCore.conn.send('f' + EnterChar + '\x1b[4~'); //f,enter,end
+      } else if(extData.boardName == '0ClassRoot') {
+        this.bbsCore.conn.send('c' + EnterChar + String(extData.sn) + EnterChar + EnterChar + '\x1b[4~'); //c,enter,end
       } else {
         var path = '';
         for(var i=0;i<extData.path.length;++i){
@@ -708,30 +710,40 @@ RobotPtt.prototype={
       var firstBoardP2 = this.bbsCore.buf.getRowText(3, 64, 67);
       var firstBoardData = this.strParser.parseBoardData(firstBoardP1, firstBoardP2);
       if(firstBoardData && firstBoardData.sn == this.NextBoardSn) {
-        for(var i=3;i<23;++i) {
-          var boardP1 = this.bbsCore.buf.getRowText(i, 0, 63);
-          var boardP2 = this.bbsCore.buf.getRowText(i, 64, 67);
-          var boardData = this.strParser.parseBoardData(boardP1, boardP2);
-          if(boardData && !this.blMap['b'+boardData.sn]) {
-            console.log(boardData.boardName);
-            if(boardData.isDirectory)
-              boardData.path = extData.path.concat([String(extData.sn)]);
-            this.blMap['b'+boardData.sn] = boardData;
+        //var findCursor = false;
+        //for(var i=3;i<23;++i) {
+        //  var cursor = this.bbsCore.buf.getRowText(i, 0, 2);
+        //  if(cursor=='\u25cf') { //solid circle
+        //    findCursor = true;
+        //    break;
+        //  }
+        //}
+        //if(findCursor) {
+          for(var i=3;i<23;++i) {
+            var boardP1 = this.bbsCore.buf.getRowText(i, 0, 63);
+            var boardP2 = this.bbsCore.buf.getRowText(i, 64, 67);
+            var boardData = this.strParser.parseBoardData(boardP1, boardP2);
+            if(boardData && !this.blMap['b'+boardData.sn]) {
+              console.log(boardData.boardName);
+              if(boardData.isDirectory)
+                boardData.path = extData.path.concat([String(extData.sn)]);
+              this.blMap['b'+boardData.sn] = boardData;
+            }
           }
-        }
-        if(this.blMap['b1']) {
-          var boardList = this.getBoardListFromMap(this.blMap);
-          this.taskStage = 0;
-          var task = this.taskList.shift();
-          console.log('boardList.length = ' + boardList.length);
-          task.callback(boardList);
-          this.currentTask = this.taskDefines.none;
-          this.runNextTask();
-          return;
-        }
-        this.NextBoardSn = firstBoardData.sn - 20;
-        //console.log('this.NextBoardSn = ' + this.NextBoardSn);
-        this.bbsCore.conn.send('\x1b[5~'); //page up.
+          if(this.blMap['b1']) {
+            var boardList = this.getBoardListFromMap(this.blMap);
+            this.taskStage = 0;
+            var task = this.taskList.shift();
+            console.log('boardList.length = ' + boardList.length);
+            task.callback(boardList);
+            this.currentTask = this.taskDefines.none;
+            this.runNextTask();
+            return;
+          }
+          this.NextBoardSn = firstBoardData.sn - 20;
+          //console.log('this.NextBoardSn = ' + this.NextBoardSn);
+          this.bbsCore.conn.send('\x1b[5~'); //page up.
+        //}
       }
     }
     setTimeout(this.getBoardList.bind(this), this.timerInterval);
@@ -773,6 +785,10 @@ RobotPtt.prototype={
                           false, //isHidden
                           '' //popular
                           );
+  },
+  
+  getClassBoardDirectories: function() {
+    return new ClassPtt(this.bbsCore);
   },
 
   logout: function() {

@@ -116,19 +116,19 @@
       <ons-page ng-controller="AppController" ng-init="init()">
         <ons-tabbar>
           <ons-tab active="true" page="home.html">
-            <div class="tab">
+            <div class="tab" ng-click="switchTab('mainUI.html')">
               <ons-icon icon="ion-home" class="tab-icon"></ons-icon>
               <div class="tab-label">Main menu</div>
             </div>
           </ons-tab>
           <ons-tab page="favorite.html">
-            <div class="tab" ng-click="enterBoard(favorites);">
+            <div class="tab" ng-click="switchTab('favorite.html')">
               <ons-icon icon="ion-heart" class="tab-icon"></ons-icon>
               <div class="tab-label">Favorites</div>
             </div>
           </ons-tab>
           <ons-tab page="settings.html">
-            <div class="tab">
+            <div class="tab" ng-click="switchTab('settings.html')">
               <ons-icon icon="ion-gear-a" class="tab-icon"></ons-icon>
               <div class="tab-label">Settings</div>
             </div>
@@ -138,13 +138,29 @@
     </ons-template>
 
     <ons-template id="home.html">
-      <ons-page>
-      </ons-page>
+      <ons-navigator animation="slide" var="homeNavigator" ons-postpop="exitBoard();">
+        <ons-page>
+          <ons-toolbar>
+            <div class="center">Main menu</div>
+          </ons-toolbar>
+          <ons-list>
+            <ons-list-item modifier="chevron" ng-click="enterClassBoard();">
+              <ons-icon icon="ion-grid" size="20px"></ons-icon>
+              Class
+            </ons-list-item>
+
+            <ons-list-item modifier="chevron">
+              <ons-icon icon="ion-email" size="20px"></ons-icon>
+              Mail
+            </ons-list-item>
+          </ons-list>
+        </ons-page>
+      </ons-navigator>
     </ons-template>
     
     <ons-template id="favorite.html">
-      <ons-navigator animation="slide" var="favoriteNavigator" ons-postpop="exitBoard();">
-        <ons-page>
+      <ons-navigator animation="slide" var="favoriteNavigator" ons-postpop="exitBoard();" page="boardList.html">
+        <!--<ons-page>
           <ons-list class="plan-list">
             <ons-list-item modifier="chevron" class="plan" ng-repeat="favorite in favorites.subBoardList" ng-click="enterBoard(favorite);">
               <ons-row>
@@ -161,7 +177,7 @@
               </ons-row>
             </ons-list-item>
           </ons-list>
-        </ons-page>
+        </ons-page>-->
       </ons-navigator>
     </ons-template>
 
@@ -229,7 +245,7 @@
                 <div class="plan-date">{{article.date}}&nbsp;{{article.author}}</div>
               </ons-col>
             </ons-row>
-          </ons-list-item>            
+          </ons-list-item>
           <ons-list-item modifier="chevron" class="plan" status="{{article.author == '-' ? 'delete' : 'normal'}}" ng-repeat="article in currentBoard.articleList">
             <ons-row height="50px">
               <ons-col width="60px" class="plan-left" ng-click="replyArticle(article)">                  
@@ -304,6 +320,29 @@
       </ons-page>
     </ons-template>
 
+    <ons-template id="classBoard.html">
+      <ons-page>
+        <ons-toolbar>
+          <div class="left"><ons-back-button>Back</ons-back-button></div>
+          <div class="center"></div>
+        </ons-toolbar>
+        <ons-list class="plan-list">
+          <ons-list-item modifier="chevron" class="plan" status="normal" ng-repeat="board in classBoards.subBoardList">
+            <ons-row height="50px">
+              <ons-col width="100px" class="plan-left">                  
+                <div class="plan-date">{{board.bClass}}</div>
+              </ons-col>
+              <ons-col width="6px" class="plan-center" ng-style="{backgroundColor:$index % 2 == 1 ? '#3399ff' : '#ccc'}">
+              </ons-col>
+              <ons-col class="plan-right" ng-click="enterBoard(board);">
+                <div class="plan-name">{{board.description}}</div>
+              </ons-col>
+            </ons-row>
+          </ons-list-item>
+        </ons-list>
+      </ons-page>
+    </ons-template>
+    
     <ons-template id="settings.html">
       <ons-page>
         <ons-toolbar>
