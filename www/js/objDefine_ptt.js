@@ -225,7 +225,7 @@ function ClassPtt(bbsCore) {
   this.bbsCore = bbsCore;
   this.robot = bbsCore.robot;
   this.sn = 'c';
-  this.boardName = '0ClassRoot';
+  this.boardName = '1ClassRoot';
   this.subBoardList = [];
   this.subBoardListReady = true;
   this.isDirectory = true;
@@ -247,7 +247,7 @@ function ClassPtt(bbsCore) {
   for(var i=0;i<classBoardInfo.length;++i) {
     var board = new BoardPtt(this.bbsCore,
                           i+1, //sn
-                          '0ClassRoot', //boardName
+                          '1ClassBranch', //boardName
                           classBoardInfo[i].bClass, //bClass
                           classBoardInfo[i].description, //description
                           true, //isDirectory

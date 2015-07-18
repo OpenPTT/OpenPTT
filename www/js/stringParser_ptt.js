@@ -5,16 +5,21 @@ function StringParserPtt(bbsCore) {
 StringParserPtt.prototype={
 
   parseBoardData: function (str1, str2) {
+    var isHidden = false;
     var regex = new RegExp(/\u25cf?\s{0,7}(\d{0,7})\s{1,2}[\u02c7 ]([\w -]{12})\s(.{1,4})\s([\u25ce\u25cf\u03a3])(.*)/g);
     var result = regex.exec(str1);
     if(result && result.length == 6) {
+      var boardName = result[2].replace(/^\s+|\s+$/g,'');
+      if(boardName == '0ClassRoot' || boardName == 'FPGinPTT')
+        isHidden = true;
+        
       return new BoardPtt(this.bbsCore,
                           parseInt(result[1]), //sn
                           result[2].replace(/^\s+|\s+$/g,''), //boardName
                           result[3], //bClass
                           result[5], //description
                           (result[4] == '\u03a3' ? true : false), //isDirectory
-                          false, //isHidden
+                          isHidden, //isHidden
                           str2.replace(/^\s+|\s+$/g,'') //popular
                           );
     }

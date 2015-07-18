@@ -199,7 +199,7 @@ RobotPtt.prototype={
       this.taskStage = 1;
       if(extData.boardName == 'favorite') {
         this.bbsCore.conn.send('f' + EnterChar + '\x1b[4~'); //f,enter,end
-      } else if(extData.boardName == '0ClassRoot') {
+      } else if(extData.boardName == '1ClassBranch') {
         this.bbsCore.conn.send('c' + EnterChar + String(extData.sn) + EnterChar + EnterChar + '\x1b[4~'); //c,enter,end
       } else {
         var path = '';
