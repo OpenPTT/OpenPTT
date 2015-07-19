@@ -25,15 +25,15 @@
             function (language) {                
                 console.log('language: ' + language.value.toLowerCase());
                 if(language.value.toLowerCase().match('^zh')){
-                    window.location="file:///android_asset/www/zh-tw.html";
+                    window.location="./zh-tw.html";
                 }
                 else{
-                    window.location="file:///android_asset/www/en.html";
+                    window.location="./en.html";
                 }
             },
             function () {
                 console.error('Error getting language');
-                window.location="en.html";
+                window.location="./en.html";
             }
         );
     }
