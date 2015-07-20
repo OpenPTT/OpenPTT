@@ -42,7 +42,7 @@ StringParserPtt.prototype={
   parseArticleData: function (str1, str2) {
     var regex = new RegExp(/((?:(?:\d+)|(?:  \u2605 ))) [\u002bmMsSD*!=~ ]((?:(?:[X\d ]{2})|(?:\u7206))[\d ])(\d\/\d{2}) ([\w-]+) +/g);
     var result = regex.exec(str1);
-    var regex2 = new RegExp(/([\u25a1\u8f49R]:?) (\[.{2,4}\])?(.*)/g);
+    var regex2 = new RegExp(/([\u25a1\u02c7\u8f49R]:?) (\[.{2,6}\])?(.*)/g);
     var result2 = regex2.exec(str2);
 
     if(result && result.length == 5 && result2 && result2.length == 4) {
