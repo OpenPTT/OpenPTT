@@ -78,6 +78,32 @@ StringParserPtt.prototype={
     return null;
   },
 
+  parseMailData: function (str) {
+    //too many case... :( 
+    
+    var regex = new RegExp(/\u25CF? {0,5}(\d{1,6}) [rD ] {1,2}(\d{1,2}\/\d{1,2}) (\w{2,14}) {1,13}(.*)/g);
+    var result = regex.exec(str);
+    if(result) {
+      return new MailPtt(
+        this.bbsCore,
+        parseInt(result[1]),
+        result[2],
+        result[3],
+        result[4]);
+    }
+    var regex2 = new RegExp(/\u25CF? {0,5}(\d{1,6}) [rD ] {1,2}(\d{1,2}\/\d{1,2}) (\[.{1,10}\]) {1,13}\u25C7 (.*)/g);
+    result = regex2.exec(str);
+    if(result) {
+      return new MailPtt(
+        this.bbsCore,
+        parseInt(result[1]),
+        result[2],
+        result[3],
+        result[4]);
+    }
+    return null;
+  },
+  
   parseAid: function (str) {
     var regex = new RegExp(/\u2502 \u6587\u7AE0\u4EE3\u78BC\(AID\): #([\w\-]{8}) \(([\w -]{2,12})\).*/g);
     var result = regex.exec(str);
@@ -124,6 +150,19 @@ StringParserPtt.prototype={
     return null;
   },
 
+  parseTotalMail: function (str) {
+    var str2 = str.replace(/\s/g, '');
+    var regex = new RegExp(/\u7DE8\u865F\u65E5\u671F\u4F5C\u8005\u4FE1\u4EF6\u6A19\u984C\(\u5BB9\u91CF:(\d{1,4})\/(\d{1,4})\u7BC7\)/g);
+    var result = regex.exec(str2);
+    if(result && result.length ==3) {
+      return {
+        total: parseInt(result[1]),
+        max: parseInt(result[2])
+      };
+    }
+    return null;
+  },
+  
   parseArticlePageInfo:function (str) {
     var regexShort = new RegExp(/  \u700F\u89BD \u7B2C {0,3}(\d{1,4}) {0,3}\u9801 {0,2}\( {0,3}(\d{1,3})%\) {0,3}.*/g);
     var result = regexShort.exec(str);
@@ -181,6 +220,10 @@ StringParserPtt.prototype={
 
   getBoardList: function(str) {
     return (str.indexOf('【看板列表】') >= 0);
+  },
+
+  getMailList: function(str) {
+    return (str.indexOf('【郵件選單】') >= 0);
   },
 
   getBoardHeader: function(str, boardName) {

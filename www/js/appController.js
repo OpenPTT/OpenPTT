@@ -72,6 +72,7 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
     $scope.bbsCore.setApplyDataEvent($scope.applyDataEvent);
     $scope.favorites = $scope.bbsCore.getFavorite();
     $scope.classBoards = $scope.bbsCore.getClassBoardDirectories();
+    $scope.mailBox = $scope.bbsCore.getMailBox();
   };
 
   $scope.applyDataEvent = function(subject, obj) {
@@ -130,6 +131,11 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
 
   $scope.enterClassBoard = function () {
     homeNavigator.pushPage('classBoard.html');
+  };
+
+  $scope.enterMailBox = function () {
+    $scope.mailBox.enter();
+    homeNavigator.pushPage('mailList.html');
   };
 
   $scope.logout = function () {

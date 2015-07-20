@@ -99,6 +99,13 @@ BBSCore.prototype={
     return null;
   },
   
+  getMailBox: function() {
+    if('getMailBox' in this.robot) {
+      return this.robot.getMailBox();
+    }
+    return null;
+  },
+  
   logout: function() {
     this.addTask('logout', this.onLogoutEvent.bind(this));
   },

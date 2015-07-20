@@ -262,3 +262,65 @@ function ClassPtt(bbsCore) {
 ClassPtt.prototype={
 
 };
+
+function MailPtt(bbsCore, sn, date, mailer, title) {
+  this.bbsCore = bbsCore;
+  this.robot = bbsCore.robot;
+  this.sn = sn;
+  this.date = date;
+  this.mailer = mailer;
+  this.title = title;
+  this.aid = 'mail';
+  this.content = {};
+}
+
+MailPtt.prototype={
+  read: function () {
+    this.robot.addTask({
+      name: 'getArticleContent',
+      run: this.robot.getArticleContent.bind(this.robot),
+      callback: function(data){
+                  this.content = data;
+                  //this.lines = data.lines;
+                  this.bbsCore.apply('updateArticleContent', this);
+                }.bind(this),
+      extData: this}
+    );
+    return true;
+  }
+}
+
+function MailBoxPtt(bbsCore) {
+  this.bbsCore = bbsCore;
+  this.robot = bbsCore.robot;
+  this.total = 0;
+  this.max = 0;
+  this.mailList = [];
+}
+
+MailBoxPtt.prototype={
+  enter: function () {
+    this.robot.addTask({
+      name: 'gotoMainFunctionList',
+      run: this.robot.gotoMainFunctionList.bind(this.robot),
+      callback: function(){},
+      extData: this
+    });
+    this.robot.addTask({
+      name: 'enterMailBox',
+      run: this.robot.enterMailBox.bind(this.robot),
+      callback: function(){},
+      extData: this
+    });
+    this.robot.addTask({
+      name: 'getMailList',
+      run: this.robot.getMailList.bind(this.robot),
+      callback: function(mailList){
+                  this.mailList = mailList;
+                  this.bbsCore.apply('updateMailList', this);
+                }.bind(this),
+      extData: this
+    });
+    return true;
+  }
+}

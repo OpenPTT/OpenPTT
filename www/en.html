@@ -149,7 +149,7 @@
               Class
             </ons-list-item>
 
-            <ons-list-item modifier="chevron">
+            <ons-list-item modifier="chevron" ng-click="enterMailBox();">
               <ons-icon icon="ion-email" size="20px"></ons-icon>
               Mail
             </ons-list-item>
@@ -342,7 +342,33 @@
         </ons-list>
       </ons-page>
     </ons-template>
-    
+
+    <ons-template id="mailList.html">
+      <ons-page>
+        <ons-toolbar>
+          <div class="left"><ons-back-button>Back</ons-back-button></div>
+          <div class="center">MailList</div>
+          <div class="right"><ons-toolbar-button><ons-icon icon="ion-navicon" style="font-size: 28px;"></ons-icon></ons-toolbar-button></div>
+        </ons-toolbar>
+        <ons-list class="plan-list">
+          <ons-list-item modifier="chevron" class="plan" ng-repeat="mail in mailBox.mailList">
+            <ons-row height="50px">
+              <ons-col width="80px" class="plan-left">                  
+                <div class="plan-date">{{mail.mailer}}</div>
+                <div class="plan-info">{{mail.sn}}</div>
+              </ons-col>
+              <ons-col width="6px" class="plan-center" ng-style="{backgroundColor:$index % 2 == 1 ? '#3399ff' : '#ccc'}">
+              </ons-col>
+              <ons-col class="plan-right" ng-click="readArticle(mail);">
+                <div class="plan-name">{{mail.title}}</div>
+                <div class="plan-date">{{mail.date}}</div>
+              </ons-col>
+            </ons-row>
+          </ons-list-item>
+        </ons-list>
+      </ons-page>
+    </ons-template>
+
     <ons-template id="settings.html">
       <ons-page>
         <ons-toolbar>

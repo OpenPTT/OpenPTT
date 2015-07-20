@@ -16,6 +16,7 @@ function RobotPtt(bbsCore) {
   //termStatus: 2 //article list
   //termStatus: 3 //reading article
   //termStatus: 4 //board list
+  //termStatus: 5 //mail box
   this.termStatus = 0;
   this.currentTask = 0; //1:getFavoriteList, 2:logout, 3:getBoardList, 4:getArticleList 5:enterBoard 6:getArticleContent
   this.taskList = [];
@@ -40,7 +41,9 @@ RobotPtt.prototype={
     enterBoard: 5,
     getArticleContent: 6,
     gotoMainFunctionList: 7,
-    enterDirectory: 8
+    enterDirectory: 8,
+    enterMailBox: 9,
+    getMailList: 10
   },
   // Modified from pcmanx-gtk2
   initialAutoLogin: function() {
@@ -165,11 +168,11 @@ RobotPtt.prototype={
     this.taskList = [];
   },
 
-  getBoardListFromMap: function(blMap) {
+  getListFromMap: function(prefix, objMap) {
     var boardList = [];
     for(var i=1;i<65535;++i) {
-      if(blMap['b' + i]) {
-        boardList.push(blMap['b' + i]);
+      if(objMap[prefix + i]) {
+        boardList.push(objMap[prefix + i]);
       } else {
         break;
       }
@@ -459,7 +462,6 @@ RobotPtt.prototype={
           }
           this.bbsCore.conn.send('\x1b[D\x1b[4~\x1b[4~' + upStr + EnterChar); //left,end,end,up*n,enter
         }
-        //parseArticleHeader
       }
     }
     
@@ -482,7 +484,11 @@ RobotPtt.prototype={
       }
       if(extData.aid) { //have aid, user aid to jump to article
         this.taskStage = 3;
-        this.bbsCore.conn.send('#' + extData.aid + EnterChar + EnterChar);//left + enter + end
+        if(extData.aid == 'mail') {
+          this.bbsCore.conn.send(String(extData.sn) + EnterChar + EnterChar);
+        } else {
+          this.bbsCore.conn.send('#' + extData.aid + EnterChar + EnterChar);//left + enter + end
+        }
       } else { //no aid, use sn to jump to article, then crawl aid.
         this.taskStage = 1;
         this.bbsCore.conn.send(String(extData.sn) + EnterChar + EnterChar);
@@ -689,7 +695,7 @@ RobotPtt.prototype={
             }
           }
           if(this.blMap['b1']) {
-            var boardList = this.getBoardListFromMap(this.blMap);
+            var boardList = this.getListFromMap('b', this.blMap);
             this.taskStage = 0;
             var task = this.taskList.shift();
             console.log('boardList.length = ' + boardList.length);
@@ -731,7 +737,7 @@ RobotPtt.prototype={
             }
           }
           if(this.blMap['b1']) {
-            var boardList = this.getBoardListFromMap(this.blMap);
+            var boardList = this.getListFromMap('b', this.blMap);
             this.taskStage = 0;
             var task = this.taskList.shift();
             console.log('boardList.length = ' + boardList.length);
@@ -774,6 +780,88 @@ RobotPtt.prototype={
     }
     setTimeout(this.gotoMainFunctionList.bind(this), this.timerInterval);
   },
+
+  enterMailBox: function() {
+    this.currentTask = this.taskDefines.enterMailBox;
+    var extData = this.taskList[0].extData;
+    var EnterChar = this.prefs.EnterChar;
+    if(this.taskStage == 0) {
+      this.taskStage = 1;
+      this.bbsCore.conn.send('m' + EnterChar + 'r' + EnterChar + '\x1b[1~'); //m,enter,r,enter,home
+    } else if(this.taskStage == 1) {
+      // check board name.
+      var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
+      var line2 = this.bbsCore.buf.getRowText(2, 0, this.bbsCore.buf.cols);
+      var mailBoxInfo = this.strParser.parseTotalMail(line2);
+      if( this.strParser.getMailList(line) && mailBoxInfo) {
+          extData.total = mailBoxInfo.total;
+          extData.max = mailBoxInfo.max;
+          this.taskStage = 0;
+          this.termStatus = 5;
+          var task = this.taskList.shift();
+          task.callback();
+          this.currentTask = this.taskDefines.none;
+          this.runNextTask();
+          return;
+      }
+    }
+    setTimeout(this.enterMailBox.bind(this), this.timerInterval);
+  },
+
+  getMailList: function() {
+    console.log('getMailList');
+    this.currentTask = this.taskDefines.getMailList;
+    var extData = this.taskList[0].extData;
+    if(this.taskStage == 0) {
+      this.mlMap = {};
+      this.mailCount = 0;
+      this.taskStage = 1;
+      this.nextMailSn = 1;
+    } else if(this.taskStage == 1) {
+      //TODO: need fix, how to detect board list page finish ?
+      var firstMailLine = this.bbsCore.buf.getRowText(3, 0, this.bbsCore.buf.cols);
+      console.log('firstMailLine = ' + firstMailLine);
+      var firstMailData = this.strParser.parseMailData(firstMailLine);
+      if(firstMailData && firstMailData.sn == this.nextMailSn) {
+        console.log('get first line data');
+        
+         var findCursor = false;
+         for(var i=3;i<23;++i) {
+           var cursor = this.bbsCore.buf.getRowText(i, 0, 2);
+           if(cursor=='\u25cf') { //solid circle
+             findCursor = true;
+             break;
+           }
+         }
+         if(findCursor) {
+          //console.log('this.bbsCore.buf.cur_x = ' + this.bbsCore.buf.cur_x);
+          for(var i=3;i<23;++i) {
+            var mailLine = this.bbsCore.buf.getRowText(i, 0, this.bbsCore.buf.cols);
+            var mailData = this.strParser.parseMailData(mailLine);
+            if(mailData && !this.mlMap['m'+mailData.sn]) {
+              console.log('mailData.sn = ' + mailData.sn);
+              this.mlMap['m'+mailData.sn] = mailData;
+              this.mailCount++;
+            }
+          }
+          this.nextMailSn+=20;
+          console.log('this.mailCount = ' + this.mailCount);
+          if(this.mailCount == extData.total) {
+            var mailList = this.getListFromMap('m', this.mlMap);
+            mailList.reverse();
+            this.taskStage = 0;
+            var task = this.taskList.shift();
+            task.callback(mailList);
+            this.currentTask = this.taskDefines.none;
+            this.runNextTask();
+            return;
+          }
+          this.bbsCore.conn.send('\x1b[6~'); //page down.
+        }
+      }
+    }
+    setTimeout(this.getMailList.bind(this), this.timerInterval);
+  },
   
   getFavorite: function() {
     return new BoardPtt(this.bbsCore,
@@ -789,6 +877,10 @@ RobotPtt.prototype={
   
   getClassBoardDirectories: function() {
     return new ClassPtt(this.bbsCore);
+  },
+  
+  getMailBox:function() {
+    return new MailBoxPtt(this.bbsCore);
   },
 
   logout: function() {
