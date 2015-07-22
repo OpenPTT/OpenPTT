@@ -1,5 +1,8 @@
 A mobile app for BBS site: telnet://ptt.cc
 
+Support iOS/Android/WP to connect PTT.
+Base on Cordova/Javascript/css/html5/AngularJS
+
 # OpenPTT
 一款真正屬於 PTT 鄉民的 App，由鄉民親手打造每一行程式碼。
 完全開源、無廣告而且免費，
