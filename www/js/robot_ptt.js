@@ -43,7 +43,8 @@ RobotPtt.prototype={
     gotoMainFunctionList: 7,
     enterDirectory: 8,
     enterMailBox: 9,
-    getMailList: 10
+    getMailList: 10,
+    postArticle: 11
   },
   // Modified from pcmanx-gtk2
   initialAutoLogin: function() {
@@ -361,12 +362,17 @@ RobotPtt.prototype={
             }
             this.bbsCore.conn.send('\x1b[4~\x1b[4~' + upStr + EnterChar); //end, up * n-1, enter 
           } else {
-            this.taskStage = 0;
-            var task = this.taskList.shift();
+            //get post class
+            this.bbsCore.conn.send('\x10'); //ctrl+p
+            task = this.taskList[0];
             task.callback(articleList);
-            this.currentTask = this.taskDefines.none;
-            this.runNextTask();
-            return;
+            this.taskStage = 6;
+            // this.taskStage = 0;
+            // var task = this.taskList.shift();
+            // task.callback(articleList);
+            // this.currentTask = this.taskDefines.none;
+            // this.runNextTask();
+            // return;
           }
         } else if(extData.direction == 'new') {
           //if(!this.alMap['a'+extData.max]) {  //only crawl newest data
@@ -395,7 +401,7 @@ RobotPtt.prototype={
             task.callback(articleList, {updateList: updateList,
                                         updateFields: ['author','popular','aClass','title','level']
                                        });
-            console.log('fresh finish');
+            console.log('refresh finish');
             this.currentTask = this.taskDefines.none;
             this.runNextTask();
             return;
@@ -445,15 +451,19 @@ RobotPtt.prototype={
         this.highlightCount--;
         this.highlightList[this.highlightCount].aid = aidData.aid; 
         if(this.highlightCount == 0) {
+          //get post class
           //console.log('finsih all');
-          this.taskStage = 0;
-          this.bbsCore.conn.send('\x1b[D');
-          var task = this.taskList.shift();
+          this.taskStage = 6;
+          this.bbsCore.conn.send('\x1b[D\x10'); //left, ctrl+p
+          task = this.taskList[0];
           task.callback([],{highlightList: this.highlightList});
+          //this.taskStage = 6;
+          //var task = this.taskList.shift();
+          //task.callback([],{highlightList: this.highlightList});
           this.highlightList = [];
-          this.currentTask = this.taskDefines.none;
-          this.runNextTask();
-          return;
+          //this.currentTask = this.taskDefines.none;
+          //this.runNextTask();
+          //return;
         } else {
           this.taskStage = 4;
           var upStr = '';
@@ -462,6 +472,18 @@ RobotPtt.prototype={
           }
           this.bbsCore.conn.send('\x1b[D\x1b[4~\x1b[4~' + upStr + EnterChar); //left,end,end,up*n,enter
         }
+      }
+    } else if(this.taskStage == 6) {
+      var line = this.bbsCore.buf.getRowText(21, 0, this.bbsCore.buf.cols);
+      var articleClass = this.strParser.parseArticleClass(line);
+      if(articleClass) {
+        this.taskStage = 0;
+        this.bbsCore.conn.send(EnterChar + EnterChar); //enter + enter
+        var task = this.taskList.shift();
+        task.callback([],{aClassList: articleClass});
+        this.currentTask = this.taskDefines.none;
+        this.runNextTask();
+        return;
       }
     }
     
@@ -863,6 +885,40 @@ RobotPtt.prototype={
     setTimeout(this.getMailList.bind(this), this.timerInterval);
   },
   
+  postArticle: function() {
+    this.currentTask = this.taskDefines.postArticle;
+    var extData = this.taskList[0].extData;
+    var EnterChar = this.prefs.EnterChar;
+    var Encoding = this.prefs.charset;
+    if(this.taskStage == 0) {
+      this.taskStage = 1;
+      this.bbsCore.conn.convSend('\x10' + EnterChar + extData.title + EnterChar, Encoding); //ctrl+p, enter      
+    } else if(this.taskStage == 1) {
+      var line = this.bbsCore.buf.getRowText(23, 0, this.bbsCore.buf.cols);
+      if( this.strParser.getEditMessage(line) ) {
+        this.taskStage = 2;
+        this.bbsCore.conn.convSend(extData.content + '\x18s' + EnterChar, Encoding);
+      }
+    } else if(this.taskStage == 2) {
+      var firstLine = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
+      var line = this.bbsCore.buf.getRowText(23, 0, this.bbsCore.buf.cols);
+      if( this.strParser.getPressAnyKeyText(line) ) {
+        this.taskStage = 0;
+        this.bbsCore.conn.convSend(' ', Encoding);
+        var task = this.taskList.shift();
+        task.callback();
+        this.currentTask = this.taskDefines.none;
+        this.runNextTask();
+        return;
+      } else if ( this.strParser.getSignatureMessage(firstLine) ) {
+        //var defaultSignature = this.strParser.getDefaultSignature(line);
+        //TODO: let user select Signature File. We use default signature now.
+        this.bbsCore.conn.send(EnterChar, Encoding);
+      }
+    }
+    setTimeout(this.postArticle.bind(this), this.timerInterval);
+  },
+  
   getFavorite: function() {
     return new BoardPtt(this.bbsCore,
                           'f', //sn
@@ -881,6 +937,10 @@ RobotPtt.prototype={
   
   getMailBox:function() {
     return new MailBoxPtt(this.bbsCore);
+  },
+  
+  createNewArticle:function(board) {
+    return new NewArticlePtt(this.bbsCore, board);
   },
 
   logout: function() {

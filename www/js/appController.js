@@ -169,6 +169,35 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
     $scope.currentDirectory = {};
     $scope.currentDirectory.subBoardList = [];
   };
+  
+  $scope.createNewArticle = function () {
+    $scope.newArticle = $scope.bbsCore.createNewArticle($scope.currentBoard);
+    if($scope.rootMenu == 'mainUI.html')
+      homeNavigator.pushPage('postArticle.html');
+    else if($scope.rootMenu == 'favorite.html')
+      favoriteNavigator.pushPage('postArticle.html');
+    $scope.boardListStack.push({});
+    $scope.currentDirectory = {};
+    $scope.currentDirectory.subBoardList = [];
+  };
+  
+  $scope.postArticle = function () {
+    $scope.newArticle.post();
+    if($scope.rootMenu == 'mainUI.html')
+      homeNavigator.popPage();
+    else if($scope.rootMenu == 'favorite.html')
+      favoriteNavigator.popPage();
+  };
+  
+  $scope.setArticleClass = function (articleClass) {
+    var regex = new RegExp(/(\[.{1,4}\] ?).*/g);
+    var result = regex.exec($scope.newArticle.title);
+    if(result) {
+      $scope.newArticle.title = '['+articleClass+']' + $scope.newArticle.title.substr(result[1].length -1);
+    } else {
+      $scope.newArticle.title = '['+articleClass+'] ' + $scope.newArticle.title;
+    }
+  };
 
   $scope.switchTab = function (tab) {
     $scope.rootMenu=tab;

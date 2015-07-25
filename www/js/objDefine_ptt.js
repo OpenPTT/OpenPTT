@@ -18,7 +18,7 @@ function BoardPtt(bbsCore, sn, boardName, bClass, description, isDirectory, isHi
 }
 
 BoardPtt.prototype={
-  enter: function () {
+  enter: function (taskArray) {
     if(this.isHidden)
       return false;
 
@@ -34,35 +34,47 @@ BoardPtt.prototype={
       extData: this
     });
     if(this.isDirectory) {
-      this.robot.addTask({
-        name: 'enterDirectory',
-        run: this.robot.enterDirectory.bind(this.robot),
-        callback: function(){},
-        extData: this
-      });
-      this.robot.addTask({
-        name: 'getBoardList',
-        run: this.robot.getBoardList.bind(this.robot),
-        callback: function(subBoardList){
-                    this.subBoardList = subBoardList;
-                    this.subBoardListReady = true;
-                    this.bbsCore.apply('updateBoardList', this);
-                  }.bind(this),
-        extData: this
-      });
+      if(!taskArray)
+        taskArray = ['enterDirectory', 'getBoardList'];
+      if(taskArray.indexOf('enterDirectory') != -1) {
+        this.robot.addTask({
+          name: 'enterDirectory',
+          run: this.robot.enterDirectory.bind(this.robot),
+          callback: function(){},
+          extData: this
+        });
+      }
+      if(taskArray.indexOf('getBoardList') != -1) {
+        this.robot.addTask({
+          name: 'getBoardList',
+          run: this.robot.getBoardList.bind(this.robot),
+          callback: function(subBoardList){
+                      this.subBoardList = subBoardList;
+                      this.subBoardListReady = true;
+                      this.bbsCore.apply('updateBoardList', this);
+                    }.bind(this),
+          extData: this
+        });
+      }
     } else {
-      this.robot.addTask({
-        name: 'enterBoard',
-        run: this.robot.enterBoard.bind(this.robot),
-        callback: function(){},
-        extData: this
-      });
-      this.robot.addTask({
-        name: 'getArticleList',
-        run: this.robot.getArticleList.bind(this.robot),
-        callback: this._updateArticleList.bind(this),
-        extData: {direction: 'none'}
-      });
+      if(!taskArray)
+        taskArray = ['enterBoard', 'getArticleList'];
+      if(taskArray.indexOf('enterBoard') != -1) {
+        this.robot.addTask({
+          name: 'enterBoard',
+          run: this.robot.enterBoard.bind(this.robot),
+          callback: function(){},
+          extData: this
+        });
+      }
+      if(taskArray.indexOf('getArticleList') != -1) {
+        this.robot.addTask({
+          name: 'getArticleList',
+          run: this.robot.getArticleList.bind(this.robot),
+          callback: this._updateArticleList.bind(this),
+          extData: {direction: 'none'}
+        });
+      }
     }
     return true;
   },
@@ -123,6 +135,10 @@ BoardPtt.prototype={
   },
   
   _updateArticleList: function (data, updateInfo) {
+    if(updateInfo && updateInfo.aClassList) {
+      this.articleClassList = updateInfo.aClassList;
+    }
+    
     if(updateInfo && updateInfo.highlightList && updateInfo.highlightList.length) {
       this.highlightList = updateInfo.highlightList;
       this.bbsCore.apply('updateArticleList', this);
@@ -217,6 +233,30 @@ ArticlePtt.prototype={
                 }.bind(this),
       extData: this}
     );
+    return true;
+  }
+};
+
+function NewArticlePtt(bbsCore, board) {
+  this.bbsCore = bbsCore;
+  this.robot = bbsCore.robot;
+  this.board = board;
+  this.title = '';
+  this.content = '';
+}
+
+NewArticlePtt.prototype={
+  post: function () {
+    this.board.enter(['enterBoard']);
+    this.robot.addTask({
+      name: 'postArticle',
+      run: this.robot.postArticle.bind(this.robot),
+      callback: function(){
+                  //this.bbsCore.apply('updateBoardList', this);
+                }.bind(this),
+      extData: this
+    });
+    this.board.refresh();
     return true;
   }
 };

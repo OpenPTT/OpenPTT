@@ -105,7 +105,11 @@ BBSCore.prototype={
     }
     return null;
   },
-  
+
+  createNewArticle: function(board) {
+    return this.robot.createNewArticle(board);
+  },
+
   logout: function() {
     this.addTask('logout', this.onLogoutEvent.bind(this));
   },

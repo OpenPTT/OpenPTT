@@ -162,7 +162,28 @@ StringParserPtt.prototype={
     }
     return null;
   },
-  
+
+  parseArticleClass:function (str) {
+    var regex = new RegExp(/\u7A2E\u985E\uFF1A.*\((\d)-(\d)\u6216\u4E0D\u9078\)\s*/g);
+    var result = regex.exec(str);
+    if (result && result.length==3) {
+      var classList = [];
+      var start = parseInt(result[1]);
+      var end = parseInt(result[2]);
+      for(var i=start; i<=end; ++i) {
+        var classRegex = new RegExp('.*'+String(i)+'\\.(.{1,4}) .*', 'g');
+        var result2 = classRegex.exec(str);
+        if(result2 && result2.length==2){
+          classList.push(result2[1]);
+        } else {
+          //bug?
+        }
+      }
+      return classList;
+    }
+    return null;
+  },
+
   parseArticlePageInfo:function (str) {
     var regexShort = new RegExp(/  \u700F\u89BD \u7B2C {0,3}(\d{1,4}) {0,3}\u9801 {0,2}\( {0,3}(\d{1,3})%\) {0,3}.*/g);
     var result = regexShort.exec(str);
@@ -196,6 +217,15 @@ StringParserPtt.prototype={
       }
     }
     return false;
+  },
+
+  getDefaultSignature: function (str) {
+    var regex = new RegExp(/\u8ACB\u9078\u64C7\u7C3D\u540D\u6A94 \(1-9, 0=\u4E0D\u52A0 x=\u96A8\u6A5F\)\[(\d)\].*/g);
+    var result = regex.exec(str);
+    if (result && result.length==2) {
+      return parseInt(result[1]);
+    }
+    return 0;
   },
   
   getErrorLogin: function(str) {
@@ -240,6 +270,14 @@ StringParserPtt.prototype={
 
   getAnsiAnimateMessage: function(str) {
    return (str.indexOf('★ 這份文件是可播放的文字動畫，要開始播放嗎') >= 0);
+  },
+
+  getEditMessage: function(str) {
+   return (str.indexOf(' 編輯文章 ') >= 0);
+  },
+
+  getSignatureMessage: function(str) {
+   return (str.indexOf('請選擇簽名檔') >= 0);
   },
 
   getLoginPrompt: function() {
