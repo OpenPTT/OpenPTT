@@ -218,17 +218,28 @@ RobotPtt.prototype={
     } else if(this.taskStage == 1) {
       // there no any way to check where we are?
       var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
-      var firstBoardP1 = this.bbsCore.buf.getRowText(3, 0, 63);
-      var firstBoardP2 = this.bbsCore.buf.getRowText(3, 64, 67);
-      var firstBoardData = this.strParser.parseBoardData(firstBoardP1, firstBoardP2);
-      if( this.strParser.getBoardList(line) && firstBoardData) {
-          this.taskStage = 0;
-          this.termStatus = 4;
-          var task = this.taskList.shift();
-          task.callback();
-          this.currentTask = this.taskDefines.none;
-          this.runNextTask();
-          return;
+      var line2 = this.bbsCore.buf.getRowText(3, 0, this.bbsCore.buf.cols);
+      if(this.strParser.getBoardList(line) && this.strParser.getEmptyDirectoryMessage(line2)){
+        this.taskStage = 0;
+        this.termStatus = 4;
+        var task = this.taskList.shift();
+        task.callback();
+        this.currentTask = this.taskDefines.none;
+        this.runNextTask();
+        return;
+      } else {
+        var firstBoardP1 = this.bbsCore.buf.getRowText(3, 0, 63);
+        var firstBoardP2 = this.bbsCore.buf.getRowText(3, 64, 67);
+        var firstBoardData = this.strParser.parseBoardData(firstBoardP1, firstBoardP2);
+        if( this.strParser.getBoardList(line) && firstBoardData) {
+            this.taskStage = 0;
+            this.termStatus = 4;
+            var task = this.taskList.shift();
+            task.callback();
+            this.currentTask = this.taskDefines.none;
+            this.runNextTask();
+            return;
+        }
       }
     }
     setTimeout(this.enterDirectory.bind(this), this.timerInterval);
@@ -690,46 +701,57 @@ RobotPtt.prototype={
     } else if(this.taskStage == 1) {
       //TODO: need fix, how to detect board list page finish ?
       var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
-      var firstBoardP1 = this.bbsCore.buf.getRowText(3, 0, 63);
-      var firstBoardP2 = this.bbsCore.buf.getRowText(3, 64, 67);
-      var firstBoardData = this.strParser.parseBoardData(firstBoardP1, firstBoardP2);
-      if(this.strParser.getBoardList(line) && firstBoardData) {
-        var findCursor = false;
-        for(var i=3;i<23;++i) {
-          var cursor = this.bbsCore.buf.getRowText(i, 0, 2);
-          if(cursor=='\u25cf') { //solid circle
-            findCursor = true;
-            break;
-          }
-        }
-        if(findCursor) {
-          this.termStatus = 1;
-          //console.log('this.bbsCore.buf.cur_x = ' + this.bbsCore.buf.cur_x);
+      var line2 = this.bbsCore.buf.getRowText(3, 0, this.bbsCore.buf.cols);
+      if(this.strParser.getBoardList(line) && this.strParser.getEmptyDirectoryMessage(line2)) {
+        this.taskStage = 0;
+        var task = this.taskList.shift();
+        console.log('boardList.length = 0');
+        task.callback([]);
+        this.currentTask = this.taskDefines.none;
+        this.runNextTask();
+        return;
+      } else {
+        var firstBoardP1 = this.bbsCore.buf.getRowText(3, 0, 63);
+        var firstBoardP2 = this.bbsCore.buf.getRowText(3, 64, 67);
+        var firstBoardData = this.strParser.parseBoardData(firstBoardP1, firstBoardP2);
+        if(this.strParser.getBoardList(line) && firstBoardData) {
+          var findCursor = false;
           for(var i=3;i<23;++i) {
-            var boardP1 = this.bbsCore.buf.getRowText(i, 0, 63);
-            var boardP2 = this.bbsCore.buf.getRowText(i, 64, 67);
-            var boardData = this.strParser.parseBoardData(boardP1, boardP2);
-            if(boardData && !this.blMap['b'+boardData.sn]) {
-              console.log(boardData.boardName);
-              if(boardData.isDirectory)
-                boardData.path = extData.path.concat([String(extData.sn)]);
-              this.blMap['b'+boardData.sn] = boardData;
+            var cursor = this.bbsCore.buf.getRowText(i, 0, 2);
+            if(cursor=='\u25cf') { //solid circle
+              findCursor = true;
+              break;
             }
           }
-          if(this.blMap['b1']) {
-            var boardList = this.getListFromMap('b', this.blMap);
-            this.taskStage = 0;
-            var task = this.taskList.shift();
-            console.log('boardList.length = ' + boardList.length);
-            task.callback(boardList);
-            this.currentTask = this.taskDefines.none;
-            this.runNextTask();
-            return;          
+          if(findCursor) {
+            this.termStatus = 1;
+            //console.log('this.bbsCore.buf.cur_x = ' + this.bbsCore.buf.cur_x);
+            for(var i=3;i<23;++i) {
+              var boardP1 = this.bbsCore.buf.getRowText(i, 0, 63);
+              var boardP2 = this.bbsCore.buf.getRowText(i, 64, 67);
+              var boardData = this.strParser.parseBoardData(boardP1, boardP2);
+              if(boardData && !this.blMap['b'+boardData.sn]) {
+                console.log(boardData.boardName);
+                if(boardData.isDirectory)
+                  boardData.path = extData.path.concat([String(extData.sn)]);
+                this.blMap['b'+boardData.sn] = boardData;
+              }
+            }
+            if(this.blMap['b1']) {
+              var boardList = this.getListFromMap('b', this.blMap);
+              this.taskStage = 0;
+              var task = this.taskList.shift();
+              console.log('boardList.length = ' + boardList.length);
+              task.callback(boardList);
+              this.currentTask = this.taskDefines.none;
+              this.runNextTask();
+              return;
+            }
+            this.NextBoardSn = firstBoardData.sn - 20;
+            //console.log('this.NextBoardSn = ' + this.NextBoardSn);
+            this.taskStage = 2;
+            this.bbsCore.conn.send('\x1b[5~'); //page up.
           }
-          this.NextBoardSn = firstBoardData.sn - 20;
-          //console.log('this.NextBoardSn = ' + this.NextBoardSn);
-          this.taskStage = 2;
-          this.bbsCore.conn.send('\x1b[5~'); //page up.
         }
       }
     }

@@ -6,19 +6,22 @@ StringParserPtt.prototype={
 
   parseBoardData: function (str1, str2) {
     var isHidden = false;
-    var regex = new RegExp(/\u25cf?\s{0,7}(\d{0,7})\s{1,2}[\u02c7 ]([\w -]{12})\s(.{1,4})\s([\u25ce\u25cf\u03a3])(.*)/g);
+    var regex = new RegExp(/\u25cf?\s{0,7}(\d{0,7})\s{1,2}[\u02c7 ]([\w -]{12})\s(.{1,4})\s([\u25ce\u25cf\u03a3\u25A1])(.*)/g);
     var result = regex.exec(str1);
     if(result && result.length == 6) {
       var boardName = result[2].replace(/^\s+|\s+$/g,'');
       if(boardName == '0ClassRoot' || boardName == 'FPGinPTT')
         isHidden = true;
+      var isDirectory = false;
+      if(result[4] == '\u03a3' || (result[4] == '\u25A1' && boardName =='MyFavFolder'))
+        isDirectory = true;
         
       return new BoardPtt(this.bbsCore,
                           parseInt(result[1]), //sn
-                          result[2].replace(/^\s+|\s+$/g,''), //boardName
+                          boardName, //boardName
                           result[3], //bClass
                           result[5], //description
-                          (result[4] == '\u03a3' ? true : false), //isDirectory
+                          isDirectory, //isDirectory
                           isHidden, //isHidden
                           str2.replace(/^\s+|\s+$/g,'') //popular
                           );
@@ -31,6 +34,19 @@ StringParserPtt.prototype={
                           result[2].replace(/^\s+|\s+$/g,''), //boardName
                           result[3].replace(/^\[|\]$/g,''), //bClass
                           result[5], //description
+                          false, //isDirectory
+                          true, //isHidden
+                          '' //popular
+                          );
+    }
+    var regex3 = new RegExp(/\u25cf?\s{0,7}(\d{0,7}) {3}-{12} {6}-*/g);
+    result = regex3.exec(str1);
+    if(result && result.length==2) {
+      return new BoardPtt(this.bbsCore,
+                          parseInt(result[1]), //sn
+                          'splitline', //boardName
+                          '', //bClass
+                          '', //description
                           false, //isDirectory
                           true, //isHidden
                           '' //popular
@@ -278,6 +294,10 @@ StringParserPtt.prototype={
 
   getSignatureMessage: function(str) {
    return (str.indexOf('請選擇簽名檔') >= 0);
+  },
+
+  getEmptyDirectoryMessage: function(str) {
+   return (str.indexOf('空目錄，請按 a 新增或用 y 列出全部看板後按 z 增刪') >= 0);
   },
 
   getLoginPrompt: function() {

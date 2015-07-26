@@ -170,8 +170,8 @@
           <div class="center">{{currentDirectory.boardName=='favorite'?'我的最愛':currentDirectory.boardName}}</div>
         </ons-toolbar>
         <ons-list class="plan-list">
-          <ons-list-item modifier="chevron" class="plan" status="{{board.isHidden ? 'delete' : 'normal'}}" ng-repeat="board in currentDirectory.subBoardList" ng-click="enterBoard(board);">
-            <ons-row>
+          <ons-list-item modifier="chevron" class="plan" itemobj="{{board.boardName == 'splitline' ? 'list' : 'line'}}" status="{{board.isHidden ? 'delete' : 'normal'}}" ng-repeat="board in currentDirectory.subBoardList" ng-click="enterBoard(board);">
+            <ons-row ng-if="board.boardName != 'splitline'">
               <ons-col width="80px" class="plan-left">
                 <div class="plan-date">{{board.bClass}}</div>
                 <div class="plan-duration">{{board.popular}}</div>
@@ -181,6 +181,10 @@
               <ons-col class="plan-right">
                 <div class="plan-name">{{board.boardName}}</div>    
                 <div class="plan-info">{{board.description}}</div>
+              </ons-col>
+            </ons-row>
+            <ons-row ng-if="board.boardName == 'splitline'" >
+              <ons-col width="100%">
               </ons-col>
             </ons-row>
           </ons-list-item>
