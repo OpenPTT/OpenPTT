@@ -1,4 +1,7 @@
 // SSH Connection porting from firessh 0.93.1
+define([
+  'core/uao/uao_conv',
+  'core/lib/paramiko'], function (uaoConv, paramikojs) {
 
 function SshProtocol(bbsCore) {
     this.socket = null;
@@ -40,12 +43,12 @@ SshProtocol.prototype={
         }
         this.bbsCore.robot.initialAutoLogin();
         this.isConnected = false;
-        
+
         var self = this;
         var shell_success = function(shell) {
           self.shell = shell;
         };
-        
+
         this.client = new paramikojs.SSHClient();
         this.client.set_missing_host_key_policy(new paramikojs.AutoAddPolicy()); //always save new key
 
@@ -82,7 +85,7 @@ SshProtocol.prototype={
       this.socket.shutdownWrite();
       this.socket.close();
       this.socket = null;
-      
+
       //ssh - start
       this.isConnected = false;
       this.client.close(true);
@@ -112,7 +115,7 @@ SshProtocol.prototype={
 
     onDataAvailable: function(dataArray) {
         var count = dataArray.length;
-        
+
         var data='';
         while(count > 0) {
             var s = String.fromCharCode.apply(String, dataArray);
@@ -205,3 +208,7 @@ SshProtocol.prototype={
       return unescape(encodeURIComponent(str));
     }
 };
+
+return SshProtocol;
+
+});

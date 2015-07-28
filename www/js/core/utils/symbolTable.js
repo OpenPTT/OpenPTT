@@ -1,4 +1,6 @@
-symboltable = new Object();
+define([], function () {
+
+symboltable = {};
 var a = symboltable;
 a.xa1=1;
 a.xa0=1;
@@ -436,3 +438,7 @@ a.xff9d=1;
 a.xff9e=1;
 a.xff9f=1;
 a.xfffd=3;
+
+return symboltable;
+
+});

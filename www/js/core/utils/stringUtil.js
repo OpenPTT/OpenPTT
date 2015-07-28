@@ -1,3 +1,5 @@
+define([], function () {
+
 function StrUtil() {
 }
 
@@ -80,3 +82,7 @@ StrUtil.prototype={
     return str;
   }
 };
+
+return StrUtil;
+
+});

@@ -18,7 +18,7 @@
     under the License.
 -->
 <!-- CSP support mode (required for Windows Universal apps): https://docs.angularjs.org/api/ng/directive/ngCsp -->
-<html lang="en" ng-app="app" ng-csp>
+<html lang="en" ng-csp>
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *">
@@ -27,13 +27,6 @@
     <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-
-    <!-- JS dependencies (order matters!) -->
-    <!--<script src="scripts/platformOverrides.js"></script>-->
-    <script src="lib/angular/angular.js"></script>
-    <script src="lib/angular/angular-sanitize.js"></script>
-    <script src="lib/onsen/js/onsenui.js"></script>
-    <script src="js/appController.js"></script>
 
     <!-- CSS dependencies -->
     <!-- <link rel="stylesheet" type="text/css" href="css/index.css">-->
@@ -49,29 +42,12 @@
     <link rel="stylesheet" type="text/css" href="css/main.css">
     <!-- --------------- App init --------------- -->
     <title>OpenPTT</title>
+
+    <script src="cordova.js"></script>
+    <script data-main="js/main" src="lib/requirejs/require.js"></script>
   </head>
 
   <body>
-    <!-- Cordova reference -->
-    <script type="text/javascript" src="cordova.js"></script>
-    <script type="text/javascript" src="js/main.js"></script>
-    <script type="text/javascript" src="js/symbolTable.js"></script>
-    <script type="text/javascript" src="js/uao_b2u_table.js"></script>
-    <script type="text/javascript" src="js/uao_u2b_table.js"></script>
-    <script type="text/javascript" src="js/uao_conv.js"></script>
-    <script type="text/javascript" src="js/stringutil.js"></script>
-    <script type="text/javascript" src="js/objDefine_ptt.js"></script>
-    <script type="text/javascript" src="js/stringParser_ptt.js"></script>
-    <script type="text/javascript" src="js/robot_ptt.js"></script>
-    <script type="text/javascript" src="js/ansiparser.js"></script>
-    <script type="text/javascript" src="js/termbuf.js"></script>
-    <script type="text/javascript" src="js/term_view.js"></script>
-    <script type="text/javascript" src="js/telnet.js"></script>
-    <script type="text/javascript" src="js/paramiko.js"></script>
-    <script type="text/javascript" src="js/ssh.js"></script>
-    <script type="text/javascript" src="js/prefsHandler.js"></script>
-    <script type="text/javascript" src="js/bbsCore.js"></script>
-    <!-- -->
     <ons-modal var="loginModal">
       <div class="spinner">
         <div class="rect1"></div>
@@ -157,7 +133,7 @@
         </ons-page>
       </ons-navigator>
     </ons-template>
-    
+
     <ons-template id="favorite.html">
       <ons-navigator animation="slide" var="favoriteNavigator" ons-postpop="exitBoard();" page="boardList.html">
       </ons-navigator>
@@ -179,7 +155,7 @@
               <ons-col width="6px" class="plan-center" ng-style="{backgroundColor:$index % 2 == 1 ? '#3399ff' : '#ccc'}">
               </ons-col>
               <ons-col class="plan-right">
-                <div class="plan-name">{{board.boardName}}</div>    
+                <div class="plan-name">{{board.boardName}}</div>
                 <div class="plan-info">{{board.description}}</div>
               </ons-col>
             </ons-row>
@@ -221,7 +197,7 @@
           </ons-list-item>-->
           <ons-list-item modifier="chevron" class="plan" status="{{article.author == '-' ? 'delete' : 'normal'}}" ng-repeat="article in currentBoard.highlightList">
             <ons-row height="50px">
-              <ons-col width="60px" class="plan-left" ng-click="replyArticle(article)">                  
+              <ons-col width="60px" class="plan-left" ng-click="replyArticle(article)">
                 <div class="plan-date">{{article.aClass}}</div>
                 <div class="plan-info">{{article.aid}}</div>
                 <div class="plan-duration">{{article.popular}}</div>
@@ -235,7 +211,7 @@
           </ons-list-item>
           <ons-list-item modifier="chevron" class="plan" status="{{article.author == '-' ? 'delete' : 'normal'}}" ng-repeat="article in currentBoard.articleList">
             <ons-row height="50px">
-              <ons-col width="60px" class="plan-left" ng-click="replyArticle(article)">                  
+              <ons-col width="60px" class="plan-left" ng-click="replyArticle(article)">
                 <div class="plan-date">{{article.aClass}}</div>
                 <div class="plan-info">{{article.sn}}</div>
                 <div class="plan-duration">{{article.popular}}</div>
@@ -264,7 +240,7 @@
           <!-- need hiht light ? -->
           <!--<ons-list-item modifier="chevron" class="plan" status="{{article.author == '-' ? 'delete' : 'normal'}}" ng-repeat="article in filterResult">
             <ons-row height="50px">
-              <ons-col width="60px" class="plan-left">                  
+              <ons-col width="60px" class="plan-left">
                 <div class="plan-date">{{article.aClass}}</div>
                 <div class="plan-info">{{article.aid}}</div>
                 <div class="plan-duration">{{article.popular}}</div>
@@ -279,7 +255,7 @@
           </ons-list-item>-->
           <ons-list-item modifier="chevron" class="plan" status="{{article.author == '-' ? 'delete' : 'normal'}}" ng-repeat="article in filterResult">
             <ons-row height="50px">
-              <ons-col width="60px" class="plan-left">                  
+              <ons-col width="60px" class="plan-left">
                 <div class="plan-date">{{article.aClass}}</div>
                 <div class="plan-info">{{article.sn}}</div>
                 <div class="plan-duration">{{article.popular}}</div>
@@ -316,7 +292,7 @@
         <ons-list class="plan-list">
           <ons-list-item modifier="chevron" class="plan" status="normal" ng-repeat="board in classBoards.subBoardList">
             <ons-row height="50px">
-              <ons-col width="100px" class="plan-left">                  
+              <ons-col width="100px" class="plan-left">
                 <div class="plan-date">{{board.bClass}}</div>
               </ons-col>
               <ons-col width="6px" class="plan-center" ng-style="{backgroundColor:$index % 2 == 1 ? '#3399ff' : '#ccc'}">
@@ -372,7 +348,7 @@
         <ons-list class="plan-list">
           <ons-list-item modifier="chevron" class="plan" ng-repeat="mail in mailBox.mailList">
             <ons-row height="50px">
-              <ons-col width="80px" class="plan-left">                  
+              <ons-col width="80px" class="plan-left">
                 <div class="plan-date">{{mail.mailer}}</div>
                 <div class="plan-info">{{mail.sn}}</div>
               </ons-col>

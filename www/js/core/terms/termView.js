@@ -1,7 +1,10 @@
 // Terminal View
+define([
+  'core/terms/termHtml',
+  'core/uao/uao_conv',
+  'core/utils/symbolTable'], function (TermHtml, uaoConv, symboltable) {
 
 function TermView(bbsCore, buf) {
-  
   this.bbsCore = bbsCore;
   this.buf = buf;
 
@@ -15,7 +18,7 @@ function TermView(bbsCore, buf) {
 
   this.curRow = 0;
   this.curCol = 0;
-  
+
   this.outputhtmls = [];//new TermHtml();
   for(var i=0; i<80; ++i) {
     this.outputhtmls.push(new TermHtml());
@@ -24,8 +27,7 @@ function TermView(bbsCore, buf) {
   this.symtable = symboltable;
 }
 
-
-TermView.prototype = {  
+TermView.prototype = {
   createNormalWord: function(ch, ch2, char1, fg, bg, forceWidth) {
     var row = this.curRow;
     var col = this.curCol;
@@ -170,7 +172,7 @@ TermView.prototype = {
     }
     outhtml[this.curCol-1].addHtml(this.closeSpanIfIsOpen());
     //outhtml[this.curCol-1].addHtml(this.closeSpanIfIsOpen());
-	  var tmp = [];
+    var tmp = [];
     for (var j = 0; j < cols; ++j)
       tmp.push(outhtml[j].getHtml());
     return tmp.join('');
@@ -205,3 +207,8 @@ TermView.prototype = {
   }
 
 };
+
+return TermView;
+
+});
+
