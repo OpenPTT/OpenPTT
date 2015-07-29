@@ -41,6 +41,7 @@
     };
 }) ();
 
+
 require.config({
   paths: {
     angular: '../lib/angular/angular',
@@ -63,5 +64,8 @@ require([
   ], function (RobotPtt) {
   window.RobotPtt = RobotPtt;
 
-  angular.bootstrap(document, ['app']);
+  require(['../lib/domReady!'], function () {
+    document.body.style.visibility = "";
+    angular.bootstrap(document, ['app']);
+  });
 });
