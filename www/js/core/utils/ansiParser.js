@@ -1,4 +1,5 @@
 // Parser for ANSI escape sequence
+define([], function () {
 
 const STATE_TEXT=0;
 const STATE_ESC=1;
@@ -334,3 +335,7 @@ AnsiParser.prototype={
         }
     }
 };
+
+return AnsiParser;
+
+});

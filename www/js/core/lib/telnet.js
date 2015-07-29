@@ -1,5 +1,6 @@
-// Handle Telnet Connections according to RFC 854
+define(['core/uao/uao_conv'], function (uaoConv) {
 
+// Handle Telnet Connections according to RFC 854
 // Telnet commands
 const SE = '\xf0'
 const NOP = '\xf1';
@@ -262,3 +263,8 @@ TelnetProtocol.prototype={
       return unescape(encodeURIComponent(str));
     }
 };
+
+return TelnetProtocol;
+
+});
+

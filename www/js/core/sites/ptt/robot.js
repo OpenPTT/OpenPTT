@@ -1,3 +1,10 @@
+define(function(require, exports, module) {
+  var StringParserPtt = require('core/sites/ptt/stringParser'),
+   NewArticlePtt = require('core/sites/ptt/objects/newArticle'),
+   BoardPtt = require('core/sites/ptt/objects/board'),
+   ClassPtt = require('core/sites/ptt/objects/class'),
+   MailBoxPtt = require('core/sites/ptt/objects/mailBox');
+
 function RobotPtt(bbsCore) {
   this.bbsCore = bbsCore;
   this.strParser = new StringParserPtt(bbsCore);
@@ -164,7 +171,7 @@ RobotPtt.prototype={
       this.taskList[0].run();
     }
   },
-  
+
   removeAllTask: function() {
     this.taskList = [];
   },
@@ -194,7 +201,7 @@ RobotPtt.prototype={
     }
     return articleList;
   },
-  
+
   enterDirectory: function() {
     this.currentTask = this.taskDefines.enterDirectory;
     var extData = this.taskList[0].extData;
@@ -255,9 +262,9 @@ RobotPtt.prototype={
         //TODO: we need a command that can jump into board from any where.
         //this command can't use when reading article
         //this.bbsCore.conn.send('s' + String(extData.boardName) +  EnterChar + ' ' + '\x1b[4~\x1b[4~');//s,boardName,enter,space,end,end
-        
-        //NOTE: only wen board in your favorite list.        
-      //  this.bbsCore.conn.send('\x1af' + String(extData.sn) +  EnterChar + EnterChar + ' ' + '\x1b[4~');//ctrl+z,f        
+
+        //NOTE: only wen board in your favorite list.
+      //  this.bbsCore.conn.send('\x1af' + String(extData.sn) +  EnterChar + EnterChar + ' ' + '\x1b[4~');//ctrl+z,f
       //} else {
       //  this.bbsCore.conn.send(String(extData.sn) +  EnterChar + EnterChar + ' ' + '\x1b[4~');
       //}
@@ -294,7 +301,7 @@ RobotPtt.prototype={
     }
     return min;
   },
-  
+
   getArticleList: function() {
     this.currentTask = this.taskDefines.getArticleList;
     var extData = this.taskList[0].extData;
@@ -319,7 +326,7 @@ RobotPtt.prototype={
         this.bbsCore.conn.send(String(extData.min) + EnterChar );//jump to article ns = min
       }
     } else if(this.taskStage == 1) {
-      var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);    
+      var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
       if(this.strParser.getBoardHeader(line, extData.boardName)) {
         this.taskStage = 2;
         this.termStatus = 2;
@@ -371,7 +378,7 @@ RobotPtt.prototype={
             for(var i=0;i<this.highlightCount-1;++i) {
               upStr+='\x1b[A'; //arrow up
             }
-            this.bbsCore.conn.send('\x1b[4~\x1b[4~' + upStr + EnterChar); //end, up * n-1, enter 
+            this.bbsCore.conn.send('\x1b[4~\x1b[4~' + upStr + EnterChar); //end, up * n-1, enter
           } else {
             //get post class
             this.bbsCore.conn.send('\x10'); //ctrl+p
@@ -453,14 +460,14 @@ RobotPtt.prototype={
         this.bbsCore.conn.send('n'); //n or q?
       } else if(articleStatus || this.strParser.getContentAlertMessage(line)) {
         this.taskStage = 5;
-        this.bbsCore.conn.send('Q'); //shift+q 
-      } 
+        this.bbsCore.conn.send('Q'); //shift+q
+      }
     } else if(this.taskStage == 5) {
       var line = this.bbsCore.buf.getRowText(19, 0, this.bbsCore.buf.cols);
       var aidData = this.strParser.parseAid(line);
       if(aidData) {
         this.highlightCount--;
-        this.highlightList[this.highlightCount].aid = aidData.aid; 
+        this.highlightList[this.highlightCount].aid = aidData.aid;
         if(this.highlightCount == 0) {
           //get post class
           //console.log('finsih all');
@@ -497,7 +504,7 @@ RobotPtt.prototype={
         return;
       }
     }
-    
+
     setTimeout(this.getArticleList.bind(this), this.timerInterval);
   },
 
@@ -535,9 +542,9 @@ RobotPtt.prototype={
         if(articlePageInfo) {
           this.termStatus = 3;
           this.taskStage = 2;
-          this.bbsCore.conn.send('Q'); //shift+q 
+          this.bbsCore.conn.send('Q'); //shift+q
         }
-      } 
+      }
     } else if(this.taskStage == 2) {
       //TODO: parse article web url here!
       var line = this.bbsCore.buf.getRowText(19, 0, this.bbsCore.buf.cols);
@@ -656,8 +663,8 @@ RobotPtt.prototype={
             this.currentTask = this.taskDefines.none;
             this.runNextTask();
             return;
-          } else {             
-            //crawl all data in current page            
+          } else {
+            //crawl all data in current page
             for(var i=0;i<23;++i,this.articleData.currentLine++) {
               //var content = this.bbsCore.buf.getRowText(i, 0, this.bbsCore.buf.cols); //need parse to html tag.
               this.articleData.lines.push(this.view.getRowHtmlCode(i));
@@ -672,23 +679,23 @@ RobotPtt.prototype={
       if(line == '\u6A19\u984C') { //title
         this.taskStage = 3;
         this.bbsCore.conn.send('\x1b[A'); //arrow up
-      } 
+      }
     } else if(this.taskStage == 6) {
       var line = this.bbsCore.buf.getRowText(0, 1, 6);
       if(line == '\u6A19\u984C') { //title
         this.taskStage = 3;
         this.bbsCore.conn.send('\x1b[B'); //arrow down
-      } 
+      }
     } else if(this.taskStage == 7) {
       var line = this.bbsCore.buf.getRowText(23, 0, this.bbsCore.buf.cols);
       if(this.strParser.getLastPage(line)) {
         this.taskStage = 3;
         this.bbsCore.conn.send('\x1b[1~'); //home
-      } 
+      }
     }
     setTimeout(this.getArticleContent.bind(this), this.timerInterval);
   },
-  
+
   getBoardList: function() {
     this.currentTask = this.taskDefines.getBoardList;
     var extData = this.taskList[0].extData;
@@ -798,7 +805,7 @@ RobotPtt.prototype={
     }
     setTimeout(this.getBoardList.bind(this), this.timerInterval);
   },
-  
+
   login:function() {
   },
 
@@ -868,7 +875,7 @@ RobotPtt.prototype={
       var firstMailData = this.strParser.parseMailData(firstMailLine);
       if(firstMailData && firstMailData.sn == this.nextMailSn) {
         console.log('get first line data');
-        
+
          var findCursor = false;
          for(var i=3;i<23;++i) {
            var cursor = this.bbsCore.buf.getRowText(i, 0, 2);
@@ -906,7 +913,7 @@ RobotPtt.prototype={
     }
     setTimeout(this.getMailList.bind(this), this.timerInterval);
   },
-  
+
   postArticle: function() {
     this.currentTask = this.taskDefines.postArticle;
     var extData = this.taskList[0].extData;
@@ -914,7 +921,7 @@ RobotPtt.prototype={
     var Encoding = this.prefs.charset;
     if(this.taskStage == 0) {
       this.taskStage = 1;
-      this.bbsCore.conn.convSend('\x10' + EnterChar + extData.title + EnterChar, Encoding); //ctrl+p, enter      
+      this.bbsCore.conn.convSend('\x10' + EnterChar + extData.title + EnterChar, Encoding); //ctrl+p, enter
     } else if(this.taskStage == 1) {
       var line = this.bbsCore.buf.getRowText(23, 0, this.bbsCore.buf.cols);
       if( this.strParser.getEditMessage(line) ) {
@@ -940,7 +947,7 @@ RobotPtt.prototype={
     }
     setTimeout(this.postArticle.bind(this), this.timerInterval);
   },
-  
+
   getFavorite: function() {
     return new BoardPtt(this.bbsCore,
                           'f', //sn
@@ -952,15 +959,15 @@ RobotPtt.prototype={
                           '' //popular
                           );
   },
-  
+
   getClassBoardDirectories: function() {
     return new ClassPtt(this.bbsCore);
   },
-  
+
   getMailBox:function() {
     return new MailBoxPtt(this.bbsCore);
   },
-  
+
   createNewArticle:function(board) {
     return new NewArticlePtt(this.bbsCore, board);
   },
@@ -1013,3 +1020,7 @@ window.siteManager.regSite('PTT',
     Robot: RobotPtt
   }
 );
+
+return RobotPtt;
+
+});

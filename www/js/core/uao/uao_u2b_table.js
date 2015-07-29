@@ -1,3 +1,5 @@
+define([], function () {
+
 var u2bTable = {
 x00A1:'\xA0\xDF',
 x00A2:'\xA2\x46',
@@ -25916,3 +25918,7 @@ xFFEC:'\xA1\xF5',
 xFFED:'\xA1\xBD',
 xFFEE:'\xA1\xB3'
 };
+
+return u2bTable;
+
+});

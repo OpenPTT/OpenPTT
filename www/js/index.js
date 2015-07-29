@@ -18,24 +18,16 @@
  */
 (function () {
     "use strict";
-        
+
     function onDeviceReady() {
         //detect device language
-        navigator.globalization.getPreferredLanguage(
-            function (language) {                
-                console.log('language: ' + language.value.toLowerCase());
-                if(language.value.toLowerCase().match('^zh')){
-                    window.location="./zh-tw.html";
-                }
-                else{
-                    window.location="./en.html";
-                }
-            },
-            function () {
-                console.error('Error getting language');
-                window.location="./en.html";
-            }
-        );
+        var language = window.navigator.userLanguage || window.navigator.language;
+        console.log('language: ' + language.toLowerCase());
+        if (language.toLowerCase().match(/^zh/)) {
+            window.location="./zh-tw.html";
+        } else {
+            window.location="./en.html";
+        }
     }
     function onPause() {
         // TODO: This application has been suspended. Save application state here.
@@ -51,7 +43,7 @@
     function onUnload() {
         //TODO: disconnect
     }
-    
+
     document.addEventListener( 'deviceready', onDeviceReady.bind( this ), false );
     window.addEventListener('load', onLoad.bind(this), false);
     window.addEventListener('unload', onUnload.bind(this), false);

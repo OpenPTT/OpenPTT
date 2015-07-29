@@ -1,6 +1,8 @@
-angular.module('app', ['onsen', 'ngSanitize']);
+define(['core/bbsCore', 'angular', 'angular-sanitize', 'onsen'], function (BBSCore) {
 
-angular.module('app').controller('LoginController', function ($scope, $window) {
+var app = angular.module('app', ['onsen', 'ngSanitize']);
+
+app.controller('LoginController', function ($scope, $window) {
   $scope.init = function() {
     if(!$window.app.bbsCore)
       $window.app.bbsCore = new BBSCore();
@@ -8,7 +10,7 @@ angular.module('app').controller('LoginController', function ($scope, $window) {
     $scope.errorMessage = '';
     $scope.sitename = 'PTT';
     $scope.filterResult = [];
-    
+
     $scope.username = $scope.bbsCore.prefs.username;
     $scope.password = $scope.bbsCore.prefs.password;
     $scope.savePassword = $scope.bbsCore.prefs.savePassword;
@@ -43,10 +45,10 @@ angular.module('app').controller('LoginController', function ($scope, $window) {
         break;
     }
   };
-  
+
 });
 
-angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$sce', function ($scope, $window, $q, $sce) {
+app.controller('AppController', ['$scope', '$window', '$q', '$sce', function ($scope, $window, $q, $sce) {
   $scope.bbsCore = null;
   $scope.nickname = '';
   $scope.currentBoardName = '';
@@ -56,19 +58,19 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
   $scope.currentBoard = {};
   $scope.currentBoard.articleList = [];
   $scope.currentBoard.highlightList = [];
-  
+
   $scope.currentDirectory = {};
   $scope.currentDirectory.subBoardList = [];
-  
+
   $scope.currentArticle = {};
   $scope.currentArticle.lines = [];
   $scope.rootMenu = 'mainUI.html';
- 
+
   $scope.init = function() {
     if(!$window.app.bbsCore)
       $window.app.bbsCore = new BBSCore();
     $scope.bbsCore = $window.app.bbsCore;
-    $scope.bbsCore.regConnectionStatusEvent($scope.updateMainUI);    
+    $scope.bbsCore.regConnectionStatusEvent($scope.updateMainUI);
     $scope.bbsCore.setApplyDataEvent($scope.applyDataEvent);
     $scope.favorites = $scope.bbsCore.getFavorite();
     $scope.classBoards = $scope.bbsCore.getClassBoardDirectories();
@@ -141,7 +143,7 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
   $scope.logout = function () {
     $scope.bbsCore.logout();
   };
-  
+
   $scope.onArticleListScrollTop = function () {
     //let robot crawl more list
     $scope.currentBoard.getOldData(15);
@@ -169,7 +171,7 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
     $scope.currentDirectory = {};
     $scope.currentDirectory.subBoardList = [];
   };
-  
+
   $scope.createNewArticle = function () {
     $scope.newArticle = $scope.bbsCore.createNewArticle($scope.currentBoard);
     if($scope.rootMenu == 'mainUI.html')
@@ -180,7 +182,7 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
     $scope.currentDirectory = {};
     $scope.currentDirectory.subBoardList = [];
   };
-  
+
   $scope.postArticle = function () {
     $scope.newArticle.post();
     if($scope.rootMenu == 'mainUI.html')
@@ -188,7 +190,7 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
     else if($scope.rootMenu == 'favorite.html')
       favoriteNavigator.popPage();
   };
-  
+
   $scope.setArticleClass = function (articleClass) {
     var regex = new RegExp(/(\[.{1,4}\] ?).*/g);
     var result = regex.exec($scope.newArticle.title);
@@ -213,7 +215,7 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
         break;
     }
   };
-  
+
   $scope.updateMainUI = function (status) {
     switch (status){
       case "logout":
@@ -227,7 +229,7 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
         break;
     }
   };
-  
+
   $scope.switchChange = function (itemName) {
     switch (itemName){
       case "deleteDuplicate":
@@ -247,3 +249,7 @@ angular.module('app').controller('AppController', ['$scope', '$window', '$q', '$
   };
 
 }]);
+
+return app;
+
+});

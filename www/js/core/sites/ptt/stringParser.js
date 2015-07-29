@@ -1,3 +1,8 @@
+define(function(require, exports, module) {
+  var ArticlePtt = require('core/sites/ptt/objects/article'),
+   BoardPtt = require('core/sites/ptt/objects/board'),
+   MailPtt = require('core/sites/ptt/objects/mail');
+
 function StringParserPtt(bbsCore) {
   this.bbsCore = bbsCore;
 }
@@ -15,7 +20,7 @@ StringParserPtt.prototype={
       var isDirectory = false;
       if(result[4] == '\u03a3' || (result[4] == '\u25A1' && boardName =='MyFavFolder'))
         isDirectory = true;
-        
+
       return new BoardPtt(this.bbsCore,
                           parseInt(result[1]), //sn
                           boardName, //boardName
@@ -81,7 +86,7 @@ StringParserPtt.prototype={
         level = 2;
       else if(parseInt(popular)>0)
         level = 1;
-      
+
       return new ArticlePtt(this.bbsCore,
                             parseInt(snStr), //sn
                             result[3], //date
@@ -89,14 +94,14 @@ StringParserPtt.prototype={
                             popular,
                             aClass,
                             title,
-                            level );      
+                            level );
     }
     return null;
   },
 
   parseMailData: function (str) {
-    //too many case... :( 
-    
+    //too many case... :(
+
     var regex = new RegExp(/\u25CF? {0,5}(\d{1,6}) [rD ] {1,2}(\d{1,2}\/\d{1,2}) (\w{2,14}) {1,13}(.*)/g);
     var result = regex.exec(str);
     if(result) {
@@ -119,7 +124,7 @@ StringParserPtt.prototype={
     }
     return null;
   },
-  
+
   parseAid: function (str) {
     var regex = new RegExp(/\u2502 \u6587\u7AE0\u4EE3\u78BC\(AID\): #([\w\-]{8}) \(([\w -]{2,12})\).*/g);
     var result = regex.exec(str);
@@ -243,15 +248,15 @@ StringParserPtt.prototype={
     }
     return 0;
   },
-  
+
   getErrorLogin: function(str) {
     return (str.indexOf('密碼不對或無此帳號。請檢查大小寫及有無輸入錯誤。') >= 0);
   },
-  
+
   getDuplicatedLogin: function(str) {
     return (str.indexOf('您想刪除其他重複登入的連線嗎') >= 0);
   },
-  
+
   getErrorLoginLogs: function(str) {
     return (str.indexOf('您要刪除以上錯誤嘗試的記錄嗎') >= 0);
   },
@@ -305,3 +310,7 @@ StringParserPtt.prototype={
   }
 
 };
+
+return StringParserPtt;
+
+});

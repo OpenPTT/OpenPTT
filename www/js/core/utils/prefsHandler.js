@@ -1,3 +1,5 @@
+define([], function () {
+
 function PrefsHandler(bbsCore) {
   this.bbsCore = bbsCore;
   this.termType = 'VT100';
@@ -80,3 +82,7 @@ PrefsHandler.prototype={
     return value;
   }
 };
+
+return PrefsHandler;
+
+});
