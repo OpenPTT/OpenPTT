@@ -3,7 +3,8 @@ define(function(require, exports, module) {
    NewArticlePtt = require('core/sites/ptt/objects/newArticle'),
    BoardPtt = require('core/sites/ptt/objects/board'),
    ClassPtt = require('core/sites/ptt/objects/class'),
-   MailBoxPtt = require('core/sites/ptt/objects/mailBox');
+   MailBoxPtt = require('core/sites/ptt/objects/mailBox'),
+   siteManager = require('core/utils/siteManager');
 
 function RobotPtt(bbsCore) {
   this.bbsCore = bbsCore;
@@ -1005,21 +1006,6 @@ RobotPtt.prototype={
     setTimeout(this.logout.bind(this), this.timerInterval);
   }
 };
-
-window.siteManager.regSite('PTT',
-  {
-    name: 'PTT',
-    addr: 'ptt.cc',
-    port: 23, //set 22 for ssh
-    protocol: 'telnet', //set 'ssh' for ssh
-    prefsRoot: 'openptt.',
-    col: 80,
-    row: 24,
-    charset: 'big5',
-    enterChar: '^M',
-    Robot: RobotPtt
-  }
-);
 
 return RobotPtt;
 

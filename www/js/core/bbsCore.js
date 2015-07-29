@@ -5,7 +5,8 @@ define(function(require, exports, module) {
       TermView = require('core/terms/termView'),
       AnsiParser = require('core/utils/ansiParser'),
       TelnetProtocol = require('core/lib/telnet'),
-      SshProtocol = require('core/lib/ssh');
+      SshProtocol = require('core/lib/ssh'),
+      siteManager = require('core/utils/siteManager');
 
   var BBSCore = function () {
     this.strUtil = new StrUtil();
@@ -60,7 +61,7 @@ define(function(require, exports, module) {
     },
 
     login: function(site, username, password, savePassword) {
-      var siteData = window.siteManager.getSite(site);
+      var siteData = siteManager.getSite(site);
       this.prefs.setRoot( siteData.prefsRoot );
       //this.buf.setCol(siteData.col);
       //this.buf.setCol(siteData.row);
