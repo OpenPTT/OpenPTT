@@ -1,6 +1,5 @@
 define(function(require, exports, module) {
-  var StrUtil = require('core/utils/stringUtil'),
-      PrefsHandler = require('core/utils/prefsHandler'),
+  var PrefsHandler = require('core/utils/prefsHandler'),
       TermBuf = require('core/terms/termBuf'),
       TermView = require('core/terms/termView'),
       AnsiParser = require('core/utils/ansiParser'),
@@ -9,7 +8,6 @@ define(function(require, exports, module) {
       siteManager = require('core/utils/siteManager');
 
   var BBSCore = function () {
-    this.strUtil = new StrUtil();
     this.prefs = new PrefsHandler(this);
     this.prefs.loadPrefs();
     this.conn = null;
