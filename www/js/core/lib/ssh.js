@@ -1,7 +1,8 @@
 // SSH Connection porting from firessh 0.93.1
 define([
   'core/uao/uao_conv',
-  'core/lib/paramiko'], function (uaoConv, paramikojs) {
+  'core/lib/paramiko',
+  'core/utils/stringUtil'], function (uaoConv, paramikojs, strUtil) {
 
 function SshProtocol(bbsCore) {
     this.socket = null;
@@ -193,7 +194,7 @@ SshProtocol.prototype={
         if(extbuf) return s;
         if(s)
         {
-          s = this.bbsCore.strUtil.ansiHalfColorConv(s);
+          s = strUtil.ansiHalfColorConv(s);
           this.send(s);
         }
     },

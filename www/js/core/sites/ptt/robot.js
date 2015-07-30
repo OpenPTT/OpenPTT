@@ -4,7 +4,9 @@ define(function(require, exports, module) {
    BoardPtt = require('core/sites/ptt/objects/board'),
    ClassPtt = require('core/sites/ptt/objects/class'),
    MailBoxPtt = require('core/sites/ptt/objects/mailBox'),
-   siteManager = require('core/utils/siteManager');
+   siteManager = require('core/utils/siteManager'),
+   robotCmd = require('core/utils/robotCmd'),
+   strUtil = require('core/utils/stringUtil');
 
 function RobotPtt(bbsCore) {
   this.bbsCore = bbsCore;
@@ -84,9 +86,8 @@ RobotPtt.prototype={
       return;
 
     var Encoding = this.prefs.charset;
-    var EnterKey = this.prefs.EnterChar;
-    //this.send(this.convSend(this.prefs.loginStr[this.autoLoginStage-1] + this.prefs.EnterChar, Encoding, true));
-    this.bbsCore.conn.convSend(this.prefs.loginStr[this.autoLoginStage - 1] + EnterKey, Encoding);
+    //this.send(this.convSend(this.prefs.loginStr[this.autoLoginStage-1] + robotCmd.Enter, Encoding, true));
+    this.bbsCore.conn.convSend(this.prefs.loginStr[this.autoLoginStage - 1] + robotCmd.Enter, Encoding);
 
     if(this.autoLoginStage == 3) {
       //if(this.prefs.loginStr[3])
@@ -104,7 +105,6 @@ RobotPtt.prototype={
   checkLoginStatus: function() {
 
     var Encoding = this.prefs.charset;
-    var EnterKey = this.prefs.EnterChar;
     var line0 = this.bbsCore.buf.getRowText(21, 0, this.bbsCore.buf.cols);
     var line1 = this.bbsCore.buf.getRowText(22, 0, this.bbsCore.buf.cols);
     var line2 = this.bbsCore.buf.getRowText(23, 0, this.bbsCore.buf.cols);
@@ -119,16 +119,16 @@ RobotPtt.prototype={
     } else if(this.postLoginStage == 1  && this.strParser.getDuplicatedLogin(line1)) {
       this.postLoginStage = 2;
       if(this.prefs.deleteDuplicate) {
-        this.bbsCore.conn.convSend('y' + EnterKey, Encoding);
+        this.bbsCore.conn.convSend('y' + robotCmd.Enter, Encoding);
       } else {
-        this.bbsCore.conn.convSend('n' + EnterKey, Encoding);
+        this.bbsCore.conn.convSend('n' + robotCmd.Enter, Encoding);
       }
     } else if((this.postLoginStage == 1 || this.postLoginStage == 2) && this.strParser.getPressAnyKeyText(line2) ) {
       this.postLoginStage = 3;
       this.bbsCore.conn.send(' ');
     } else if(this.postLoginStage == 3 && this.strParser.getErrorLoginLogs(line2)) {
       this.postLoginStage = 4;
-      this.bbsCore.conn.convSend('y' + EnterKey, Encoding);
+      this.bbsCore.conn.convSend('y' + robotCmd.Enter, Encoding);
     } else if((this.postLoginStage == 3 || this.postLoginStage == 4) && this.strParser.getMainFunctionList(line3)) {
       console.log('main menu');
       this.bbsCore.conn.debug = true;
@@ -206,22 +206,21 @@ RobotPtt.prototype={
   enterDirectory: function() {
     this.currentTask = this.taskDefines.enterDirectory;
     var extData = this.taskList[0].extData;
-    var EnterChar = this.prefs.EnterChar;
     if(this.taskStage == 0) {
       this.taskStage = 1;
       if(extData.boardName == 'favorite') {
-        this.bbsCore.conn.send('f' + EnterChar + '\x1b[4~'); //f,enter,end
+        this.bbsCore.conn.send('f' + robotCmd.Enter + robotCmd.End); //f,enter,end
       } else if(extData.boardName == '1ClassBranch') {
-        this.bbsCore.conn.send('c' + EnterChar + String(extData.sn) + EnterChar + EnterChar + '\x1b[4~'); //c,enter,end
+        this.bbsCore.conn.send('c' + robotCmd.Enter + String(extData.sn) + robotCmd.Enter + robotCmd.Enter + robotCmd.End); //c,enter,end
       } else {
         var path = '';
         for(var i=0;i<extData.path.length;++i){
-          path += (extData.path[i] + EnterChar);
+          path += (extData.path[i] + robotCmd.Enter);
           if(extData.path[i] != 'f' && extData.path[i] != 'c') {
-            path += (EnterChar + ' ');
+            path += (robotCmd.Enter + ' ');
           }
         }
-        this.bbsCore.conn.send(path + String(extData.sn) + EnterChar + EnterChar + ' ' + '\x1b[4~'); //s,boardName,enter,space,end
+        this.bbsCore.conn.send(path + String(extData.sn) + robotCmd.Enter + robotCmd.Enter + ' ' + robotCmd.End); //s,boardName,enter,space,end
       }
     } else if(this.taskStage == 1) {
       // there no any way to check where we are?
@@ -256,20 +255,19 @@ RobotPtt.prototype={
   enterBoard: function() {
     this.currentTask = this.taskDefines.enterBoard;
     var extData = this.taskList[0].extData;
-    var EnterChar = this.prefs.EnterChar;
     if(this.taskStage == 0) {
       this.taskStage = 1;
       //if(this.termStatus != 1) {
         //TODO: we need a command that can jump into board from any where.
         //this command can't use when reading article
-        //this.bbsCore.conn.send('s' + String(extData.boardName) +  EnterChar + ' ' + '\x1b[4~\x1b[4~');//s,boardName,enter,space,end,end
+        //this.bbsCore.conn.send('s' + String(extData.boardName) +  robotCmd.Enter + ' ' + '\x1b[4~\x1b[4~');//s,boardName,enter,space,end,end
 
         //NOTE: only wen board in your favorite list.
-      //  this.bbsCore.conn.send('\x1af' + String(extData.sn) +  EnterChar + EnterChar + ' ' + '\x1b[4~');//ctrl+z,f
+      //  this.bbsCore.conn.send('\x1af' + String(extData.sn) +  robotCmd.Enter + robotCmd.Enter + ' ' + robotCmd.End);//ctrl+z,f
       //} else {
-      //  this.bbsCore.conn.send(String(extData.sn) +  EnterChar + EnterChar + ' ' + '\x1b[4~');
+      //  this.bbsCore.conn.send(String(extData.sn) +  robotCmd.Enter + robotCmd.Enter + ' ' + robotCmd.End);
       //}
-      this.bbsCore.conn.send('s' + String(extData.boardName) + EnterChar + ' ' + '\x1b[4~'); //s,boardName,enter,space,end
+      this.bbsCore.conn.send('s' + String(extData.boardName) + robotCmd.Enter + ' ' + robotCmd.End); //s,boardName,enter,space,end
     } else if(this.taskStage == 1) {
       // check board name.
       var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
@@ -309,7 +307,6 @@ RobotPtt.prototype={
     //none: end, get first page
     //new: left + enter + end, get all article that sn > max
     //old: jump to min, get article that sn < min (articleList.length = 15)
-    var EnterChar = this.prefs.EnterChar;
     if(this.taskStage == 0) {
       this.alMap = {};
       if(this.termStatus != 2) {
@@ -321,10 +318,10 @@ RobotPtt.prototype={
         this.taskStage = 2;
       } else if(extData.direction == 'new') {
         this.taskStage = 1;
-        //this.bbsCore.conn.send('\x1b[D' + EnterChar + '\x1b[4~');//left + enter + end
+        //this.bbsCore.conn.send(robotCmd.Left + robotCmd.Enter + robotCmd.End);//left + enter + end
       } else if(extData.direction == 'old') {
         this.taskStage = 2;
-        this.bbsCore.conn.send(String(extData.min) + EnterChar );//jump to article ns = min
+        this.bbsCore.conn.send(String(extData.min) + robotCmd.Enter );//jump to article ns = min
       }
     } else if(this.taskStage == 1) {
       var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
@@ -375,14 +372,10 @@ RobotPtt.prototype={
             task = this.taskList[0];
             task.callback(articleList);
             this.taskStage = 4;
-            var upStr = '';
-            for(var i=0;i<this.highlightCount-1;++i) {
-              upStr+='\x1b[A'; //arrow up
-            }
-            this.bbsCore.conn.send('\x1b[4~\x1b[4~' + upStr + EnterChar); //end, up * n-1, enter
+            this.bbsCore.conn.send(robotCmd.End.repeat(2) + robotCmd.Up.repeat(this.highlightCount) + robotCmd.Enter); //end, up * n-1, enter
           } else {
             //get post class
-            this.bbsCore.conn.send('\x10'); //ctrl+p
+            this.bbsCore.conn.send(robotCmd.CtrlP); //ctrl+p
             task = this.taskList[0];
             task.callback(articleList);
             this.taskStage = 6;
@@ -398,7 +391,7 @@ RobotPtt.prototype={
           if(!this.alMap['a'+extData.min]) { //crawl all data to update article's newest status
             this.taskStage = 3;
             //send page up and wait update. how to detect page up finish?
-            this.bbsCore.conn.send('\x1b[B\x1b[5~');//arrow down + page up
+            this.bbsCore.conn.send(robotCmd.Down + robotCmd.PgUp);//arrow down + page up
           } else {
             this.taskStage = 0;
             this.termStatus = 2;
@@ -431,7 +424,7 @@ RobotPtt.prototype={
           if(articleList.length < extData.count && !this.alMap['a1']) {
             this.taskStage = 3;
             //send page up and wait update. how to detect page up finish?
-            this.bbsCore.conn.send('\x1b[B\x1b[5~');//arrow down + page up
+            this.bbsCore.conn.send(robotCmd.Down + robotCmd.PgUp);//arrow down + page up
           } else {
             this.taskStage = 0;
             this.termStatus = 2;
@@ -473,7 +466,7 @@ RobotPtt.prototype={
           //get post class
           //console.log('finsih all');
           this.taskStage = 6;
-          this.bbsCore.conn.send('\x1b[D\x10'); //left, ctrl+p
+          this.bbsCore.conn.send(robotCmd.Left + robotCmd.CtrlP); //left, ctrl+p
           task = this.taskList[0];
           task.callback([],{highlightList: this.highlightList});
           //this.taskStage = 6;
@@ -485,11 +478,7 @@ RobotPtt.prototype={
           //return;
         } else {
           this.taskStage = 4;
-          var upStr = '';
-          for(var i=0;i<this.highlightCount-1;++i) {
-            upStr+='\x1b[A';
-          }
-          this.bbsCore.conn.send('\x1b[D\x1b[4~\x1b[4~' + upStr + EnterChar); //left,end,end,up*n,enter
+          this.bbsCore.conn.send(robotCmd.Left + robotCmd.End.repeat(2) + robotCmd.Up.repeat(this.highlightCount) + robotCmd.Enter); //left,end,end,up*n,enter
         }
       }
     } else if(this.taskStage == 6) {
@@ -497,7 +486,7 @@ RobotPtt.prototype={
       var articleClass = this.strParser.parseArticleClass(line);
       if(articleClass) {
         this.taskStage = 0;
-        this.bbsCore.conn.send(EnterChar + EnterChar); //enter + enter
+        this.bbsCore.conn.send(robotCmd.Enter + robotCmd.Enter); //enter + enter
         var task = this.taskList.shift();
         task.callback([],{aClassList: articleClass});
         this.currentTask = this.taskDefines.none;
@@ -512,7 +501,6 @@ RobotPtt.prototype={
   getArticleContent: function() {
     this.currentTask = this.taskDefines.getArticleContent;
     var extData = this.taskList[0].extData;
-    var EnterChar = this.prefs.EnterChar;
     if(this.taskStage == 0) {
         this.articleData = {
         currentPage: 1,
@@ -526,13 +514,13 @@ RobotPtt.prototype={
       if(extData.aid) { //have aid, user aid to jump to article
         this.taskStage = 3;
         if(extData.aid == 'mail') {
-          this.bbsCore.conn.send(String(extData.sn) + EnterChar + EnterChar);
+          this.bbsCore.conn.send(String(extData.sn) + robotCmd.Enter + robotCmd.Enter);
         } else {
-          this.bbsCore.conn.send('#' + extData.aid + EnterChar + EnterChar);//left + enter + end
+          this.bbsCore.conn.send('#' + extData.aid + robotCmd.Enter + robotCmd.Enter);//left + enter + end
         }
       } else { //no aid, use sn to jump to article, then crawl aid.
         this.taskStage = 1;
-        this.bbsCore.conn.send(String(extData.sn) + EnterChar + EnterChar);
+        this.bbsCore.conn.send(String(extData.sn) + robotCmd.Enter + robotCmd.Enter);
       }
     } else if(this.taskStage == 1) {
       var line = this.bbsCore.buf.getRowText(23, 0, this.bbsCore.buf.cols);
@@ -553,7 +541,7 @@ RobotPtt.prototype={
       if(aidData) {
         extData.aid = aidData.aid;
         this.taskStage = 3;
-        this.bbsCore.conn.send(' ' + EnterChar); //space,enter
+        this.bbsCore.conn.send(' ' + robotCmd.Enter); //space,enter
       }
     } else if(this.taskStage == 3) {
       var statusText = this.bbsCore.buf.getRowText(23, 0, this.bbsCore.buf.cols);
@@ -581,7 +569,7 @@ RobotPtt.prototype={
               this.articleData.currentLine = this.articleData.lines.length;
               this.taskStage = 0;
               this.termStatus = 2;
-              this.bbsCore.conn.send('\x1b[D'); //left
+              this.bbsCore.conn.send(robotCmd.Left); //left
               var task = this.taskList.shift();
               task.callback(this.articleData);
               this.currentTask = this.taskDefines.none;
@@ -589,7 +577,7 @@ RobotPtt.prototype={
               return;
             } else {
               this.taskStage = 5;
-              this.bbsCore.conn.send('\x1b[B'); //arrow down
+              this.bbsCore.conn.send(robotCmd.Down); //arrow down
             }
           }
           var statusInfo = this.strParser.parseArticleStatus(statusText);
@@ -611,7 +599,7 @@ RobotPtt.prototype={
               this.articleData.currentLine = this.articleData.lines.length;
               this.taskStage = 0;
               this.termStatus = 2;
-              this.bbsCore.conn.send('\x1b[D'); //left
+              this.bbsCore.conn.send(robotCmd.Left); //left
               var task = this.taskList.shift();
               task.callback(this.articleData);
               this.currentTask = this.taskDefines.none;
@@ -621,7 +609,7 @@ RobotPtt.prototype={
             } else {
               if(statusInfo.pageTotal == 0) {
                 this.taskStage = 7;
-                this.bbsCore.conn.send('\x1b[4~'); //end
+                this.bbsCore.conn.send(robotCmd.End); //end
               } else {
                 //get all info. crawl first data
                 //
@@ -633,7 +621,7 @@ RobotPtt.prototype={
                 this.articleData.currentLine = statusInfo.rowIndexEnd;
                 this.articleData.totalPage = statusInfo.pageTotal;
                 this.articleData.currentPage++;
-                this.bbsCore.conn.send('\x1b[6~'); //page down
+                this.bbsCore.conn.send(robotCmd.PgDown); //page down
               }
             }
           }
@@ -643,7 +631,7 @@ RobotPtt.prototype={
       var statusText = this.bbsCore.buf.getRowText(23, 0, this.bbsCore.buf.cols);
       if(this.strParser.getContentAlertMessage(statusText)) {
         this.taskStage = 6;
-        this.bbsCore.conn.send('\x1b[A'); //arrow up
+        this.bbsCore.conn.send(robotCmd.Up); //arrow up
       } else {
         var statusInfo = this.strParser.parseArticleStatus(statusText);
         if(statusInfo && this.articleData.currentPage == statusInfo.pageNow) {
@@ -658,7 +646,7 @@ RobotPtt.prototype={
             this.articleData.finish = true;
             this.taskStage = 0;
             this.termStatus = 2;
-            this.bbsCore.conn.send('\x1b[D'); //left
+            this.bbsCore.conn.send(robotCmd.Left); //left
             var task = this.taskList.shift();
             task.callback(this.articleData);
             this.currentTask = this.taskDefines.none;
@@ -671,7 +659,7 @@ RobotPtt.prototype={
               this.articleData.lines.push(this.view.getRowHtmlCode(i));
             }
             this.articleData.currentPage++;
-            this.bbsCore.conn.send('\x1b[6~'); //page down
+            this.bbsCore.conn.send(robotCmd.PgDown); //page down
           }
         }
       }
@@ -679,19 +667,19 @@ RobotPtt.prototype={
       var line = this.bbsCore.buf.getRowText(0, 1, 6);
       if(line == '\u6A19\u984C') { //title
         this.taskStage = 3;
-        this.bbsCore.conn.send('\x1b[A'); //arrow up
+        this.bbsCore.conn.send(robotCmd.Up); //arrow up
       }
     } else if(this.taskStage == 6) {
       var line = this.bbsCore.buf.getRowText(0, 1, 6);
       if(line == '\u6A19\u984C') { //title
         this.taskStage = 3;
-        this.bbsCore.conn.send('\x1b[B'); //arrow down
+        this.bbsCore.conn.send(robotCmd.Down); //arrow down
       }
     } else if(this.taskStage == 7) {
       var line = this.bbsCore.buf.getRowText(23, 0, this.bbsCore.buf.cols);
       if(this.strParser.getLastPage(line)) {
         this.taskStage = 3;
-        this.bbsCore.conn.send('\x1b[1~'); //home
+        this.bbsCore.conn.send(robotCmd.Home); //home
       }
     }
     setTimeout(this.getArticleContent.bind(this), this.timerInterval);
@@ -758,7 +746,7 @@ RobotPtt.prototype={
             this.NextBoardSn = firstBoardData.sn - 20;
             //console.log('this.NextBoardSn = ' + this.NextBoardSn);
             this.taskStage = 2;
-            this.bbsCore.conn.send('\x1b[5~'); //page up.
+            this.bbsCore.conn.send(robotCmd.PgUp); //page up.
           }
         }
       }
@@ -800,7 +788,7 @@ RobotPtt.prototype={
           }
           this.NextBoardSn = firstBoardData.sn - 20;
           //console.log('this.NextBoardSn = ' + this.NextBoardSn);
-          this.bbsCore.conn.send('\x1b[5~'); //page up.
+          this.bbsCore.conn.send(robotCmd.PgUp); //page up.
         //}
       }
     }
@@ -816,7 +804,7 @@ RobotPtt.prototype={
       this.taskStage = 1;
       //if(this.termStatus != 0) {
         //this.bbsCore.conn.send('\x1b[D\x1b[D\x1b[D');
-        this.bbsCore.conn.send('\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D');//left,left,left...
+        this.bbsCore.conn.send(robotCmd.Left.repeat(9));//left,left,left...
       //}
     } else if(this.taskStage == 1) {
       var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
@@ -836,10 +824,9 @@ RobotPtt.prototype={
   enterMailBox: function() {
     this.currentTask = this.taskDefines.enterMailBox;
     var extData = this.taskList[0].extData;
-    var EnterChar = this.prefs.EnterChar;
     if(this.taskStage == 0) {
       this.taskStage = 1;
-      this.bbsCore.conn.send('m' + EnterChar + 'r' + EnterChar + '\x1b[1~'); //m,enter,r,enter,home
+      this.bbsCore.conn.send('m' + robotCmd.Enter + 'r' + robotCmd.Enter + robotCmd.Home); //m,enter,r,enter,home
     } else if(this.taskStage == 1) {
       // check board name.
       var line = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
@@ -908,7 +895,7 @@ RobotPtt.prototype={
             this.runNextTask();
             return;
           }
-          this.bbsCore.conn.send('\x1b[6~'); //page down.
+          this.bbsCore.conn.send(robotCmd.PgDown); //page down.
         }
       }
     }
@@ -918,16 +905,15 @@ RobotPtt.prototype={
   postArticle: function() {
     this.currentTask = this.taskDefines.postArticle;
     var extData = this.taskList[0].extData;
-    var EnterChar = this.prefs.EnterChar;
     var Encoding = this.prefs.charset;
     if(this.taskStage == 0) {
       this.taskStage = 1;
-      this.bbsCore.conn.convSend('\x10' + EnterChar + extData.title + EnterChar, Encoding); //ctrl+p, enter
+      this.bbsCore.conn.convSend(robotCmd.CtrlP + robotCmd.Enter + extData.title + robotCmd.Enter, Encoding); //ctrl+p, enter
     } else if(this.taskStage == 1) {
       var line = this.bbsCore.buf.getRowText(23, 0, this.bbsCore.buf.cols);
       if( this.strParser.getEditMessage(line) ) {
         this.taskStage = 2;
-        this.bbsCore.conn.convSend(extData.content + '\x18s' + EnterChar, Encoding);
+        this.bbsCore.conn.convSend(extData.content + '\x18s' + robotCmd.Enter, Encoding);
       }
     } else if(this.taskStage == 2) {
       var firstLine = this.bbsCore.buf.getRowText(0, 0, this.bbsCore.buf.cols);
@@ -943,7 +929,7 @@ RobotPtt.prototype={
       } else if ( this.strParser.getSignatureMessage(firstLine) ) {
         //var defaultSignature = this.strParser.getDefaultSignature(line);
         //TODO: let user select Signature File. We use default signature now.
-        this.bbsCore.conn.send(EnterChar, Encoding);
+        this.bbsCore.conn.send(robotCmd.Enter, Encoding);
       }
     }
     setTimeout(this.postArticle.bind(this), this.timerInterval);
@@ -980,7 +966,7 @@ RobotPtt.prototype={
     if(this.taskStage == 0) {
       this.taskStage = 1;
       //if(this.termStatus != 0) {
-        this.bbsCore.conn.send('\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D\x1b[D');
+        this.bbsCore.conn.send(robotCmd.Left.repeat(9));
         //this.bbsCore.conn.send('\x1b[D\x1ac\x1b[D');//left,ctrl+z,c,left
       //}
     } else if(this.taskStage == 1) {
@@ -988,12 +974,12 @@ RobotPtt.prototype={
       if( this.strParser.getMainFunctionList(line) ) {
         this.termStatus = 0;
         this.taskStage = 2;
-        this.bbsCore.conn.send('g' + this.prefs.EnterChar); //g + enter
+        this.bbsCore.conn.send('g' + robotCmd.Enter); //g + enter
       }
     } else if(this.taskStage == 2) {
       var line = this.bbsCore.buf.getRowText(22, 0, this.bbsCore.buf.cols);
       if( this.strParser.getExitMessage(line)) {
-        this.bbsCore.conn.send('y' + this.prefs.EnterChar + ' '); //y + enter + space
+        this.bbsCore.conn.send('y' + robotCmd.Enter + ' '); //y + enter + space
 
         this.taskStage = 0;
         var task = this.taskList.shift();

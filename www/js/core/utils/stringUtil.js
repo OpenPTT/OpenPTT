@@ -1,9 +1,11 @@
 define([], function () {
 
-function StrUtil() {
-}
+var StrUtil = {
+  // concat('a', 'b', 'c') ==> 'abc'
+  concat: function () {
+    return Array.prototype.slice.call(arguments).join('');
+  },
 
-StrUtil.prototype={
   UnEscapeStr: function(str) {
     var result = '';
     for(var i=0; i<str.length; ++i) {

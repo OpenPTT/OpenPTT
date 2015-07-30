@@ -6,7 +6,6 @@ function PrefsHandler(bbsCore) {
   this.bbsCol = 80;
   this.bbsRow = 24;
   this.charset = 'big5';
-  this.EnterChar = bbsCore.strUtil.UnEscapeStr('^M');
   this.disableLinefeed = false;
   this.aidAction = 0;
   this.deleteDuplicate = true;
