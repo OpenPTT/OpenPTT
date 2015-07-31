@@ -1,5 +1,12 @@
 define([], function () {
 
+//workaround for String.repeat
+if(!String.prototype.repeat){
+  String.prototype.repeat = function( num ) {
+    return new Array( num + 1 ).join( this );
+  };
+}
+
 var StrUtil = {
   // concat('a', 'b', 'c') ==> 'abc'
   concat: function () {
