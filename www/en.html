@@ -66,9 +66,12 @@
         </ons-toolbar>
 
         <div class="login-form">
-
-          <input type="text" class="text-input--underbar" placeholder="Username" ng-model="username">
-          <input type="password" class="text-input--underbar" placeholder="Password" ng-model="password">
+          <div class="form-row">
+            <input type="text" class="text-input--underbar width-full" placeholder="Username" ng-model="username">
+          </div>
+          <div class="form-row">
+            <input type="password" class="text-input--underbar width-full" placeholder="Password" ng-model="password">
+          </div>
           <ons-list class="remember-me">
             <ons-list-item modifier="tappable">
               <label class="checkbox checkbox--list-item">
