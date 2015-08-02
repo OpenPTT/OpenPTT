@@ -1,9 +1,9 @@
 require.config({
+  // only define libraries here
   paths: {
     angular: '../lib/angular/angular',
     "angular-sanitize": '../lib/angular/angular-sanitize',
     "angular-gettext": '../lib/angular/angular-gettext',
-    "gettext-translations": 'translations', // TODO need help with requireJS
     onsen: '../lib/onsen/js/onsenui'
   },
   shim: {
@@ -11,11 +11,7 @@ require.config({
       exports: "angular"
     },
     "angular-sanitize": ["angular"],
-    "angular-gettext": {
-      deps: ["angular"],
-      exports: "gettext" // TODO need help with requireJS
-    },
-    "gettext-translations": ["angular", "gettext"], // TODO need help with requireJS
+    "angular-gettext": ["angular"],
     "onsen": ["angular"]
   }
 });
@@ -32,7 +28,7 @@ require.config({
     //document.addEventListener( 'pause', onPause.bind(this), false );
     //document.addEventListener( 'resume', onResume.bind(this), false );
     require([
-      'frontend/appController',
+      'frontend/app',
       'core/sites/ptt',
       '../lib/domReady!'
       ], function () {

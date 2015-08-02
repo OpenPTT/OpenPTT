@@ -1,71 +1,6 @@
-define(['core/bbsCore', 'angular', 'angular-sanitize', 'angular-gettext', 'onsen'], function (BBSCore) {
+define(['core/bbsCore'], function (BBSCore) {
 
-var app = angular.module('app', ['onsen', 'ngSanitize', 'gettext']);
-
-app.run(function (gettextCatalog) {
-  // on my English Win7, cordova android emulator
-  // window.navigator.userLanguage || window.navigator.language
-  // is 'en-us'
-  gettextCatalog.currentLanguage = 'en';
-  gettextCatalog.debug = true;
-});
-
-// this run() was copied from translations.js, without this part translations won't work
-angular.module('app').run(['gettextCatalog', function (gettextCatalog) {
-/* jshint -W100 */
-  console.log("WE IN?");
-  gettextCatalog.setStrings('en', {"hihihi":"T_T"});
-  gettextCatalog.setStrings('en_US', {"hihihi":"TEST TRANSLATION"});
-/* jshint +W100 */
-}]);
-
-app.controller('LoginController', function ($scope, $window) {
-  $scope.init = function() {
-    if(!$window.app.bbsCore)
-      $window.app.bbsCore = new BBSCore();
-    $scope.bbsCore = $window.app.bbsCore;
-    $scope.errorMessage = '';
-    $scope.sitename = 'PTT';
-    $scope.filterResult = [];
-
-    $scope.username = $scope.bbsCore.prefs.username;
-    $scope.password = $scope.bbsCore.prefs.password;
-    $scope.savePassword = $scope.bbsCore.prefs.savePassword;
-
-    $scope.bbsCore.regConnectionStatusEvent($scope.updateMainUI);
-  };
-
-  $scope.login = function () {
-    console.log('login');
-    $scope.bbsCore.login($scope.sitename, $scope.username, $scope.password, $scope.savePassword);
-  };
-
-  $scope.updateMainUI = function (status, message) {
-    switch (status){
-      case "logout":
-        mainNavigator.popPage('mainUI.html');
-        $scope.errorMessage = '';
-        break;
-      case "login-success":
-        mainNavigator.pushPage('mainUI.html');
-        loginModal.hide();
-        $scope.errorMessage = '';
-        break;
-      case "login-failed":
-        //show error message
-        loginModal.hide();
-        $scope.errorMessage = message;
-        $scope.$apply();
-      case "disconnect":
-        break;
-      default:
-        break;
-    }
-  };
-
-});
-
-app.controller('AppController', ['$scope', '$window', '$q', '$sce', function ($scope, $window, $q, $sce) {
+var AppController = ['$scope', '$window', '$q', '$sce', function ($scope, $window, $q, $sce) {
   $scope.bbsCore = null;
   $scope.nickname = '';
   $scope.currentBoardName = '';
@@ -265,8 +200,8 @@ app.controller('AppController', ['$scope', '$window', '$q', '$sce', function ($s
     }
   };
 
-}]);
+}];
 
-return app;
+return AppController;
 
 });

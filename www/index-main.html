@@ -64,8 +64,8 @@
     <ons-navigator animation="slide" var="mainNavigator">
       <ons-page ng-controller="LoginController" ng-init="init()">
         <ons-toolbar>
-          <div class="center">登入</div>
-          <div class="right"><ons-toolbar-button>關閉</ons-toolbar-button></div>
+          <div class="center" translate>Login</div>
+          <div class="right"><ons-toolbar-button><span translate>Close</span></ons-toolbar-button></div>
         </ons-toolbar>
 
         <div class="login-form">
@@ -86,8 +86,6 @@
             登入
             <!--<ons-icon icon="ion-load-c" spin="true"></ons-icon>-->
           </ons-button>
-          <div>i18n test marker</div>
-          <div translate> hihihi </div>
           <span style="color:red">{{errorMessage}}</span>
         </div>
       </ons-page>
