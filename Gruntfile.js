@@ -25,7 +25,7 @@ module.exports = function(grunt) {
           module: 'app'
         },
         files: {
-          'www/js/translations.js': ['po/*.po']
+          'www/js/frontend/translations.js': ['po/*.po']
         }
       },
     },
@@ -39,8 +39,8 @@ module.exports = function(grunt) {
 
   grunt.loadNpmTasks('grunt-angular-gettext');
   grunt.registerTask('default', [
-    'nggettext_extract'
-    // 'nggettext_compile'
+    'nggettext_extract',
+    'nggettext_compile'
   ]);
   grunt.registerTask('translate', [
     'nggettext_extract'

@@ -12,7 +12,8 @@ require.config({
     },
     "angular-sanitize": ["angular"],
     "angular-gettext": ["angular"],
-    "onsen": ["angular"]
+    "onsen": ["angular"],
+    'frontend/translations': ['frontend/app']
   }
 });
 
@@ -29,6 +30,7 @@ require.config({
     //document.addEventListener( 'resume', onResume.bind(this), false );
     require([
       'frontend/app',
+      'frontend/translations',
       'core/sites/ptt',
       '../lib/domReady!'
       ], function () {
