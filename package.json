@@ -1,0 +1,8 @@
+{
+  "name": "OpenPTT",
+  "version": "0.1.0",
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-angular-gettext": "^2.1.0"
+  }
+}

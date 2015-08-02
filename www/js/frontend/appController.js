@@ -1,6 +1,23 @@
-define(['core/bbsCore', 'angular', 'angular-sanitize', 'onsen'], function (BBSCore) {
+define(['core/bbsCore', 'angular', 'angular-sanitize', 'angular-gettext', 'onsen'], function (BBSCore) {
 
-var app = angular.module('app', ['onsen', 'ngSanitize']);
+var app = angular.module('app', ['onsen', 'ngSanitize', 'gettext']);
+
+app.run(function (gettextCatalog) {
+  // on my English Win7, cordova android emulator
+  // window.navigator.userLanguage || window.navigator.language
+  // is 'en-us'
+  gettextCatalog.currentLanguage = 'en';
+  gettextCatalog.debug = true;
+});
+
+// this run() was copied from translations.js, without this part translations won't work
+angular.module('app').run(['gettextCatalog', function (gettextCatalog) {
+/* jshint -W100 */
+  console.log("WE IN?");
+  gettextCatalog.setStrings('en', {"hihihi":"T_T"});
+  gettextCatalog.setStrings('en_US', {"hihihi":"TEST TRANSLATION"});
+/* jshint +W100 */
+}]);
 
 app.controller('LoginController', function ($scope, $window) {
   $scope.init = function() {
