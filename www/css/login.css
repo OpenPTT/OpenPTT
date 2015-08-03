@@ -1,17 +1,33 @@
+.form-row {
+  margin: 0px;
+}
+
+.width-full {
+  width: 100%;
+}
+
+input[type=text],
+input[type=password] {
+  height: 40px;
+  outline: none;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
 .login-form {
     text-align: center;
     width: 80%;
     margin: 60px auto 0;
 }
 
-input[type=text], input[type=password] {
+/*input[type=text], input[type=password] {
     display: block;
     width: 100%;
     margin: 0 auto;
     outline: none;
     padding-top: 24px;
     padding-bottom: 24px;
-}
+}*/
 
 .login-button {
     width: 100%;
