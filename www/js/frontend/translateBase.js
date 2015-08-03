@@ -7,7 +7,7 @@ lang = lang.toLowerCase().match(/^zh/) ? 'zh_TW' : 'en';
 var translations = ['gettextCatalog', function (gettextCatalog) {
   gettextCatalog.currentLanguage = lang;
   gettextCatalog.debug = true;
-  // gettextCatalog.showTranslatedMarkers = true;
+  gettextCatalog.showTranslatedMarkers = true;
 }];
 
 return translations;

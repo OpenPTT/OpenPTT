@@ -67,20 +67,20 @@
 
         <div class="login-form">
 
-          <input type="text" class="text-input--underbar" placeholder="Username" ng-model="username">
-          <input type="password" class="text-input--underbar" placeholder="Password" ng-model="password">
+          <input type="text" class="text-input--underbar" placeholder="{{'Username'|translate}}" ng-model="username">
+          <input type="password" class="text-input--underbar" placeholder="{{'Password'|translate}}" ng-model="password">
           <ons-list class="remember-me">
             <ons-list-item modifier="tappable">
               <label class="checkbox checkbox--list-item">
                 <input type="checkbox" ng-model="savePassword">
                 <div class="checkbox__checkmark checkbox--list-item__checkmark"></div>
-                Remember password
+                <span translate>Remember password</span>
               </label>
             </ons-list-item>
           </ons-list>
           <!--<ons-button modifier="large" class="login-button" ng-click="login()">-->
             <ons-button modifier="large" class="login-button" ng-click="loginModal.show();login();">
-            Login
+            <span translate>Login</span>
             <!--<ons-icon icon="ion-load-c" spin="true"></ons-icon>-->
           </ons-button>
           <span style="color:red">{{errorMessage}}</span>
@@ -94,19 +94,19 @@
           <ons-tab active="true" page="home.html">
             <div class="tab" ng-click="switchTab('mainUI.html')">
               <ons-icon icon="ion-home" class="tab-icon"></ons-icon>
-              <div class="tab-label">Main menu</div>
+              <div class="tab-label" translate>Main menu</div>
             </div>
           </ons-tab>
           <ons-tab page="favorite.html">
             <div class="tab" ng-click="switchTab('favorite.html')">
               <ons-icon icon="ion-heart" class="tab-icon"></ons-icon>
-              <div class="tab-label">Favorites</div>
+              <div class="tab-label" translate>Favorites</div>
             </div>
           </ons-tab>
           <ons-tab page="settings.html">
             <div class="tab" ng-click="switchTab('settings.html')">
               <ons-icon icon="ion-gear-a" class="tab-icon"></ons-icon>
-              <div class="tab-label">Settings</div>
+              <div class="tab-label" translate>Settings</div>
             </div>
           </ons-tab>
         </ons-tabbar>
@@ -117,17 +117,17 @@
       <ons-navigator animation="slide" var="homeNavigator" ons-postpop="exitBoard();">
         <ons-page>
           <ons-toolbar>
-            <div class="center">Main menu</div>
+            <div class="center" translate>Main menu</div>
           </ons-toolbar>
           <ons-list>
             <ons-list-item modifier="chevron" ng-click="enterClassBoard();">
               <ons-icon icon="ion-grid" size="20px"></ons-icon>
-              Class
+              <span translate>Class</span>
             </ons-list-item>
 
             <ons-list-item modifier="chevron" ng-click="enterMailBox();">
               <ons-icon icon="ion-email" size="20px"></ons-icon>
-              Mail
+              <span translate>Mail</span>
             </ons-list-item>
           </ons-list>
         </ons-page>
@@ -142,8 +142,10 @@
     <ons-template id="boardList.html">
       <ons-page>
         <ons-toolbar>
-          <div class="left"><ons-back-button>退後</ons-back-button></div>
-          <div class="center">{{currentDirectory.boardName=='favorite'?'我的最愛':currentDirectory.boardName}}</div>
+          <div class="left"><ons-back-button><span translate>Back</span></ons-back-button></div>
+          <!-- FIXME -->
+          <!-- <div class="center">{{currentDirectory.boardName=='favorite'?'我的最愛':currentDirectory.boardName}}</div> -->
+          <div class="center">{{boardName_translate}}</div>
         </ons-toolbar>
         <ons-list class="plan-list">
           <ons-list-item modifier="chevron" class="plan" itemobj="{{board.boardName == 'splitline' ? 'list' : 'line'}}" status="{{board.isHidden ? 'delete' : 'normal'}}" ng-repeat="board in currentDirectory.subBoardList" ng-click="enterBoard(board);">
@@ -172,7 +174,7 @@
       <ons-page>
         <!--<ons-pull-hook var="refreshArticle" height="0px" ng-action="refresh($done)">-->
         <ons-toolbar>
-          <div class="left"><ons-back-button>Back</ons-back-button></div>
+          <div class="left"><ons-back-button><span translate>Back</span></ons-back-button></div>
           <div class="center">{{currentBoard.boardName}}</div>
           <div class="right"><ons-toolbar-button ng-click="createNewArticle()"><ons-icon icon="ion-compose" style="font-size: 28px;"></ons-icon></ons-toolbar-button></div>
         </ons-toolbar>
@@ -232,7 +234,7 @@
     <ons-template id="filter.html">
       <ons-page>
         <ons-toolbar>
-          <div class="left"><ons-back-button>Back</ons-back-button></div>
+          <div class="left"><ons-back-button><span translate>Back</span></ons-back-button></div>
           <div class="center">{{currentBoardName}}</div>
           <div class="right"><ons-toolbar-button ng-click="refresh()"><ons-icon icon="ion-navicon" style="font-size: 28px;"></ons-icon></ons-toolbar-button></div>
         </ons-toolbar>
@@ -275,7 +277,7 @@
     <ons-template id="reading.html">
       <ons-page>
         <ons-toolbar>
-          <div class="left"><ons-back-button>Back</ons-back-button></div>
+          <div class="left"><ons-back-button><span translate>Back</span></ons-back-button></div>
         </ons-toolbar>
         <div id="BBSWindow" class="BBSWindow">
           <span class="bbsline" ng-repeat="line in currentArticle.lines"><span type="bbsrow" srow="line.sn" ng-bind-html="line.html"></span></span>
@@ -286,8 +288,8 @@
     <ons-template id="classBoard.html">
       <ons-page>
         <ons-toolbar>
-          <div class="left"><ons-back-button>Back</ons-back-button></div>
-          <div class="center">class board</div>
+          <div class="left"><ons-back-button><span translate>Back</span></ons-back-button></div>
+          <div class="center"><span translate>Classified Boards</span></div>
         </ons-toolbar>
         <ons-list class="plan-list">
           <ons-list-item modifier="chevron" class="plan" status="normal" ng-repeat="board in classBoards.subBoardList">
@@ -309,8 +311,8 @@
     <ons-template id="postArticle.html">
       <ons-page>
         <ons-toolbar>
-          <div class="left"><ons-back-button>退後</ons-back-button></div>
-          <div class="center">發表文章</div>
+          <div class="left"><ons-back-button><span translate>Back</span></ons-back-button></div>
+          <div class="center"><span translate>Create post</span></div>
         </ons-toolbar>
 
         <ons-list modifier="inset" style="margin-top: 10px">
@@ -322,17 +324,17 @@
             </ons-row>
           </ons-list-item>
           <ons-list-item>
-            <input type="text" class="text-input text-input--transparent" placeholder="標題" style="width: 100%" ng-model="newArticle.title">
+            <input type="text" class="text-input text-input--transparent" placeholder="{{'Title'|translate}}" style="width: 100%" ng-model="newArticle.title">
           </ons-list-item>
 
           <ons-list-item>
-            <textarea class="textarea textarea--transparent" placeholder="內文" style="width: 100%; height: 100px;" ng-model="newArticle.content"></textarea>
+            <textarea class="textarea textarea--transparent" placeholder="{{'Content'|translate}}" style="width: 100%; height: 100px;" ng-model="newArticle.content"></textarea>
           </ons-list-item>
         </ons-list>
 
         <div style="padding: 10px 9px">
           <ons-button modifier="large" style="margin: 0 auto;" ng-click="postArticle();">
-            發文
+            <span translate>Send post</span>
           </ons-button>
         </div>
       </ons-page>
@@ -341,8 +343,8 @@
     <ons-template id="mailList.html">
       <ons-page>
         <ons-toolbar>
-          <div class="left"><ons-back-button>Back</ons-back-button></div>
-          <div class="center">MailList</div>
+          <div class="left"><ons-back-button><span translate>Back</span></ons-back-button></div>
+          <div class="center" translate>MailList</div>
           <div class="right"><ons-toolbar-button><ons-icon icon="ion-navicon" style="font-size: 28px;"></ons-icon></ons-toolbar-button></div>
         </ons-toolbar>
         <ons-list class="plan-list">
@@ -367,7 +369,7 @@
     <ons-template id="settings.html">
       <ons-page>
         <ons-toolbar>
-          <div class="center">Settings</div>
+          <div class="center" translate>Settings</div>
         </ons-toolbar>
         <ons-row class="profile-wrapper">
           <ons-col width="60px" class="profile-image-wrapper">
@@ -378,14 +380,14 @@
             <div class="profile-email">{{nickname}}</div>
           </ons-col>
         </ons-row>
-        <div class="settings-header">Login setting</div>
+        <div class="settings-header" translate>Login setting</div>
         <ons-list modifier="inset" class="settings-list">
           <ons-list-item>
-            Delete duplicate login
+            <span translate>Delete duplicate login</span>
             <ons-switch modifier="list-item" ng-model="deleteDuplicate" ng-change='switchChange("deleteDuplicate")'></ons-switch>
           </ons-list-item>
           <ons-list-item>
-            Save password
+            <span translate>Save password</span>
             <ons-switch modifier="list-item" ng-model="savePassword" ng-change='switchChange("savePassword")'></ons-switch>
           </ons-list-item>
         </ons-list>
@@ -393,7 +395,7 @@
         <ons-list modifier="inset" class="settings-list">
           <ons-list-item modifier="tappable" ng-click="logout()">
             <ons-icon icon="ion-log-out" style="opacity: 0.8"></ons-icon>
-            Sign out
+            <span translate>Sign out</span>
           </ons-list-item>
         </ons-list>
         <br>

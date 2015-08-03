@@ -12,14 +12,92 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "Language: zh_TW\n"
 
-#: www/index-main.html:68
+#: www/index-main.html:145 www/index-main.html:177 www/index-main.html:237
+#: www/index-main.html:280 www/index-main.html:291 www/index-main.html:314
+#: www/index-main.html:346
+msgid "Back"
+msgstr "退回"
+
+#: www/js/frontend/controllers/appController.js:53
+msgid "boardName_translate"
+msgstr "我的最愛"
+
+#: www/index-main.html:125
+msgid "Class"
+msgstr "分組討論區"
+
+#: www/index-main.html:292
+msgid "Classified Boards"
+msgstr "分組討論區"
+
+#: www/index-main.html:65
 msgid "Close"
-msgstr "關關關"
+msgstr "關閉"
 
-#: www/index-main.html:67
+#: www/index-main.html:331
+msgid "Content"
+msgstr "內文"
+
+#: www/index-main.html:315
+msgid "Create post"
+msgstr "發文"
+
+#: www/index-main.html:386
+msgid "Delete duplicate login"
+msgstr "刪除其他重複登入的連線"
+
+#: www/index-main.html:103
+msgid "Favorites"
+msgstr "我的最愛"
+
+#: www/index-main.html:64 www/index-main.html:83
 msgid "Login"
-msgstr "登登"
+msgstr "登入"
 
-#: www/index-main.html:80
+#: www/index-main.html:383
+msgid "Login setting"
+msgstr "登入設定"
+
+#: www/index-main.html:130
+msgid "Mail"
+msgstr "私人信件區"
+
+#: www/index-main.html:347
+msgid "MailList"
+msgstr "信件列表"
+
+#: www/index-main.html:120 www/index-main.html:97
+msgid "Main menu"
+msgstr "主選單"
+
+#: www/index-main.html:71
+msgid "Password"
+msgstr "密碼"
+
+#: www/index-main.html:77
 msgid "Remember password"
-msgstr "記密碼"
+msgstr "記住密碼"
+
+#: www/index-main.html:390
+msgid "Save password"
+msgstr "儲存密碼"
+
+#: www/index-main.html:337
+msgid "Send post"
+msgstr "發文"
+
+#: www/index-main.html:109 www/index-main.html:372
+msgid "Settings"
+msgstr "設定"
+
+#: www/index-main.html:398
+msgid "Sign out"
+msgstr "登出"
+
+#: www/index-main.html:327
+msgid "Title"
+msgstr "標題"
+
+#: www/index-main.html:70
+msgid "Username"
+msgstr "使用者名稱"

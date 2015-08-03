@@ -1,10 +1,9 @@
 define(['core/bbsCore'], function (BBSCore) {
 
-var AppController = ['$scope', '$window', '$q', '$sce', function ($scope, $window, $q, $sce, gettextCatalog) {
+var AppController = ['$scope', '$window', '$q', '$sce', 'gettextCatalog', function ($scope, $window, $q, $sce, gettextCatalog) {
   $scope.bbsCore = null;
   $scope.nickname = '';
   $scope.currentBoardName = '';
-
 
   $scope.boardListStack = [];
   $scope.currentBoard = {};
@@ -17,6 +16,9 @@ var AppController = ['$scope', '$window', '$q', '$sce', function ($scope, $windo
   $scope.currentArticle = {};
   $scope.currentArticle.lines = [];
   $scope.rootMenu = 'mainUI.html';
+  // var gg = gettextCatalog;
+  // console.log("here");
+  // console.log(gg);
 
   $scope.init = function() {
     if(!$window.app.bbsCore)
@@ -45,13 +47,15 @@ var AppController = ['$scope', '$window', '$q', '$sce', function ($scope, $windo
   $scope.enterBoard = function (board) {
     if(!board.enter())
       return;
-
+    $scope.boardName_translate = '';
     if(board.isDirectory) {
       if(board.boardName == 'favorite') {
+        $scope.boardName_translate = gettextCatalog.getString("boardName_translate");
         $scope.boardListStack.push($scope.favorites);
         $scope.currentDirectory = $scope.favorites;
       } else {
         //$scope.boardList = board.subBoardList;
+        $scope.boardName_translate = board.boardName;
         if($scope.rootMenu == 'mainUI.html')
           homeNavigator.pushPage('boardList.html');
         else if($scope.rootMenu == 'favorite.html')
