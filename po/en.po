@@ -1,0 +1,103 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"X-Generator: Poedit 1.8.3\n"
+"Last-Translator: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Language: en\n"
+
+#: www/index-main.html:145 www/index-main.html:177 www/index-main.html:237
+#: www/index-main.html:280 www/index-main.html:291 www/index-main.html:314
+#: www/index-main.html:346
+msgid "Back"
+msgstr ""
+
+#: www/js/frontend/controllers/appController.js:51
+msgid "boardName_translate"
+msgstr "Favorites"
+
+#: www/index-main.html:125
+msgid "Class"
+msgstr ""
+
+#: www/index-main.html:292
+msgid "class board"
+msgstr ""
+
+#: www/index-main.html:65
+msgid "Close"
+msgstr ""
+
+#: www/index-main.html:331
+msgid "Content"
+msgstr ""
+
+#: www/index-main.html:315
+msgid "Create post"
+msgstr ""
+
+#: www/index-main.html:386
+msgid "Delete duplicate login"
+msgstr ""
+
+#: www/index-main.html:103
+msgid "Favorites"
+msgstr ""
+
+#: www/index-main.html:64 www/index-main.html:83
+msgid "Login"
+msgstr ""
+
+#: www/index-main.html:383
+msgid "Login setting"
+msgstr ""
+
+#: www/index-main.html:130
+msgid "Mail"
+msgstr ""
+
+#: www/index-main.html:347
+msgid "MailList"
+msgstr ""
+
+#: www/index-main.html:120 www/index-main.html:97
+msgid "Main menu"
+msgstr ""
+
+#: www/index-main.html:71
+msgid "Password"
+msgstr ""
+
+#: www/index-main.html:77
+msgid "Remember password"
+msgstr ""
+
+#: www/index-main.html:390
+msgid "Save password"
+msgstr ""
+
+#: www/index-main.html:337
+msgid "Send post"
+msgstr ""
+
+#: www/index-main.html:109 www/index-main.html:372
+msgid "Settings"
+msgstr ""
+
+#: www/index-main.html:398
+msgid "Sign out"
+msgstr ""
+
+#: www/index-main.html:327
+msgid "Title"
+msgstr ""
+
+#: www/index-main.html:70
+msgid "Username"
+msgstr ""

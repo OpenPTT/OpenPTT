@@ -23,11 +23,12 @@
         //detect device language
         var language = window.navigator.userLanguage || window.navigator.language;
         console.log('language: ' + language.toLowerCase());
-        if (language.toLowerCase().match(/^zh/)) {
-            window.location="./zh-tw.html";
-        } else {
-            window.location="./en.html";
-        }
+        // if (language.toLowerCase().match(/^zh/)) {
+        //     window.location="./zh-tw.html";
+        // } else {
+        //     window.location="./en.html";
+        // }
+        window.location="./index-main.html";
     }
     function onPause() {
         // TODO: This application has been suspended. Save application state here.

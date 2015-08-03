@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<!--
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+     KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+-->
+<!-- CSP support mode (required for Windows Universal apps): https://docs.angularjs.org/api/ng/directive/ngCsp -->
+<html lang="en" ng-csp>
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <!-- CSS dependencies -->
+    <!-- <link rel="stylesheet" type="text/css" href="css/index.css">-->
+    <link rel="stylesheet" href="lib/onsen/css/onsenui.css" />
+    <link rel="stylesheet" href="lib/onsen/css/onsen-css-components-blue-basic-theme.css" />
+    <link rel="stylesheet" type="text/css" href="css/login.css">
+    <link rel="stylesheet" type="text/css" href="css/boardList.css">
+    <link rel="stylesheet" type="text/css" href="css/articleList.css">
+    <link rel="stylesheet" type="text/css" href="css/color.css">
+
+    <!-- CSP support mode (required for Windows Universal apps) -->
+    <link rel="stylesheet" href="lib/angular/angular-csp.css" />
+    <link rel="stylesheet" type="text/css" href="css/main.css">
+    <!-- --------------- App init --------------- -->
+    <title>OpenPTT</title>
+
+    <script src="cordova.js"></script>
+    <script data-main="js/main" src="lib/requirejs/require.js"></script>
+  </head>
+
+  <body style="visibility: hidden">
+    <ons-modal var="loginModal">
+      <div class="spinner">
+        <div class="rect1"></div>
+        <div class="rect2"></div>
+        <div class="rect3"></div>
+        <div class="rect4"></div>
+        <div class="rect5"></div>
+      </div>
+    </ons-modal>
+
+    <ons-navigator animation="slide" var="mainNavigator">
+      <ons-page ng-controller="LoginController" ng-init="init()">
+        <ons-toolbar>
+          <div class="center" translate>Login</div>
+          <div class="right"><ons-toolbar-button><span translate>Close</span></ons-toolbar-button></div>
+        </ons-toolbar>
+
+        <div class="login-form">
+          <div class="form-row">
+            <input type="text" class="text-input--underbar" placeholder="{{'Username'|translate}}" ng-model="username">
+          </div>
+          <div class="form-row">
+            <input type="password" class="text-input--underbar" placeholder="{{'Password'|translate}}" ng-model="password">
+          </div>
+          <ons-list class="remember-me">
+            <ons-list-item modifier="tappable">
+              <label class="checkbox checkbox--list-item">
+                <input type="checkbox" ng-model="savePassword">
+                <div class="checkbox__checkmark checkbox--list-item__checkmark"></div>
+                <span translate>Remember password</span>
+              </label>
+            </ons-list-item>
+          </ons-list>
+          <!--<ons-button modifier="large" class="login-button" ng-click="login()">-->
+            <ons-button modifier="large" class="login-button" ng-click="loginModal.show();login();">
+            <span translate>Login</span>
+            <!--<ons-icon icon="ion-load-c" spin="true"></ons-icon>-->
+          </ons-button>
+          <span style="color:red">{{errorMessage}}</span>
+        </div>
+      </ons-page>
+    </ons-navigator>
+
+    <ons-template id="mainUI.html">
+      <ons-page ng-controller="AppController" ng-init="init()">
+        <ons-tabbar>
+          <ons-tab active="true" page="home.html">
+            <div class="tab" ng-click="switchTab('mainUI.html')">
+              <ons-icon icon="ion-home" class="tab-icon"></ons-icon>
+              <div class="tab-label" translate>Main menu</div>
+            </div>
+          </ons-tab>
+          <ons-tab page="favorite.html">
+            <div class="tab" ng-click="switchTab('favorite.html')">
+              <ons-icon icon="ion-heart" class="tab-icon"></ons-icon>
+              <div class="tab-label" translate>Favorites</div>
+            </div>
+          </ons-tab>
+          <ons-tab page="settings.html">
+            <div class="tab" ng-click="switchTab('settings.html')">
+              <ons-icon icon="ion-gear-a" class="tab-icon"></ons-icon>
+              <div class="tab-label" translate>Settings</div>
+            </div>
+          </ons-tab>
+        </ons-tabbar>
+      </ons-page>
+    </ons-template>
+
+    <ons-template id="home.html">
+      <ons-navigator animation="slide" var="homeNavigator" ons-postpop="exitBoard();">
+        <ons-page>
+          <ons-toolbar>
+            <div class="center" translate>Main menu</div>
+          </ons-toolbar>
+          <ons-list>
+            <ons-list-item modifier="chevron" ng-click="enterClassBoard();">
+              <ons-icon icon="ion-grid" size="20px"></ons-icon>
+              <span translate>Class</span>
+            </ons-list-item>
+
+            <ons-list-item modifier="chevron" ng-click="enterMailBox();">
+              <ons-icon icon="ion-email" size="20px"></ons-icon>
+              <span translate>Mail</span>
+            </ons-list-item>
+          </ons-list>
+        </ons-page>
+      </ons-navigator>
+    </ons-template>
+
+    <ons-template id="favorite.html">
+      <ons-navigator animation="slide" var="favoriteNavigator" ons-postpop="exitBoard();" page="boardList.html">
+      </ons-navigator>
+    </ons-template>
+
+    <ons-template id="boardList.html">
+      <ons-page>
+        <ons-toolbar>
+          <div class="left"><ons-back-button><span translate>Back</span></ons-back-button></div>
+          <!-- FIXME -->
+          <!-- <div class="center">{{currentDirectory.boardName=='favorite'?'我的最愛':currentDirectory.boardName}}</div> -->
+          <div class="center">{{boardName_translate}}</div>
+        </ons-toolbar>
+        <ons-list class="plan-list">
+          <ons-list-item modifier="chevron" class="plan" itemobj="{{board.boardName == 'splitline' ? 'list' : 'line'}}" status="{{board.isHidden ? 'delete' : 'normal'}}" ng-repeat="board in currentDirectory.subBoardList" ng-click="enterBoard(board);">
+            <ons-row ng-if="board.boardName != 'splitline'">
+              <ons-col width="80px" class="plan-left">
+                <div class="plan-date">{{board.bClass}}</div>
+                <div class="plan-duration">{{board.popular}}</div>
+              </ons-col>
+              <ons-col width="6px" class="plan-center" ng-style="{backgroundColor:$index % 2 == 1 ? '#3399ff' : '#ccc'}">
+              </ons-col>
+              <ons-col class="plan-right">
+                <div class="plan-name">{{board.boardName}}</div>
+                <div class="plan-info">{{board.description}}</div>
+              </ons-col>
+            </ons-row>
+            <ons-row ng-if="board.boardName == 'splitline'" >
+              <ons-col width="100%">
+              </ons-col>
+            </ons-row>
+          </ons-list-item>
+        </ons-list>
+      </ons-page>
+    </ons-template>
+
+    <ons-template id="article.html">
+      <ons-page>
+        <!--<ons-pull-hook var="refreshArticle" height="0px" ng-action="refresh($done)">-->
+        <ons-toolbar>
+          <div class="left"><ons-back-button><span translate>Back</span></ons-back-button></div>
+          <div class="center">{{currentBoard.boardName}}</div>
+          <div class="right"><ons-toolbar-button ng-click="createNewArticle()"><ons-icon icon="ion-compose" style="font-size: 28px;"></ons-icon></ons-toolbar-button></div>
+        </ons-toolbar>
+        <ons-list class="plan-list">
+          <!--<ons-list-item modifier="chevron" class="plan" status="{{article.author == '-' ? 'delete' : 'normal'}}" ons-lazy-repeat="infiniteScrollingDelegate">
+            <ons-row style="height:90px;">
+              <ons-col width="100px" class="plan-left">
+                <div class="plan-date">{{article.author}}</div>
+                <div class="plan-date">{{article.aClass}}</div>
+                <div class="plan-duration">
+                  {{article.popular}}
+                </div>
+              </ons-col>
+              <ons-col width="6px" class="plan-center" ng-style="{backgroundColor:$index % 2 == 1 ? '#3399ff' : '#ccc'}">
+              </ons-col>
+              <ons-col class="plan-right">
+                <div class="plan-name">{{article.title}}</div>
+                <div class="plan-info">{{article.date}}</div>
+                <div class="plan-info">{{article.sn}}</div>
+              </ons-col>
+            </ons-row>
+          </ons-list-item>-->
+          <ons-list-item modifier="chevron" class="plan" status="{{article.author == '-' ? 'delete' : 'normal'}}" ng-repeat="article in currentBoard.highlightList">
+            <ons-row height="50px">
+              <ons-col width="60px" class="plan-left" ng-click="replyArticle(article)">
+                <div class="plan-date">{{article.aClass}}</div>
+                <div class="plan-info">{{article.aid}}</div>
+                <div class="plan-duration">{{article.popular}}</div>
+              </ons-col>
+              <ons-col width="6px" class="plan-center" ng-style="{backgroundColor:$index % 2 == 1 ? '#3399ff' : '#ccc'}"></ons-col>
+              <ons-col class="plan-right" ng-click="readArticle(article);">
+                <div class="plan-name">{{article.title}}</div>
+                <div class="plan-date">{{article.date}}&nbsp;{{article.author}}</div>
+              </ons-col>
+            </ons-row>
+          </ons-list-item>
+          <ons-list-item modifier="chevron" class="plan" status="{{article.author == '-' ? 'delete' : 'normal'}}" ng-repeat="article in currentBoard.articleList">
+            <ons-row height="50px">
+              <ons-col width="60px" class="plan-left" ng-click="replyArticle(article)">
+                <div class="plan-date">{{article.aClass}}</div>
+                <div class="plan-info">{{article.sn}}</div>
+                <div class="plan-duration">{{article.popular}}</div>
+              </ons-col>
+              <ons-col width="6px" class="plan-center" ng-style="{backgroundColor:$index % 2 == 1 ? '#3399ff' : '#ccc'}">
+              </ons-col>
+              <ons-col class="plan-right" ng-click="readArticle(article);">
+                <div class="plan-name">{{article.title}}</div>
+                <div class="plan-date">{{article.date}}&nbsp;{{article.author}}</div>
+              </ons-col>
+            </ons-row>
+          </ons-list-item>
+        </ons-list>
+        <!--</ons-pull-hook>-->
+      </ons-page>
+    </ons-template>
+
+    <ons-template id="filter.html">
+      <ons-page>
+        <ons-toolbar>
+          <div class="left"><ons-back-button><span translate>Back</span></ons-back-button></div>
+          <div class="center">{{currentBoardName}}</div>
+          <div class="right"><ons-toolbar-button ng-click="refresh()"><ons-icon icon="ion-navicon" style="font-size: 28px;"></ons-icon></ons-toolbar-button></div>
+        </ons-toolbar>
+        <ons-list class="plan-list">
+          <!-- need hiht light ? -->
+          <!--<ons-list-item modifier="chevron" class="plan" status="{{article.author == '-' ? 'delete' : 'normal'}}" ng-repeat="article in filterResult">
+            <ons-row height="50px">
+              <ons-col width="60px" class="plan-left">
+                <div class="plan-date">{{article.aClass}}</div>
+                <div class="plan-info">{{article.aid}}</div>
+                <div class="plan-duration">{{article.popular}}</div>
+              </ons-col>
+              <ons-col width="6px" class="plan-center" ng-style="{backgroundColor:$index % 2 == 1 ? '#3399ff' : '#ccc'}">
+              </ons-col>
+              <ons-col class="plan-right">
+                <div class="plan-name">{{article.title}}</div>
+                <div class="plan-date">{{article.author}}&nbsp;{{article.date}}</div>
+              </ons-col>
+            </ons-row>
+          </ons-list-item>-->
+          <ons-list-item modifier="chevron" class="plan" status="{{article.author == '-' ? 'delete' : 'normal'}}" ng-repeat="article in filterResult">
+            <ons-row height="50px">
+              <ons-col width="60px" class="plan-left">
+                <div class="plan-date">{{article.aClass}}</div>
+                <div class="plan-info">{{article.sn}}</div>
+                <div class="plan-duration">{{article.popular}}</div>
+              </ons-col>
+              <ons-col width="6px" class="plan-center" ng-style="{backgroundColor:$index % 2 == 1 ? '#3399ff' : '#ccc'}">
+              </ons-col>
+              <ons-col class="plan-right">
+                <div class="plan-name">{{article.title}}</div>
+                <div class="plan-date">{{article.author}}&nbsp;{{article.date}}</div>
+              </ons-col>
+            </ons-row>
+          </ons-list-item>
+        </ons-list>
+      </ons-page>
+    </ons-template>
+
+    <ons-template id="reading.html">
+      <ons-page>
+        <ons-toolbar>
+          <div class="left"><ons-back-button><span translate>Back</span></ons-back-button></div>
+        </ons-toolbar>
+        <div id="BBSWindow" class="BBSWindow">
+          <span class="bbsline" ng-repeat="line in currentArticle.lines"><span type="bbsrow" srow="line.sn" ng-bind-html="line.html"></span></span>
+        </div>
+      </ons-page>
+    </ons-template>
+
+    <ons-template id="classBoard.html">
+      <ons-page>
+        <ons-toolbar>
+          <div class="left"><ons-back-button><span translate>Back</span></ons-back-button></div>
+          <div class="center"><span translate>Classified Boards</span></div>
+        </ons-toolbar>
+        <ons-list class="plan-list">
+          <ons-list-item modifier="chevron" class="plan" status="normal" ng-repeat="board in classBoards.subBoardList">
+            <ons-row height="50px">
+              <ons-col width="100px" class="plan-left">
+                <div class="plan-date">{{board.bClass}}</div>
+              </ons-col>
+              <ons-col width="6px" class="plan-center" ng-style="{backgroundColor:$index % 2 == 1 ? '#3399ff' : '#ccc'}">
+              </ons-col>
+              <ons-col class="plan-right" ng-click="enterBoard(board);">
+                <div class="plan-name">{{board.description}}</div>
+              </ons-col>
+            </ons-row>
+          </ons-list-item>
+        </ons-list>
+      </ons-page>
+    </ons-template>
+
+    <ons-template id="postArticle.html">
+      <ons-page>
+        <ons-toolbar>
+          <div class="left"><ons-back-button><span translate>Back</span></ons-back-button></div>
+          <div class="center"><span translate>Create post</span></div>
+        </ons-toolbar>
+
+        <ons-list modifier="inset" style="margin-top: 10px">
+          <ons-list-item class="to-wrapper">
+            <ons-row>
+              <button class="button" style="margin-top: 2px;margin-bottom: 2px;margin-right: 2px;" ng-repeat="articleClass in currentBoard.articleClassList" ng-click="setArticleClass(articleClass)">
+                {{articleClass}}
+              </button>
+            </ons-row>
+          </ons-list-item>
+          <ons-list-item>
+            <input type="text" class="text-input text-input--transparent" placeholder="{{'Title'|translate}}" style="width: 100%" ng-model="newArticle.title">
+          </ons-list-item>
+
+          <ons-list-item>
+            <textarea class="textarea textarea--transparent" placeholder="{{'Content'|translate}}" style="width: 100%; height: 100px;" ng-model="newArticle.content"></textarea>
+          </ons-list-item>
+        </ons-list>
+
+        <div style="padding: 10px 9px">
+          <ons-button modifier="large" style="margin: 0 auto;" ng-click="postArticle();">
+            <span translate>Send post</span>
+          </ons-button>
+        </div>
+      </ons-page>
+    </ons-template>
+
+    <ons-template id="mailList.html">
+      <ons-page>
+        <ons-toolbar>
+          <div class="left"><ons-back-button><span translate>Back</span></ons-back-button></div>
+          <div class="center" translate>MailList</div>
+          <div class="right"><ons-toolbar-button><ons-icon icon="ion-navicon" style="font-size: 28px;"></ons-icon></ons-toolbar-button></div>
+        </ons-toolbar>
+        <ons-list class="plan-list">
+          <ons-list-item modifier="chevron" class="plan" ng-repeat="mail in mailBox.mailList">
+            <ons-row height="50px">
+              <ons-col width="80px" class="plan-left">
+                <div class="plan-date">{{mail.mailer}}</div>
+                <div class="plan-info">{{mail.sn}}</div>
+              </ons-col>
+              <ons-col width="6px" class="plan-center" ng-style="{backgroundColor:$index % 2 == 1 ? '#3399ff' : '#ccc'}">
+              </ons-col>
+              <ons-col class="plan-right" ng-click="readArticle(mail);">
+                <div class="plan-name">{{mail.title}}</div>
+                <div class="plan-date">{{mail.date}}</div>
+              </ons-col>
+            </ons-row>
+          </ons-list-item>
+        </ons-list>
+      </ons-page>
+    </ons-template>
+
+    <ons-template id="settings.html">
+      <ons-page>
+        <ons-toolbar>
+          <div class="center" translate>Settings</div>
+        </ons-toolbar>
+        <ons-row class="profile-wrapper">
+          <ons-col width="60px" class="profile-image-wrapper">
+            <div class="profile-image"></div>
+          </ons-col>
+          <ons-col>
+            <div class="profile-name">{{username}}</div>
+            <div class="profile-email">{{nickname}}</div>
+          </ons-col>
+        </ons-row>
+        <div class="settings-header" translate>Login setting</div>
+        <ons-list modifier="inset" class="settings-list">
+          <ons-list-item>
+            <span translate>Delete duplicate login</span>
+            <ons-switch modifier="list-item" ng-model="deleteDuplicate" ng-change='switchChange("deleteDuplicate")'></ons-switch>
+          </ons-list-item>
+          <ons-list-item>
+            <span translate>Save password</span>
+            <ons-switch modifier="list-item" ng-model="savePassword" ng-change='switchChange("savePassword")'></ons-switch>
+          </ons-list-item>
+        </ons-list>
+        <br>
+        <ons-list modifier="inset" class="settings-list">
+          <ons-list-item modifier="tappable" ng-click="logout()">
+            <ons-icon icon="ion-log-out" style="opacity: 0.8"></ons-icon>
+            <span translate>Sign out</span>
+          </ons-list-item>
+        </ons-list>
+        <br>
+      </ons-page>
+    </ons-template>
+  </body>
+</html>

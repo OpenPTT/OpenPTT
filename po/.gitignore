@@ -1,0 +1,3 @@
+template.pot
+*.mo
+!.gitignore
