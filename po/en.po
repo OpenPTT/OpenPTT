@@ -12,10 +12,10 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "Language: en\n"
 
-#: www/index-main.html:68
+#: www/index-main.html:65
 msgid "Close"
-msgstr "Close"
+msgstr "cloo"
 
-#: www/index-main.html:67
+#: www/index-main.html:64
 msgid "Login"
-msgstr "Login"
+msgstr ""

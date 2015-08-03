@@ -14,8 +14,12 @@ msgstr ""
 
 #: www/index-main.html:68
 msgid "Close"
-msgstr "關閉"
+msgstr "關關關"
 
 #: www/index-main.html:67
 msgid "Login"
-msgstr "登入"
+msgstr "登登"
+
+#: www/index-main.html:80
+msgid "Remember password"
+msgstr "記密碼"

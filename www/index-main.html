@@ -18,7 +18,7 @@
     under the License.
 -->
 <!-- CSP support mode (required for Windows Universal apps): https://docs.angularjs.org/api/ng/directive/ngCsp -->
-<html lang="zh-tw" ng-csp>
+<html lang="en" ng-csp>
   <head>
     <meta charset="utf-8" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *">
@@ -43,11 +43,8 @@
     <!-- --------------- App init --------------- -->
     <title>OpenPTT</title>
 
-
     <script src="cordova.js"></script>
     <script data-main="js/main" src="lib/requirejs/require.js"></script>
-    <!-- <script src="js/translations.js"></script> -->
-
   </head>
 
   <body style="visibility: hidden">
@@ -70,20 +67,20 @@
 
         <div class="login-form">
 
-          <input type="text" class="text-input--underbar" placeholder="帳號" ng-model="username">
-          <input type="password" class="text-input--underbar" placeholder="密碼" ng-model="password">
+          <input type="text" class="text-input--underbar" placeholder="Username" ng-model="username">
+          <input type="password" class="text-input--underbar" placeholder="Password" ng-model="password">
           <ons-list class="remember-me">
             <ons-list-item modifier="tappable">
               <label class="checkbox checkbox--list-item">
                 <input type="checkbox" ng-model="savePassword">
                 <div class="checkbox__checkmark checkbox--list-item__checkmark"></div>
-                記住密碼
+                Remember password
               </label>
             </ons-list-item>
           </ons-list>
           <!--<ons-button modifier="large" class="login-button" ng-click="login()">-->
             <ons-button modifier="large" class="login-button" ng-click="loginModal.show();login();">
-            登入
+            Login
             <!--<ons-icon icon="ion-load-c" spin="true"></ons-icon>-->
           </ons-button>
           <span style="color:red">{{errorMessage}}</span>
@@ -97,19 +94,19 @@
           <ons-tab active="true" page="home.html">
             <div class="tab" ng-click="switchTab('mainUI.html')">
               <ons-icon icon="ion-home" class="tab-icon"></ons-icon>
-              <div class="tab-label">主選單</div>
+              <div class="tab-label">Main menu</div>
             </div>
           </ons-tab>
           <ons-tab page="favorite.html">
             <div class="tab" ng-click="switchTab('favorite.html')">
               <ons-icon icon="ion-heart" class="tab-icon"></ons-icon>
-              <div class="tab-label">我的最愛</div>
+              <div class="tab-label">Favorites</div>
             </div>
           </ons-tab>
           <ons-tab page="settings.html">
             <div class="tab" ng-click="switchTab('settings.html')">
               <ons-icon icon="ion-gear-a" class="tab-icon"></ons-icon>
-              <div class="tab-label">設定</div>
+              <div class="tab-label">Settings</div>
             </div>
           </ons-tab>
         </ons-tabbar>
@@ -120,17 +117,17 @@
       <ons-navigator animation="slide" var="homeNavigator" ons-postpop="exitBoard();">
         <ons-page>
           <ons-toolbar>
-            <div class="center">主選單</div>
+            <div class="center">Main menu</div>
           </ons-toolbar>
           <ons-list>
             <ons-list-item modifier="chevron" ng-click="enterClassBoard();">
               <ons-icon icon="ion-grid" size="20px"></ons-icon>
-              分類看板
+              Class
             </ons-list-item>
 
             <ons-list-item modifier="chevron" ng-click="enterMailBox();">
               <ons-icon icon="ion-email" size="20px"></ons-icon>
-              信箱
+              Mail
             </ons-list-item>
           </ons-list>
         </ons-page>
@@ -175,7 +172,7 @@
       <ons-page>
         <!--<ons-pull-hook var="refreshArticle" height="0px" ng-action="refresh($done)">-->
         <ons-toolbar>
-          <div class="left"><ons-back-button>退後</ons-back-button></div>
+          <div class="left"><ons-back-button>Back</ons-back-button></div>
           <div class="center">{{currentBoard.boardName}}</div>
           <div class="right"><ons-toolbar-button ng-click="createNewArticle()"><ons-icon icon="ion-compose" style="font-size: 28px;"></ons-icon></ons-toolbar-button></div>
         </ons-toolbar>
@@ -235,7 +232,7 @@
     <ons-template id="filter.html">
       <ons-page>
         <ons-toolbar>
-          <div class="left"><ons-back-button>退後</ons-back-button></div>
+          <div class="left"><ons-back-button>Back</ons-back-button></div>
           <div class="center">{{currentBoardName}}</div>
           <div class="right"><ons-toolbar-button ng-click="refresh()"><ons-icon icon="ion-navicon" style="font-size: 28px;"></ons-icon></ons-toolbar-button></div>
         </ons-toolbar>
@@ -278,7 +275,7 @@
     <ons-template id="reading.html">
       <ons-page>
         <ons-toolbar>
-          <div class="left"><ons-back-button>退後</ons-back-button></div>
+          <div class="left"><ons-back-button>Back</ons-back-button></div>
         </ons-toolbar>
         <div id="BBSWindow" class="BBSWindow">
           <span class="bbsline" ng-repeat="line in currentArticle.lines"><span type="bbsrow" srow="line.sn" ng-bind-html="line.html"></span></span>
@@ -289,8 +286,8 @@
     <ons-template id="classBoard.html">
       <ons-page>
         <ons-toolbar>
-          <div class="left"><ons-back-button>退後</ons-back-button></div>
-          <div class="center">分類看板</div>
+          <div class="left"><ons-back-button>Back</ons-back-button></div>
+          <div class="center">class board</div>
         </ons-toolbar>
         <ons-list class="plan-list">
           <ons-list-item modifier="chevron" class="plan" status="normal" ng-repeat="board in classBoards.subBoardList">
@@ -344,8 +341,8 @@
     <ons-template id="mailList.html">
       <ons-page>
         <ons-toolbar>
-          <div class="left"><ons-back-button>退後</ons-back-button></div>
-          <div class="center">郵件選單</div>
+          <div class="left"><ons-back-button>Back</ons-back-button></div>
+          <div class="center">MailList</div>
           <div class="right"><ons-toolbar-button><ons-icon icon="ion-navicon" style="font-size: 28px;"></ons-icon></ons-toolbar-button></div>
         </ons-toolbar>
         <ons-list class="plan-list">
@@ -370,7 +367,7 @@
     <ons-template id="settings.html">
       <ons-page>
         <ons-toolbar>
-          <div class="center">設定</div>
+          <div class="center">Settings</div>
         </ons-toolbar>
         <ons-row class="profile-wrapper">
           <ons-col width="60px" class="profile-image-wrapper">
@@ -381,14 +378,14 @@
             <div class="profile-email">{{nickname}}</div>
           </ons-col>
         </ons-row>
-        <div class="settings-header">登入設定</div>
+        <div class="settings-header">Login setting</div>
         <ons-list modifier="inset" class="settings-list">
           <ons-list-item>
-            清除重複登入
+            Delete duplicate login
             <ons-switch modifier="list-item" ng-model="deleteDuplicate" ng-change='switchChange("deleteDuplicate")'></ons-switch>
           </ons-list-item>
           <ons-list-item>
-            記住密碼
+            Save password
             <ons-switch modifier="list-item" ng-model="savePassword" ng-change='switchChange("savePassword")'></ons-switch>
           </ons-list-item>
         </ons-list>
@@ -396,7 +393,7 @@
         <ons-list modifier="inset" class="settings-list">
           <ons-list-item modifier="tappable" ng-click="logout()">
             <ons-icon icon="ion-log-out" style="opacity: 0.8"></ons-icon>
-            登出
+            Sign out
           </ons-list-item>
         </ons-list>
         <br>
