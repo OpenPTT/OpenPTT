@@ -1,6 +1,6 @@
 define(['core/bbsCore'], function (BBSCore) {
 
-var LoginController = function ($scope, $window) {
+var LoginController = function ($scope, $window, gettextCatalog) {
 
   $scope.init = function() {
     if(!$window.app.bbsCore)

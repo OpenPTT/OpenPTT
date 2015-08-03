@@ -14,8 +14,12 @@ msgstr ""
 
 #: www/index-main.html:65
 msgid "Close"
-msgstr "cloo"
+msgstr "eeeeecor"
 
 #: www/index-main.html:64
 msgid "Login"
 msgstr ""
+
+#: www/js/frontend/controllers/loginController.js:18
+msgid "TRANSLATEMEEE"
+msgstr "mememememeeee"

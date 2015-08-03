@@ -1,6 +1,6 @@
 define(['core/bbsCore'], function (BBSCore) {
 
-var AppController = ['$scope', '$window', '$q', '$sce', function ($scope, $window, $q, $sce) {
+var AppController = ['$scope', '$window', '$q', '$sce', function ($scope, $window, $q, $sce, gettextCatalog) {
   $scope.bbsCore = null;
   $scope.nickname = '';
   $scope.currentBoardName = '';
