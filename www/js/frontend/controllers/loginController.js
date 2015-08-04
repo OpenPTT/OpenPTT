@@ -29,7 +29,7 @@ var LoginController = function ($scope, $window, gettextCatalog) {
         $scope.errorMessage = '';
         break;
       case "login-success":
-        mainNavigator.pushPage('mainUI.html');
+        mainNavigator.replacePage('mainUI.html');
         loginModal.hide();
         $scope.errorMessage = '';
         break;
