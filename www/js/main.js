@@ -1,5 +1,5 @@
+// define libraries and non-amd projects
 require.config({
-  // only define libraries here
   paths: {
     angular: '../lib/angular/angular',
     "angular-sanitize": '../lib/angular/angular-sanitize',
@@ -25,9 +25,11 @@ require.config({
   };
 
   function onDeviceReady() {
-    // Handle the Cordova pause and resume events
+    // TODO: Handle the Cordova pause and resume events
     //document.addEventListener( 'pause', onPause.bind(this), false );
     //document.addEventListener( 'resume', onResume.bind(this), false );
+
+    // main entrypoint of our app
     require([
       'frontend/app',
       'frontend/translations',
@@ -35,9 +37,9 @@ require.config({
       '../lib/domReady!'
       ], function () {
 
-      // TODO: replace visibility into a loading indicator
-      document.body.style.visibility = "";
-      angular.bootstrap(document, ['app']);
+        // TODO: replace visibility into a loading indicator
+        document.body.style.visibility = "";
+        angular.bootstrap(document, ['app']);
 
     });
   }
@@ -61,4 +63,5 @@ require.config({
   document.addEventListener('deviceready', onDeviceReady.bind(this), false);
   //window.addEventListener('load', onLoad.bind(this), false);
   //window.addEventListener('unload', onUnload.bind(this), false);
+
 }) ();
