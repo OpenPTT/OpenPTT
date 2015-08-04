@@ -1,7 +1,7 @@
 define(function(require, exports, module) {
-  var ArticlePtt = require('core/sites/ptt/objects/article'),
-   BoardPtt = require('core/sites/ptt/objects/board'),
-   MailPtt = require('core/sites/ptt/objects/mail');
+  var ArticlePtt = require('sites/ptt/objects/article'),
+   BoardPtt = require('sites/ptt/objects/board'),
+   MailPtt = require('sites/ptt/objects/mail');
 
 function StringParserPtt(bbsCore) {
   this.bbsCore = bbsCore;

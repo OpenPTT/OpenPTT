@@ -1,6 +1,6 @@
 // register ptt robot into site manager
 define([
-  'core/sites/ptt/robot',
+  'sites/ptt/robot',
   'core/utils/siteManager'], function (RobotPtt, siteManager) {
 
 siteManager.regSite('PTT',

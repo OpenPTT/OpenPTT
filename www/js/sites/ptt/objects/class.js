@@ -1,4 +1,4 @@
-define(['core/sites/ptt/objects/board'], function (BoardPtt) {
+define(['sites/ptt/objects/board'], function (BoardPtt) {
 
 function ClassPtt(bbsCore) {
   this.bbsCore = bbsCore;

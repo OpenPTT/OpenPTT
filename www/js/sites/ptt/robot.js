@@ -1,9 +1,9 @@
 define(function(require, exports, module) {
-  var StringParserPtt = require('core/sites/ptt/stringParser'),
-   NewArticlePtt = require('core/sites/ptt/objects/newArticle'),
-   BoardPtt = require('core/sites/ptt/objects/board'),
-   ClassPtt = require('core/sites/ptt/objects/class'),
-   MailBoxPtt = require('core/sites/ptt/objects/mailBox'),
+  var StringParserPtt = require('sites/ptt/stringParser'),
+   NewArticlePtt = require('sites/ptt/objects/newArticle'),
+   BoardPtt = require('sites/ptt/objects/board'),
+   ClassPtt = require('sites/ptt/objects/class'),
+   MailBoxPtt = require('sites/ptt/objects/mailBox'),
    siteManager = require('core/utils/siteManager'),
    robotCmd = require('core/utils/robotCmd'),
    strUtil = require('core/utils/stringUtil');

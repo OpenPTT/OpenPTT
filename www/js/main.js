@@ -31,7 +31,7 @@ require.config({
     require([
       'frontend/app',
       'frontend/translations',
-      'core/sites/ptt',
+      'sites/ptt',
       '../lib/domReady!'
       ], function () {
 
