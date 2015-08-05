@@ -92,6 +92,7 @@ var AppController = ['$scope', '$window', '$q', '$sce', 'gettextCatalog', functi
   };
 
   $scope.enterClassBoard = function () {
+    $scope.boardListStack = [];
     homeNavigator.pushPage('classBoard.html');
   };
 
@@ -133,6 +134,7 @@ var AppController = ['$scope', '$window', '$q', '$sce', 'gettextCatalog', functi
   };
 
   $scope.createNewArticle = function () {
+    //console.log(JSON.stringify($scope.currentBoard.articleClassList));
     $scope.newArticle = $scope.bbsCore.createNewArticle($scope.currentBoard);
     if($scope.rootMenu == 'mainUI.html')
       homeNavigator.pushPage('postArticle.html');
@@ -162,11 +164,12 @@ var AppController = ['$scope', '$window', '$q', '$sce', 'gettextCatalog', functi
   };
 
   $scope.switchTab = function (tab) {
-    $scope.rootMenu=tab;
+    $scope.rootMenu = tab;
     switch (tab){
       case "mainUI.html":
         break;
       case "favorite.html":
+        $scope.boardListStack = [];
         $scope.enterBoard($scope.favorites);
         break;
       case "settings.html":
