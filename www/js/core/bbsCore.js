@@ -87,6 +87,7 @@ define(function(require, exports, module) {
       } else {
         this.prefs.removeUsernameAndPassword();
       }
+      this.prefs.username = username;
       this.prefs.loginStr[1] = username;
       this.prefs.loginStr[2] = password;
       this.addTask('login', this.onLoginEvent.bind(this));

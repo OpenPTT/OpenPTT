@@ -29,6 +29,10 @@ var AppController = ['$scope', '$window', '$q', '$sce', 'gettextCatalog', functi
     $scope.favorites = $scope.bbsCore.getFavorite();
     $scope.classBoards = $scope.bbsCore.getClassBoardDirectories();
     $scope.mailBox = $scope.bbsCore.getMailBox();
+    
+    $scope.username = $scope.bbsCore.prefs.username;
+    $scope.deleteDuplicate = $scope.bbsCore.prefs.deleteDuplicate;
+    $scope.savePassword = $scope.bbsCore.prefs.savePassword;
   };
 
   $scope.applyDataEvent = function(subject, obj) {
