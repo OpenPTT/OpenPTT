@@ -372,7 +372,7 @@ RobotPtt.prototype={
             task = this.taskList[0];
             task.callback(articleList);
             this.taskStage = 4;
-            this.bbsCore.conn.send(robotCmd.End.repeat(2) + robotCmd.Up.repeat(this.highlightCount) + robotCmd.Enter); //end, up * n-1, enter
+            this.bbsCore.conn.send(robotCmd.End.repeat(2) + robotCmd.Up.repeat(this.highlightCount-1) + robotCmd.Enter); //end, up * n-1, enter
           } else {
             //get post class
             this.bbsCore.conn.send(robotCmd.CtrlP); //ctrl+p
@@ -478,7 +478,7 @@ RobotPtt.prototype={
           //return;
         } else {
           this.taskStage = 4;
-          this.bbsCore.conn.send(robotCmd.Left + robotCmd.End.repeat(2) + robotCmd.Up.repeat(this.highlightCount) + robotCmd.Enter); //left,end,end,up*n,enter
+          this.bbsCore.conn.send(robotCmd.Left + robotCmd.End.repeat(2) + robotCmd.Up.repeat(this.highlightCount-1) + robotCmd.Enter); //left,end,end,up*n,enter
         }
       }
     } else if(this.taskStage == 6) {
