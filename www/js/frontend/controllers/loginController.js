@@ -3,8 +3,6 @@ define(['core/bbsCore'], function (BBSCore) {
 var LoginController = function ($scope, $window, gettextCatalog) {
 
   $scope.init = function() {
-    if(!$window.app.bbsCore)
-      $window.app.bbsCore = new BBSCore();
     $scope.bbsCore = $window.app.bbsCore;
     $scope.errorMessage = '';
     $scope.sitename = 'PTT';

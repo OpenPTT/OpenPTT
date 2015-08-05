@@ -18,15 +18,13 @@ var AppController = ['$scope', '$window', '$q', '$sce', 'gettextCatalog', functi
   $scope.rootMenu = 'mainUI.html';
 
   $scope.init = function() {
-    if(!$window.app.bbsCore)
-      $window.app.bbsCore = new BBSCore();
     $scope.bbsCore = $window.app.bbsCore;
     $scope.bbsCore.regConnectionStatusEvent($scope.updateMainUI);
     $scope.bbsCore.setApplyDataEvent($scope.applyDataEvent);
     $scope.favorites = $scope.bbsCore.getFavorite();
     $scope.classBoards = $scope.bbsCore.getClassBoardDirectories();
     $scope.mailBox = $scope.bbsCore.getMailBox();
-    
+
     $scope.username = $scope.bbsCore.prefs.username;
     $scope.deleteDuplicate = $scope.bbsCore.prefs.deleteDuplicate;
     $scope.savePassword = $scope.bbsCore.prefs.savePassword;
