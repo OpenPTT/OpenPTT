@@ -16,9 +16,6 @@ var AppController = ['$scope', '$window', '$q', '$sce', 'gettextCatalog', functi
   $scope.currentArticle = {};
   $scope.currentArticle.lines = [];
   $scope.rootMenu = 'mainUI.html';
-  // var gg = gettextCatalog;
-  // console.log("here");
-  // console.log(gg);
 
   $scope.init = function() {
     if(!$window.app.bbsCore)
@@ -33,6 +30,11 @@ var AppController = ['$scope', '$window', '$q', '$sce', 'gettextCatalog', functi
     $scope.username = $scope.bbsCore.prefs.username;
     $scope.deleteDuplicate = $scope.bbsCore.prefs.deleteDuplicate;
     $scope.savePassword = $scope.bbsCore.prefs.savePassword;
+  };
+
+  $scope.leave = function () {
+    // FIXME: 需有個離開點，目前手動call
+    $scope.bbsCore.unRegConnectionStatusEvent($scope.updateMainUI);
   };
 
   $scope.applyDataEvent = function(subject, obj) {
@@ -102,6 +104,7 @@ var AppController = ['$scope', '$window', '$q', '$sce', 'gettextCatalog', functi
   };
 
   $scope.logout = function () {
+    $scope.leave();
     $scope.bbsCore.logout();
   };
 

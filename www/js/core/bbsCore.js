@@ -139,6 +139,14 @@ define(function(require, exports, module) {
       this.connectionStatusEventNotify.push(eventCallback);
     },
 
+    unRegConnectionStatusEvent: function(eventCallback) {
+      var index = this.connectionStatusEventNotify.indexOf(eventCallback);
+      if (index === -1) {
+        return ;
+      }
+      this.connectionStatusEventNotify.splice(index, 1);
+    },
+
     setApplyDataEvent: function(eventCallback) {
       this.applyDataEvent = eventCallback;
     },

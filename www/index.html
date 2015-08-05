@@ -47,7 +47,7 @@
     <script data-main="js/main" src="lib/requirejs/require.js"></script>
   </head>
 
-  <body style="visibility: hidden">
+  <body style="visibility: hidden" ng-controller="LoginController" ng-init="init()">
     <ons-modal var="loginModal">
       <div class="spinner">
         <div class="rect1"></div>
@@ -59,37 +59,41 @@
     </ons-modal>
 
     <ons-navigator animation="slide" var="mainNavigator">
-      <ons-page ng-controller="LoginController" ng-init="init()">
-        <ons-toolbar>
-          <div class="center" translate>Login</div>
-          <div class="right"><ons-toolbar-button><span translate>Close</span></ons-toolbar-button></div>
-        </ons-toolbar>
-
-        <div class="login-form">
-          <div class="form-row">
-            <input type="text" class="text-input--underbar" placeholder="{{'Username'|translate}}" ng-model="username">
-          </div>
-          <div class="form-row">
-            <input type="password" class="text-input--underbar" placeholder="{{'Password'|translate}}" ng-model="password">
-          </div>
-          <ons-list class="remember-me">
-            <ons-list-item modifier="tappable">
-              <label class="checkbox checkbox--list-item">
-                <input type="checkbox" ng-model="savePassword">
-                <div class="checkbox__checkmark checkbox--list-item__checkmark"></div>
-                <span translate>Remember password</span>
-              </label>
-            </ons-list-item>
-          </ons-list>
-          <!--<ons-button modifier="large" class="login-button" ng-click="login()">-->
-            <ons-button modifier="large" class="login-button" ng-click="loginModal.show();login();">
-            <span translate>Login</span>
-            <!--<ons-icon icon="ion-load-c" spin="true"></ons-icon>-->
-          </ons-button>
-          <span style="color:red">{{errorMessage}}</span>
-        </div>
-      </ons-page>
+      <div ons-loading-placeholder="login.html"></div>
     </ons-navigator>
+
+    <ons-template id="login.html">
+        <ons-page>
+          <ons-toolbar>
+            <div class="center" translate>Login</div>
+            <div class="right"><ons-toolbar-button><span translate>Close</span></ons-toolbar-button></div>
+          </ons-toolbar>
+
+          <div class="login-form">
+            <div class="form-row">
+              <input type="text" class="text-input--underbar" placeholder="{{'Username'|translate}}" ng-model="username">
+            </div>
+            <div class="form-row">
+              <input type="password" class="text-input--underbar" placeholder="{{'Password'|translate}}" ng-model="password">
+            </div>
+            <ons-list class="remember-me">
+              <ons-list-item modifier="tappable">
+                <label class="checkbox checkbox--list-item">
+                  <input type="checkbox" ng-model="savePassword">
+                  <div class="checkbox__checkmark checkbox--list-item__checkmark"></div>
+                  <span translate>Remember password</span>
+                </label>
+              </ons-list-item>
+            </ons-list>
+            <!--<ons-button modifier="large" class="login-button" ng-click="login()">-->
+              <ons-button modifier="large" class="login-button" ng-click="loginModal.show();login();">
+              <span translate>Login</span>
+              <!--<ons-icon icon="ion-load-c" spin="true"></ons-icon>-->
+            </ons-button>
+            <span style="color:red">{{errorMessage}}</span>
+          </div>
+        </ons-page>
+    </ons-template>
 
     <ons-template id="mainUI.html">
       <ons-page ng-controller="AppController" ng-init="init()">

@@ -18,18 +18,17 @@ var LoginController = function ($scope, $window, gettextCatalog) {
   };
 
   $scope.login = function () {
-    console.log('login');
     $scope.bbsCore.login($scope.sitename, $scope.username, $scope.password, $scope.savePassword);
   };
 
   $scope.updateMainUI = function (status, message) {
     switch (status){
       case "logout":
-        mainNavigator.popPage('mainUI.html');
+        mainNavigator.resetToPage('login.html', { animation: "slide" });
         $scope.errorMessage = '';
         break;
       case "login-success":
-        mainNavigator.replacePage('mainUI.html');
+        mainNavigator.resetToPage('mainUI.html', { animation: "slide" });
         loginModal.hide();
         $scope.errorMessage = '';
         break;
