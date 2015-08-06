@@ -150,8 +150,6 @@
       <ons-page>
         <ons-toolbar>
           <div class="left"><ons-back-button><span translate>Back</span></ons-back-button></div>
-          <!-- FIXME -->
-          <!-- <div class="center">{{currentDirectory.boardName=='favorite'?'我的最愛':currentDirectory.boardName}}</div> -->
           <div class="center">{{boardName_translate}}</div>
         </ons-toolbar>
         <ons-list class="plan-list">
@@ -397,7 +395,17 @@
             <span translate>Save password</span>
             <ons-switch modifier="list-item" ng-model="savePassword" ng-change='switchChange("savePassword")'></ons-switch>
           </ons-list-item>
+          <ons-list-item>
+            <span translate>Set language</span>
+            <!-- <ons-switch modifier="list-item" ng-model="savePassword" ng-change='switchChange("savePassword")'></ons-switch> -->
+
+          </ons-list-item>
         </ons-list>
+        <label class="radio-button">
+          <input type="radio">
+          <div class="radio-button__checkmark">radio 1</div>
+          <div class="radio-button__checkmark">radio 2</div>
+        </label>
         <br>
         <ons-list modifier="inset" class="settings-list">
           <ons-list-item modifier="tappable" ng-click="logout()">
