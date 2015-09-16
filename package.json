@@ -1,6 +1,10 @@
 {
   "name": "OpenPTT",
   "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OpenPTT/OpenPTT.git"
+  },
   "optionalDependencies": {
     "ios-sim": "latest",
     "ios-deploy": "latest"
