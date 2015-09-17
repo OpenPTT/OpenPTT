@@ -1,8 +1,18 @@
 {
   "name": "OpenPTT",
   "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OpenPTT/OpenPTT.git"
+  },
+  "optionalDependencies": {
+    "ios-sim": "latest",
+    "ios-deploy": "latest"
+  },
   "devDependencies": {
+    "cordova": "^5.3.1",
     "grunt": "^0.4.5",
+    "grunt-cli": "^0.1.13",
     "grunt-angular-gettext": "^2.1.0"
   }
 }
