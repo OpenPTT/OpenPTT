@@ -8,15 +8,18 @@ var LoginController = function ($scope, $window, gettextCatalog) {
     $scope.sitename = 'PTT';
     $scope.filterResult = [];
 
-    $scope.username = $scope.bbsCore.prefs.username;
-    $scope.password = $scope.bbsCore.prefs.password;
+    $scope.user = {
+      name: $scope.bbsCore.prefs.username,
+      password: $scope.bbsCore.prefs.password
+    };
+
     $scope.savePassword = $scope.bbsCore.prefs.savePassword;
 
     $scope.bbsCore.regConnectionStatusEvent($scope.updateMainUI);
   };
 
   $scope.login = function () {
-    $scope.bbsCore.login($scope.sitename, $scope.username, $scope.password, $scope.savePassword);
+    $scope.bbsCore.login($scope.sitename, $scope.user.name, $scope.user.password, $scope.savePassword);
   };
 
   $scope.updateMainUI = function (status, message) {
