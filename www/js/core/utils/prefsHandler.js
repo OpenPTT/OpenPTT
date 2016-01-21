@@ -16,6 +16,8 @@ function PrefsHandler(bbsCore) {
                    ''];
   this.savePassword = false;
   this.prefsRoot = 'openptt.';
+  this.username = '';
+  this.password = '';
 }
 
 PrefsHandler.prototype={

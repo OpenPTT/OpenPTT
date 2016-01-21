@@ -54,7 +54,8 @@ SshProtocol.prototype={
         this.client.set_missing_host_key_policy(new paramikojs.AutoAddPolicy()); //always save new key
 
         var auth_success = function() {
-          self.client.invoke_shell('xterm-256color', self.bbsCore.prefs.bbsCol, self.bbsCore.prefs.bbsRow, shell_success);          console.log('SshProtocol connect - 3-2');
+          self.client.invoke_shell('xterm-256color', self.bbsCore.prefs.bbsCol, self.bbsCore.prefs.bbsRow, shell_success);
+          console.log('SshProtocol connect - 3-2');
         };
 
         var write = function(str) {
